@@ -4,7 +4,9 @@ A Minecraft Fabric mod that adds an enhanced player locator bar.
 An improvement over **Mojang**'s existing player indicator system.
 
 ## Features
-- ❇️ **HUD Icons**: Displays square icons above the experience bar for tracked players.
+- **HUD Icons**: Displays square icons above the experience bar for tracked players.
+![2025-03-18_13 53 19](https://github.com/user-attachments/assets/599ca07e-bb5e-460b-ae48-98b192591397)
+![2025-03-18_14 03 13](https://github.com/user-attachments/assets/294faad0-510e-489d-98bb-efdfe58d3bb7)
 - 🌈 **Player Colors**: Each player gets a unique color.
 - 💫 **Smooth Animations**: Icons resize and move smoothly with `lerp`.
 - 🪜 **Height Indicator**: Uses an arrow texture to indicate vertical position differences.
