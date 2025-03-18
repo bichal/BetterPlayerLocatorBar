@@ -3,15 +3,15 @@
 A Minecraft Fabric mod that adds an enhanced player locator bar with customizable icons, colors, and smooth animations.
 
 ## Features
-❇️ **HUD Icons**: Displays square icons above the experience bar for tracked players.
-🌈 **Player Colors**: Each player gets a unique color.
-💫 **Smooth Animations**: Icons resize and move smoothly with `lerp`.
-🪜 **Height Indicator**: Uses an arrow texture to indicate vertical position differences.
-📏 **Distance-Based Transparency**: Icons fade out between 100 and 5000 blocks.
-📦 **Server Support**: Works in multiplayer, persisting indicators even when chunks are unloaded.
+- ❇️ **HUD Icons**: Displays square icons above the experience bar for tracked players.
+- 🌈 **Player Colors**: Each player gets a unique color.
+- 💫 **Smooth Animations**: Icons resize and move smoothly with `lerp`.
+- 🪜 **Height Indicator**: Uses an arrow texture to indicate vertical position differences.
+- 📏 **Distance-Based Transparency**: Icons fade out between 100 and 5000 blocks.
+- 📦 **Server Support**: Works in multiplayer, persisting indicators even when chunks are unloaded.
 
 ## Controls
-⌨️ **`Tab`** - Show player names and heads.
+- ⌨️ **`Tab`** - Show player names and heads.
 
 ## Installation
 1. Download and install **Fabric Loader**.
