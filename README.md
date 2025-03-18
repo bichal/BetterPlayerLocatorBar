@@ -30,3 +30,4 @@ Feel free to use, modify, and share it without restrictions.
 - [GitHub Repository](https://github.com/bichal/BetterPlayerLocatorBar)  
 - [Issues & Suggestions](https://github.com/bichal/BetterPlayerLocatorBar/issues) 
 - [Modrinth](https://modrinth.com/mod/bplb)
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar)
