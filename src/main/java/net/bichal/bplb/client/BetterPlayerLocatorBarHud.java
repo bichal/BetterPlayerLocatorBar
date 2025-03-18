@@ -238,7 +238,7 @@ public class BetterPlayerLocatorBarHud {
             int textAlpha = (int) (alpha * 255) << 24;
 
             context.getMatrices().push();
-            context.getMatrices().translate(backgroundX, backgroundY, translateZ);
+            context.getMatrices().translate(backgroundX, backgroundY - 1, translateZ);
 
             context.fill(-padding * 2, -padding * 2, scaledTextWidth + padding + 1, scaledFontHeight + padding + 1, (borderAlpha << 24) | playerColor);
             context.fill(-padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, (backgroundAlpha << 24) | 0x2F2F2F);
