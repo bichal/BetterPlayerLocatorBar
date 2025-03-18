@@ -1,6 +1,7 @@
 # Better Player Locator Bar
 
-A Minecraft Fabric mod that adds an enhanced player locator bar with customizable icons, colors, and smooth animations.
+A Minecraft Fabric mod that adds an enhanced player locator bar.
+An improvement over **Mojang**'s existing player indicator system.
 
 ## Features
 - ❇️ **HUD Icons**: Displays square icons above the experience bar for tracked players.
