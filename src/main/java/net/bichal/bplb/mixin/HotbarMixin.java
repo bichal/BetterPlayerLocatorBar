@@ -17,7 +17,7 @@ public class HotbarMixin {
     @Unique
     private static final float BASE_EXPERIENCE_OFFSET = -3;
     @Unique
-    private static final float TAB_OFFSET = -11;
+    private static final float TAB_OFFSET = -13;
     @Unique
     private static final float LERP_SPEED = 0.15f;
     @Unique
