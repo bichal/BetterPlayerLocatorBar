@@ -1,5 +1,6 @@
 package net.bichal.bplb.mixin;
 
+import net.bichal.bplb.client.BetterPlayerLocatorBarHud;
 import net.bichal.bplb.client.Keybinds;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -17,7 +18,9 @@ public class HotbarMixin {
     @Unique
     private static final float BASE_EXPERIENCE_OFFSET = -3;
     @Unique
-    private static final float TAB_OFFSET = -11;
+    private static final float TAB_OFFSET = -9;
+    @Unique
+    private static final float ARROW_OFFSET = -5;
     @Unique
     private static final float LERP_SPEED = 0.15f;
     @Unique
@@ -27,19 +30,8 @@ public class HotbarMixin {
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
-
-        float targetExperienceOffset = hasPlayers ? BASE_EXPERIENCE_OFFSET : 0;
-        if (isTabPressed) {
-            targetExperienceOffset += TAB_OFFSET;
-        }
-
-        experienceYOffset = MathHelper.lerp(LERP_SPEED, experienceYOffset, targetExperienceOffset);
-
-        context.getMatrices().push();
-        context.getMatrices().translate(0, experienceYOffset, 0);
+        experienceYOffset = updateYOffset(BASE_EXPERIENCE_OFFSET, experienceYOffset);
+        applyTranslation(context, experienceYOffset);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
@@ -49,20 +41,31 @@ public class HotbarMixin {
 
     @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
-
-        float targetStatusOffset = isTabPressed ? TAB_OFFSET : 0;
-
-        statusYOffset = MathHelper.lerp(LERP_SPEED, statusYOffset, targetStatusOffset);
-
-        context.getMatrices().push();
-        context.getMatrices().translate(0, statusYOffset, 0);
+        statusYOffset = updateYOffset(0, statusYOffset);
+        applyTranslation(context, statusYOffset);
     }
 
     @Inject(method = "renderStatusBars", at = @At("RETURN"))
     private void resetStatusBars(DrawContext context, CallbackInfo ci) {
         context.getMatrices().pop();
+    }
+
+    @Unique
+    private float updateYOffset(float baseOffset, float currentOffset) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
+        boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
+
+        float targetOffset = hasPlayers ? baseOffset : 0;
+        if (isTabPressed) targetOffset += TAB_OFFSET;
+        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client)) targetOffset += ARROW_OFFSET;
+
+        return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);
+    }
+
+    @Unique
+    private void applyTranslation(DrawContext context, float offset) {
+        context.getMatrices().push();
+        context.getMatrices().translate(0, offset, 0);
     }
 }

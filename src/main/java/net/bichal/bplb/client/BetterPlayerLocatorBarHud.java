@@ -36,6 +36,7 @@ public class BetterPlayerLocatorBarHud {
     private static final float LERP_SPEED = 0.2f;
     private static final Map<UUID, Long> joinAnimations = new HashMap<>();
     private static final Map<UUID, Boolean> activePlayers = new HashMap<>();
+    private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
     private static final Identifier ARROW_UP_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_up.png");
     private static final Identifier ARROW_DOWN_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_down.png");
 
@@ -108,19 +109,18 @@ public class BetterPlayerLocatorBarHud {
 
                 playerColors.computeIfAbsent(pos.uuid(), k -> new int[]{generateRandomColor()});
 
+                double heightDifference = pos.y() - client.player.getY();
+                if (Math.abs(heightDifference) > 4) {
+                    if (heightDifference > 0) {
+                        renderArrowUp(context, iconX, barY, alpha, heightDifference);
+                    } else {
+                        renderArrowDown(context, iconX, barY, alpha, heightDifference);
+                    }
+                }
                 if (showDetails) {
-                    renderPlayerHeadBorder(context, pos.uuid(), iconX, barY, alpha);
-                    renderPlayerHead(context, pos.uuid(), iconX, barY, alpha);
+                    renderPlayerHead(context, client, pos.uuid(), pos, iconX, barY, alpha);
                     renderPlayerName(context, client, pos, iconX, barY - 10, totalScale, (int) translateZ);
                 } else {
-                    double heightDifference = pos.y() - client.player.getY();
-                    if (Math.abs(heightDifference) > 4) {
-                        if (heightDifference > 0) {
-                            renderArrowUp(context, iconX, barY, alpha, translateZ, heightDifference);
-                        } else {
-                            renderArrowDown(context, iconX, barY, alpha, translateZ, heightDifference);
-                        }
-                    }
                     renderIcon(context, iconX, barY, playerColors.get(pos.uuid()), alpha);
                 }
                 renderJoinAnimation(context, pos.uuid(), iconX, barY, alpha, totalScale);
@@ -154,64 +154,44 @@ public class BetterPlayerLocatorBarHud {
     static void renderIcon(DrawContext context, int x, int y, int[] colorPalette, float alpha) {
         context.getMatrices().push();
         RenderSystem.enableBlend();
-        assert colorPalette != null;
+        colorsPalette(context, x, y, colorPalette, alpha);
+        RenderSystem.disableBlend();
+        context.getMatrices().pop();
+    }
+
+    private static void colorsPalette(DrawContext context, int x, int y, int[] colorPalette, float alpha) {
         int color = colorPalette[0];
         RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, alpha);
         context.drawTexture(ICON_TEXTURE, x, y, ICON_SIZE, ICON_SIZE, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
     }
 
-    static void renderArrowUp(DrawContext context, int x, int y, float alpha, float translateZ, double heightDifference) {
+    static void renderArrowUp(DrawContext context, int x, int y, float alpha, double heightDifference) {
         context.getMatrices().push();
-        context.getMatrices().translate(0, 0, translateZ);
-
         int arrowWidth = 7;
         int arrowHeight = 5;
-
-        float arrowAlpha;
-        if (Math.abs(heightDifference) <= 4) {
-            arrowAlpha = 1.0f;
-        } else if (Math.abs(heightDifference) >= 200) {
-            arrowAlpha = 0.1f;
-        } else {
-            arrowAlpha = MathHelper.lerp((float) ((Math.abs(heightDifference) - 4) / (200 - 4)), 1.0f, 0.1f);
-        }
-
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * arrowAlpha);
+        arrowAlpha(alpha, heightDifference);
         context.drawTexture(ARROW_UP_TEXTURE, x, y - 3, arrowWidth, arrowHeight, 0, 0, arrowWidth, arrowHeight, arrowWidth, arrowHeight);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
-
         context.getMatrices().pop();
     }
 
-    private static void renderArrowDown(DrawContext context, int x, int y, float alpha, float translateZ, double heightDifference) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, translateZ);
-
-        int arrowWidth = 7;
-        int arrowHeight = 5;
-
-        int arrowY = y + ICON_SIZE - 2;
-
-        float arrowAlpha;
-        if (Math.abs(heightDifference) <= 4) {
-            arrowAlpha = 1.0f;
-        } else if (Math.abs(heightDifference) >= 200) {
-            arrowAlpha = 0.1f;
-        } else {
-            arrowAlpha = MathHelper.lerp((float) ((Math.abs(heightDifference) - 4) / (200 - 4)), 1.0f, 0.1f);
-        }
-
+    private static void arrowAlpha(float alpha, double heightDifference) {
+        float arrowAlpha = MathHelper.lerp((float) MathHelper.clamp((Math.abs(heightDifference) - 4) / 196, 0, 1), 1.0f, 0.1f);
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * arrowAlpha);
+    }
+
+    private static void renderArrowDown(DrawContext context, int x, int y, float alpha, double heightDifference) {
+        context.getMatrices().push();
+        int arrowWidth = 7;
+        int arrowHeight = 5;
+        int arrowY = y + ICON_SIZE - 2;
+        arrowAlpha(alpha, heightDifference);
         context.drawTexture(ARROW_DOWN_TEXTURE, x, arrowY, arrowWidth, arrowHeight, 0, 0, arrowWidth, arrowHeight, arrowWidth, arrowHeight);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
-
         context.getMatrices().pop();
     }
 
@@ -219,7 +199,8 @@ public class BetterPlayerLocatorBarHud {
         PlayerEntity player = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
         if (player != null) {
             String name = player.getName().getString();
-            int textWidth = client.textRenderer.getWidth(name);
+            int textPadding = 3;
+            int textWidth = client.textRenderer.getWidth(name) + textPadding * 2;
             int iconRelativeX = x - (client.getWindow().getScaledWidth() / 2 - BAR_WIDTH / 2);
             int adjustedX = getAdjustedX(x, iconRelativeX, textWidth);
             int[] colors = playerColors.get(pos.uuid());
@@ -230,25 +211,70 @@ public class BetterPlayerLocatorBarHud {
             int scaledFontHeight = (int) (client.textRenderer.fontHeight * scale);
 
             int padding = 1;
-            int borderAlpha = (int) (alpha * 0.1f * 255);
-            int backgroundAlpha = (int) (alpha * 0.3f * 255);
+            float borderAlpha = 0.7f;
+            float backgroundAlpha = 0.7f;
 
             int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + 3;
             int backgroundY = y + 1 + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
             int textAlpha = (int) (alpha * 255) << 24;
+            int nameOffset = -4;
+
+            if (shouldApplyArrowOffset(client)) {
+                backgroundY += nameOffset;
+            }
+
+            int darkerColor2 = darkenColor(playerColor, 0.4f);
+            int darkerColor1 = darkenColor(playerColor, 0.6f);
+
+            float currentYOffset = playerNameOffsets.getOrDefault(pos.uuid(), (float) backgroundY);
+            currentYOffset = MathHelper.lerp(LERP_SPEED, currentYOffset, backgroundY);
+            playerNameOffsets.put(pos.uuid(), currentYOffset);
 
             context.getMatrices().push();
-            context.getMatrices().translate(backgroundX, backgroundY - 1, translateZ);
+            context.getMatrices().translate(backgroundX, currentYOffset, translateZ);
 
-            context.fill(-padding * 2, -padding * 2, scaledTextWidth + padding + 1, scaledFontHeight + padding + 1, (borderAlpha << 24) | playerColor);
-            context.fill(-padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, (backgroundAlpha << 24) | 0x2F2F2F);
-
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderColor(1, 1, 1, backgroundAlpha);
+            context.fill(0, -0, scaledTextWidth, scaledFontHeight, darkerColor1);
+            drawRoundedBorder(context, -padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, darkerColor2);
+            RenderSystem.setShaderColor(1, 1, 1, borderAlpha);
+            drawSquaredBorder(context, 0, 0, scaledTextWidth, scaledFontHeight, playerColor);
+            RenderSystem.setShaderColor(1, 1, 1, 1);
             context.getMatrices().scale(scale, scale, 1.0f);
 
-            context.drawText(client.textRenderer, name, 0, 0, 0xFFFFFF | textAlpha, true);
-
+            context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | textAlpha, true);
+            RenderSystem.disableBlend();
             context.getMatrices().pop();
         }
+    }
+
+    private static int darkenColor(int color, float factor) {
+        int a = (color >> 24) & 0xFF;
+        int r = (int) (((color >> 16) & 0xFF) * (1 - factor));
+        int g = (int) (((color >> 8) & 0xFF) * (1 - factor));
+        int b = (int) ((color & 0xFF) * (1 - factor));
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    private static void drawRoundedBorder(DrawContext context, int x1, int y1, int x2, int y2, int color) {
+        context.fill(x1 - 1, y1, x1, y2, color);
+        context.fill(x2, y1, x2 + 1, y2, color);
+
+        context.fill(x1, y1 - 1, x2, y1, color);
+        context.fill(x1, y2, x2, y2 + 1, color);
+    }
+
+    private static void drawSquaredBorder(DrawContext context, int x1, int y1, int x2, int y2, int color) {
+        context.fill(x1 - 1, y1 - 1, x1, y2 + 1, color);
+        context.fill(x2, y1 - 1, x2 + 1, y2 + 1, color);
+
+        context.fill(x1, y1 - 1, x2, y2, color);
+        context.fill(x1, y2, x2, y2 + 1, color);
+    }
+
+    public static boolean shouldApplyArrowOffset(MinecraftClient client) {
+        return client.player != null && Objects.requireNonNull(client.world).getPlayers().stream()
+                .anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
     }
 
     private static int getAdjustedX(int x, int iconRelativeX, int textWidth) {
@@ -264,34 +290,23 @@ public class BetterPlayerLocatorBarHud {
         }
     }
 
-    private static void renderPlayerHead(DrawContext context, UUID playerId, int x, int y, float alpha) {
+    private static void renderPlayerHead(DrawContext context, MinecraftClient client, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha) {
         Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
             assert MinecraftClient.getInstance().world != null;
-            AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) MinecraftClient.getInstance().world.getPlayerByUuid(id);
-            return player != null ? player.getSkinTextures().texture() : Identifier.of("minecraft", "textures/entity/steve.png");
+            AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) MinecraftClient.getInstance().world.getPlayerByUuid(id);
+            return p != null ? p.getSkinTextures().texture() : Identifier.of("minecraft", "textures/entity/steve.png");
         });
+
+        int[] colors = playerColors.get(pos.uuid());
+        int playerColor = colors != null ? colors[0] : 0xFFFFFF;
+
+        int iconRelativeX = x - (client.getWindow().getScaledWidth() / 2 - BAR_WIDTH / 2);
 
         context.getMatrices().push();
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+        drawRoundedBorder(context, x + iconRelativeX, x + ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE * 2, ICON_PRIMARY_SIZE * 2, playerColor);
         context.drawTexture(skin, x + ICON_BORDER_SIZE, y + ICON_BORDER_SIZE, ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE, 8, 8, 8, 8, 64, 64);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
-    }
-
-    private static void renderPlayerHeadBorder(DrawContext context, UUID uuid, int x, int y, float alpha) {
-        int[] colors = playerColors.get(uuid);
-        if (colors == null) return;
-        int color = colors[0];
-        float red = ((color >> 16) & 0xFF) / 255.0f;
-        float green = ((color >> 8) & 0xFF) / 255.0f;
-        float blue = (color & 0xFF) / 255.0f;
-
-        context.getMatrices().push();
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(red, green, blue, alpha);
-        context.drawTexture(ICON_TEXTURE, x, y, ICON_SIZE, ICON_SIZE, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
         context.getMatrices().pop();
