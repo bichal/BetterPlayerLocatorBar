@@ -27,6 +27,7 @@ public class BetterPlayerLocatorBarHud {
     private static final float MAX_FADE_DISTANCE = 5000f;
     private static final float FADE_START_DISTANCE = 100f;
     private static final float MIN_ALPHA = 0.1f;
+    private static final float ICON_OPACITY = 1f;
     private static final Identifier ICON_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/icon_overlay.png");
     private static final Map<UUID, PositionUpdatePayload.PlayerPosition> playerPositions = new HashMap<>();
     private static final Map<UUID, int[]> playerColors = new HashMap<>();
@@ -37,6 +38,8 @@ public class BetterPlayerLocatorBarHud {
     private static final Map<UUID, Long> joinAnimations = new HashMap<>();
     private static final Map<UUID, Boolean> activePlayers = new HashMap<>();
     private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
+    private static final int ARROW_WIDTH = 7;
+    private static final int ARROW_HEIGHT = 5;
     private static final Identifier ARROW_UP_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_up.png");
     private static final Identifier ARROW_DOWN_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_down.png");
 
@@ -118,10 +121,10 @@ public class BetterPlayerLocatorBarHud {
                     }
                 }
                 if (showDetails) {
-                    renderPlayerHead(context, client, pos.uuid(), pos, iconX, barY, alpha);
+                    renderPlayerHead(context, client, pos.uuid(), pos, iconX, barY, ICON_OPACITY * alpha);
                     renderPlayerName(context, client, pos, iconX, barY - 10, totalScale, (int) translateZ);
                 } else {
-                    renderIcon(context, iconX, barY, playerColors.get(pos.uuid()), alpha);
+                    renderIcon(context, iconX, barY, playerColors.get(pos.uuid()), ICON_OPACITY * alpha);
                 }
                 renderJoinAnimation(context, pos.uuid(), iconX, barY, alpha, totalScale);
                 context.getMatrices().pop();
@@ -168,10 +171,18 @@ public class BetterPlayerLocatorBarHud {
 
     static void renderArrowUp(DrawContext context, int x, int y, float alpha, double heightDifference) {
         context.getMatrices().push();
-        int arrowWidth = 7;
-        int arrowHeight = 5;
         arrowAlpha(alpha, heightDifference);
-        context.drawTexture(ARROW_UP_TEXTURE, x, y - 3, arrowWidth, arrowHeight, 0, 0, arrowWidth, arrowHeight, arrowWidth, arrowHeight);
+        context.drawTexture(ARROW_UP_TEXTURE, x, y - ICON_SIZE + 1, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.disableBlend();
+        context.getMatrices().pop();
+    }
+
+    private static void renderArrowDown(DrawContext context, int x, int y, float alpha, double heightDifference) {
+        context.getMatrices().push();
+        int arrowY = y + ICON_SIZE + 1;
+        arrowAlpha(alpha, heightDifference);
+        context.drawTexture(ARROW_DOWN_TEXTURE, x, arrowY, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
         context.getMatrices().pop();
@@ -181,18 +192,6 @@ public class BetterPlayerLocatorBarHud {
         float arrowAlpha = MathHelper.lerp((float) MathHelper.clamp((Math.abs(heightDifference) - 4) / 196, 0, 1), 1.0f, 0.1f);
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * arrowAlpha);
-    }
-
-    private static void renderArrowDown(DrawContext context, int x, int y, float alpha, double heightDifference) {
-        context.getMatrices().push();
-        int arrowWidth = 7;
-        int arrowHeight = 5;
-        int arrowY = y + ICON_SIZE - 2;
-        arrowAlpha(alpha, heightDifference);
-        context.drawTexture(ARROW_DOWN_TEXTURE, x, arrowY, arrowWidth, arrowHeight, 0, 0, arrowWidth, arrowHeight, arrowWidth, arrowHeight);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
     }
 
     static void renderPlayerName(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int translateZ) {
@@ -217,14 +216,12 @@ public class BetterPlayerLocatorBarHud {
             int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + 3;
             int backgroundY = y + 1 + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
             int textAlpha = (int) (alpha * 255) << 24;
+            int allAlpha = (int) (ICON_OPACITY * textAlpha);
             int nameOffset = -4;
 
             if (shouldApplyArrowOffset(client)) {
                 backgroundY += nameOffset;
             }
-
-            int darkerColor2 = darkenColor(playerColor, 0.4f);
-            int darkerColor1 = darkenColor(playerColor, 0.6f);
 
             float currentYOffset = playerNameOffsets.getOrDefault(pos.uuid(), (float) backgroundY);
             currentYOffset = MathHelper.lerp(LERP_SPEED, currentYOffset, backgroundY);
@@ -234,15 +231,15 @@ public class BetterPlayerLocatorBarHud {
             context.getMatrices().translate(backgroundX, currentYOffset, translateZ);
 
             RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1, 1, 1, backgroundAlpha);
-            context.fill(0, -0, scaledTextWidth, scaledFontHeight, darkerColor1);
-            drawRoundedBorder(context, -padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, darkerColor2);
-            RenderSystem.setShaderColor(1, 1, 1, borderAlpha);
-            drawSquaredBorder(context, 0, 0, scaledTextWidth, scaledFontHeight, playerColor);
+            RenderSystem.setShaderColor(1, 1, 1, ICON_OPACITY * backgroundAlpha);
+            context.fill(0, -0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.4f));
+            drawRoundedBorder(context, -padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, darkenColor(playerColor, 0.6f));
+            RenderSystem.setShaderColor(1, 1, 1, ICON_OPACITY * borderAlpha);
+            drawSquaredBorder(context, 0, 0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.5f));
             RenderSystem.setShaderColor(1, 1, 1, 1);
             context.getMatrices().scale(scale, scale, 1.0f);
 
-            context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | textAlpha, true);
+            context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | allAlpha, true);
             RenderSystem.disableBlend();
             context.getMatrices().pop();
         }
