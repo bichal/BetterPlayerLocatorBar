@@ -16,11 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class HotbarMixin {
     @Unique
-    private static final float BASE_EXPERIENCE_OFFSET = -3;
+    private static final float BASE_EXPERIENCE_OFFSET = -4;
     @Unique
     private static final float TAB_OFFSET = -9;
     @Unique
-    private static final float ARROW_OFFSET = -5;
+    private static final float ARROW_OFFSET = -6;
     @Unique
     private static final float LERP_SPEED = 0.15f;
     @Unique
@@ -41,7 +41,7 @@ public class HotbarMixin {
 
     @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
-        statusYOffset = updateYOffset(0, statusYOffset);
+        statusYOffset = updateYOffset(-1, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
 
