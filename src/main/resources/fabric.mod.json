@@ -7,9 +7,6 @@
   "authors": [
     "Bichal"
   ],
-  "contact": {
-    "sources": "https://github.com/bichal"
-  },
   "license": "CC0-1.0",
   "icon": "assets/bplb/icon.png",
   "environment": "*",
@@ -42,7 +39,7 @@
         "modmenu.source": "https://github.com/bichal"
       },
       "badges": [
-        "Client"
+        "client"
       ],
       "update_checker": true
     }
