@@ -26,5 +26,6 @@
   "tooltip.bplb.minAlpha": "Opacidad mínima para jugadores lejanos",
   "tooltip.bplb.maxFadeDistance": "Distancia máxima antes de desvanecer",
   "tooltip.bplb.playerSettings": "Personalización por jugador (colores, visibilidad)",
-  "tooltip.bplb.color": "Color en formato ARGB (ej: -1 = blanco)"
+  "tooltip.bplb.color": "Color en formato ARGB (ej: -1 = blanco)",
+  "modmenu.source": "Github"
 }

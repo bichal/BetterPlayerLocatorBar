@@ -26,5 +26,6 @@
   "tooltip.bplb.minAlpha": "Minimum opacity for distant players",
   "tooltip.bplb.maxFadeDistance": "Max distance before fading starts",
   "tooltip.bplb.playerSettings": "Per-player customization (colors, visibility)",
-  "tooltip.bplb.color": "ARGB color value (e.g., -1 = white)"
+  "tooltip.bplb.color": "ARGB color value (e.g., -1 = white)",
+  "modmenu.source": "Github"
 }

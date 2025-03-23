@@ -9,7 +9,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -75,16 +78,29 @@ public class BetterPlayerLocatorBarHud {
             PositionUpdatePayload.PlayerPosition pos = players.get(i);
             if (pos.uuid().equals(client.player.getUuid())) continue;
 
+            PlayerEntity targetPlayer = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
+            if (targetPlayer != null && shouldHideTarget(targetPlayer)) {
+                continue;
+            }
+
             float relativePos = calculateRelativePosition(client.player, pos);
             if (relativePos != Float.MIN_VALUE) {
                 float targetPos = relativePos * BAR_WIDTH;
                 float currentPos = currentIconPositions.getOrDefault(pos.uuid(), targetPos);
-                currentPos = MathHelper.lerp(LERP_SPEED, currentPos, targetPos);
+
+                float delta = Math.abs(targetPos - currentPos);
+                if (delta > (float) BAR_WIDTH / 2) {
+                    currentPos = targetPos;
+                } else {
+                    currentPos = MathHelper.lerp(LERP_SPEED, currentPos, targetPos);
+                }
+
                 currentIconPositions.put(pos.uuid(), currentPos);
                 int iconX = barX + (int) currentPos;
                 float alpha = getAlpha(client.player, pos);
 
-                float translateZ = 1000 + i * 10;
+                float translateZ = 1 + i;
+                float translateMoreZ = 1000 + i * 10;
 
                 Vec3d targetPosVec = new Vec3d(pos.x(), pos.y(), pos.z());
                 double distance = client.player.getPos().distanceTo(targetPosVec);
@@ -95,18 +111,19 @@ public class BetterPlayerLocatorBarHud {
                 }
 
                 int edgeDistance = Math.min(iconX - barX, BAR_WIDTH - (iconX - barX));
-                float edgeScale = MathHelper.lerp(Math.min(edgeDistance / 35f, 1f), 0.5f, 1.0f);
+                float edgeScale = MathHelper.lerp(Math.min(edgeDistance / 15f, 1f), 0.5f, 1.0f);
                 float totalScale = distanceScale * edgeScale;
 
-                if (edgeDistance < 15) {
-                    alpha = MathHelper.lerp(edgeDistance / 15f, 0.0f, alpha);
+                if (edgeDistance < 10) {
+                    alpha = MathHelper.lerp(edgeDistance / 10f, 0.0f, alpha);
                 }
 
                 context.getMatrices().push();
-                context.getMatrices().translate(0, 0, translateZ);
+                context.getMatrices().translate(0, 0, translateMoreZ);
 
                 float scaleOffsetX = (iconX + ICON_SIZE / 2f) * (1 - totalScale);
                 float scaleOffsetY = (barY + ICON_SIZE / 2f) * (1 - totalScale);
+
                 context.getMatrices().translate(scaleOffsetX, scaleOffsetY, 0);
                 context.getMatrices().scale(totalScale, totalScale, 1.0f);
 
@@ -121,7 +138,7 @@ public class BetterPlayerLocatorBarHud {
                     }
                 }
                 if (showDetails) {
-                    renderPlayerHead(context, client, pos.uuid(), pos, iconX, barY, ICON_OPACITY * alpha);
+                    renderPlayerHead(context, pos.uuid(), pos, iconX, barY, ICON_OPACITY * alpha);
                     renderPlayerName(context, client, pos, iconX, barY - 10, totalScale, (int) translateZ);
                 } else {
                     renderIcon(context, iconX, barY, playerColors.get(pos.uuid()), ICON_OPACITY * alpha);
@@ -130,6 +147,13 @@ public class BetterPlayerLocatorBarHud {
                 context.getMatrices().pop();
             }
         }
+    }
+
+    private static boolean shouldHideTarget(PlayerEntity target) {
+        ItemStack headStack = target.getEquippedStack(EquipmentSlot.HEAD);
+        boolean isHelmet = headStack.isOf(Items.LEATHER_HELMET) || headStack.isOf(Items.CHAINMAIL_HELMET) || headStack.isOf(Items.IRON_HELMET) || headStack.isOf(Items.GOLDEN_HELMET) || headStack.isOf(Items.DIAMOND_HELMET) || headStack.isOf(Items.NETHERITE_HELMET);
+
+        return target.isSneaking() || target.isInvisible() || !(headStack.isEmpty() || isHelmet);
     }
 
     private static float calculateRelativePosition(PlayerEntity viewer, PositionUpdatePayload.PlayerPosition target) {
@@ -214,10 +238,10 @@ public class BetterPlayerLocatorBarHud {
             float backgroundAlpha = 0.7f;
 
             int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + 3;
-            int backgroundY = y + 1 + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
+            int backgroundY = y + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
             int textAlpha = (int) (alpha * 255) << 24;
             int allAlpha = (int) (ICON_OPACITY * textAlpha);
-            int nameOffset = -4;
+            int nameOffset = -6;
 
             if (shouldApplyArrowOffset(client)) {
                 backgroundY += nameOffset;
@@ -270,8 +294,7 @@ public class BetterPlayerLocatorBarHud {
     }
 
     public static boolean shouldApplyArrowOffset(MinecraftClient client) {
-        return client.player != null && Objects.requireNonNull(client.world).getPlayers().stream()
-                .anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
+        return client.player != null && Objects.requireNonNull(client.world).getPlayers().stream().anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
     }
 
     private static int getAdjustedX(int x, int iconRelativeX, int textWidth) {
@@ -287,7 +310,7 @@ public class BetterPlayerLocatorBarHud {
         }
     }
 
-    private static void renderPlayerHead(DrawContext context, MinecraftClient client, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha) {
+    private static void renderPlayerHead(DrawContext context, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha) {
         Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
             assert MinecraftClient.getInstance().world != null;
             AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) MinecraftClient.getInstance().world.getPlayerByUuid(id);
@@ -297,13 +320,14 @@ public class BetterPlayerLocatorBarHud {
         int[] colors = playerColors.get(pos.uuid());
         int playerColor = colors != null ? colors[0] : 0xFFFFFF;
 
-        int iconRelativeX = x - (client.getWindow().getScaledWidth() / 2 - BAR_WIDTH / 2);
+        int borderX = x + ICON_BORDER_SIZE;
+        int borderY = y + ICON_BORDER_SIZE;
 
         context.getMatrices().push();
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        drawRoundedBorder(context, x + iconRelativeX, x + ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE * 2, ICON_PRIMARY_SIZE * 2, playerColor);
-        context.drawTexture(skin, x + ICON_BORDER_SIZE, y + ICON_BORDER_SIZE, ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE, 8, 8, 8, 8, 64, 64);
+        drawRoundedBorder(context, borderX, borderY, borderX + ICON_PRIMARY_SIZE, borderY + ICON_PRIMARY_SIZE, darkenColor(playerColor, 0.8f));
+        context.drawTexture(skin, borderX, borderY, ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE, 8, 8, 8, 8, 64, 64);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
         context.getMatrices().pop();
