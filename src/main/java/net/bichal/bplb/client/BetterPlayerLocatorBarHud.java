@@ -2,6 +2,7 @@ package net.bichal.bplb.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.BetterPlayerLocatorBar;
+import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -22,35 +23,34 @@ import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
 public class BetterPlayerLocatorBarHud {
+    private static final BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
+
     private static final int BAR_Y_OFFSET = -30;
     private static final int BAR_WIDTH = 182;
     private static final int ICON_PRIMARY_SIZE = 5;
     private static final int ICON_BORDER_SIZE = 1;
     private static final int ICON_SIZE = ICON_PRIMARY_SIZE + ICON_BORDER_SIZE * 2;
-    private static final float MAX_FADE_DISTANCE = 5000f;
-    private static final float FADE_START_DISTANCE = 100f;
-    private static final float MIN_ALPHA = 0.1f;
-    private static final float ICON_OPACITY = 1f;
+    private static final int ARROW_WIDTH = 7;
+    private static final int ARROW_HEIGHT = 5;
+
     private static final Identifier ICON_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/icon_overlay.png");
+    private static final Identifier ARROW_UP_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_up.png");
+    private static final Identifier ARROW_DOWN_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_down.png");
+
     private static final Map<UUID, PositionUpdatePayload.PlayerPosition> playerPositions = new HashMap<>();
-    private static final Map<UUID, int[]> playerColors = new HashMap<>();
     private static final Map<UUID, Identifier> playerSkins = new HashMap<>();
-    private static final Random RANDOM = new Random();
     private static final Map<UUID, Float> currentIconPositions = new HashMap<>();
-    private static final float LERP_SPEED = 0.2f;
     private static final Map<UUID, Long> joinAnimations = new HashMap<>();
     private static final Map<UUID, Boolean> activePlayers = new HashMap<>();
     private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
-    private static final int ARROW_WIDTH = 7;
-    private static final int ARROW_HEIGHT = 5;
-    private static final Identifier ARROW_UP_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_up.png");
-    private static final Identifier ARROW_DOWN_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_down.png");
 
     public static void registerEvents() {
         ClientPlayNetworking.registerGlobalReceiver(PositionUpdatePayload.ID, (payload, context) -> {
             Set<UUID> currentPlayers = payload.positions().stream().map(PositionUpdatePayload.PlayerPosition::uuid).collect(Collectors.toSet());
+
             playerPositions.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
             activePlayers.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
+
             for (PositionUpdatePayload.PlayerPosition pos : payload.positions()) {
                 if (!activePlayers.containsKey(pos.uuid())) {
                     joinAnimations.put(pos.uuid(), System.currentTimeMillis());
@@ -65,7 +65,7 @@ public class BetterPlayerLocatorBarHud {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
 
-        boolean showDetails = Keybinds.SHOW_PLAYER_NAME.isPressed();
+        boolean showDetails = Keybinds.SHOW_PLAYER_NAME.isPressed() || config.isToggleTab();
         int screenWidth = client.getWindow().getScaledWidth();
         int screenHeight = client.getWindow().getScaledHeight();
         int barX = screenWidth / 2 - BAR_WIDTH / 2 - ICON_SIZE / 2;
@@ -79,74 +79,83 @@ public class BetterPlayerLocatorBarHud {
             if (pos.uuid().equals(client.player.getUuid())) continue;
 
             PlayerEntity targetPlayer = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
-            if (targetPlayer != null && shouldHideTarget(targetPlayer)) {
-                continue;
-            }
+            if (targetPlayer != null && shouldHideTarget(targetPlayer)) continue;
 
             float relativePos = calculateRelativePosition(client.player, pos);
-            if (relativePos != Float.MIN_VALUE) {
-                float targetPos = relativePos * BAR_WIDTH;
-                float currentPos = currentIconPositions.getOrDefault(pos.uuid(), targetPos);
+            if (relativePos == Float.MIN_VALUE) continue;
 
-                float delta = Math.abs(targetPos - currentPos);
-                if (delta > (float) BAR_WIDTH / 2) {
-                    currentPos = targetPos;
-                } else {
-                    currentPos = MathHelper.lerp(LERP_SPEED, currentPos, targetPos);
-                }
-
-                currentIconPositions.put(pos.uuid(), currentPos);
-                int iconX = barX + (int) currentPos;
-                float alpha = getAlpha(client.player, pos);
-
-                float translateZ = 1 + i;
-                float translateMoreZ = 1000 + i * 10;
-
-                Vec3d targetPosVec = new Vec3d(pos.x(), pos.y(), pos.z());
-                double distance = client.player.getPos().distanceTo(targetPosVec);
-
-                float distanceScale = 1.0f;
-                if (distance > 1000) {
-                    distanceScale = MathHelper.clamp((float) (1 - (distance - 1000) / 4000 * 0.25f), 0.75f, 1.0f);
-                }
-
-                int edgeDistance = Math.min(iconX - barX, BAR_WIDTH - (iconX - barX));
-                float edgeScale = MathHelper.lerp(Math.min(edgeDistance / 15f, 1f), 0.5f, 1.0f);
-                float totalScale = distanceScale * edgeScale;
-
-                if (edgeDistance < 10) {
-                    alpha = MathHelper.lerp(edgeDistance / 10f, 0.0f, alpha);
-                }
-
-                context.getMatrices().push();
-                context.getMatrices().translate(0, 0, translateMoreZ);
-
-                float scaleOffsetX = (iconX + ICON_SIZE / 2f) * (1 - totalScale);
-                float scaleOffsetY = (barY + ICON_SIZE / 2f) * (1 - totalScale);
-
-                context.getMatrices().translate(scaleOffsetX, scaleOffsetY, 0);
-                context.getMatrices().scale(totalScale, totalScale, 1.0f);
-
-                playerColors.computeIfAbsent(pos.uuid(), k -> new int[]{generateRandomColor()});
-
-                double heightDifference = pos.y() - client.player.getY();
-                if (Math.abs(heightDifference) > 4) {
-                    if (heightDifference > 0) {
-                        renderArrowUp(context, iconX, barY, alpha, heightDifference);
-                    } else {
-                        renderArrowDown(context, iconX, barY, alpha, heightDifference);
-                    }
-                }
-                if (showDetails) {
-                    renderPlayerHead(context, pos.uuid(), pos, iconX, barY, ICON_OPACITY * alpha);
-                    renderPlayerName(context, client, pos, iconX, barY - 10, totalScale, (int) translateZ);
-                } else {
-                    renderIcon(context, iconX, barY, playerColors.get(pos.uuid()), ICON_OPACITY * alpha);
-                }
-                renderJoinAnimation(context, pos.uuid(), iconX, barY, alpha, totalScale);
-                context.getMatrices().pop();
-            }
+            renderPlayerIcon(context, client, pos, barX, barY, relativePos, i, showDetails);
         }
+    }
+
+    private static void renderPlayerIcon(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int barX, int barY, float relativePos, int index, boolean showDetails) {
+        float targetPos = relativePos * BAR_WIDTH;
+        float currentPos = currentIconPositions.getOrDefault(pos.uuid(), targetPos);
+        float lerpSpeed = config.getLerpSpeed();
+
+        float delta = Math.abs(targetPos - currentPos);
+        currentPos = delta > (float) BAR_WIDTH / 2 ? targetPos : MathHelper.lerp(lerpSpeed, currentPos, targetPos);
+        currentIconPositions.put(pos.uuid(), currentPos);
+
+        int iconX = barX + (int) currentPos;
+        float alpha = getAlpha(Objects.requireNonNull(client.player), pos);
+        float zDepth = 1 + index;
+        float highZDepth = 1000 + index * 10;
+
+        double distance = client.player.getPos().distanceTo(new Vec3d(pos.x(), pos.y(), pos.z()));
+        float distanceScale = calculateDistanceScale(distance);
+        float edgeScale = calculateEdgeScale(iconX, barX);
+        float totalScale = distanceScale * edgeScale;
+
+        int edgeDistance = Math.min(iconX - barX, BAR_WIDTH - (iconX - barX));
+        if (edgeDistance < 10) {
+            alpha = MathHelper.lerp(edgeDistance / 10f, config.getMinAlpha(), alpha);
+        }
+
+        context.getMatrices().push();
+        context.getMatrices().translate(0, 0, highZDepth);
+
+        float scaleOffsetX = (iconX + ICON_SIZE / 2f) * (1 - totalScale);
+        float scaleOffsetY = (barY + ICON_SIZE / 2f) * (1 - totalScale);
+        context.getMatrices().translate(scaleOffsetX, scaleOffsetY, 0);
+        context.getMatrices().scale(totalScale, totalScale, 1.0f);
+
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, alpha);
+
+        double heightDifference = pos.y() - client.player.getY();
+        if (Math.abs(heightDifference) > 4) {
+            renderHeightArrow(context, iconX, barY, alpha, heightDifference);
+        }
+
+        if (showDetails || config.isAlwaysShowPlayerNames()) {
+            renderPlayerName(context, client, pos, iconX, barY - 10, alpha, (int) zDepth);
+        }
+
+        if (showDetails || config.isAlwaysShowPlayerHeads()) {
+            renderPlayerHead(context, pos.uuid(), pos, iconX, barY, alpha);
+        } else {
+            renderIcon(context, iconX, barY, generateColorFromUUID(pos.uuid()), config.getIconOpacity() * alpha);
+        }
+
+        renderJoinAnimation(context, pos.uuid(), pos, iconX, barY, alpha, totalScale);
+
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        RenderSystem.disableBlend();
+        context.getMatrices().pop();
+    }
+
+    private static float calculateDistanceScale(double distance) {
+        float fadeStart = config.getFadeStartDistance();
+        float fadeMax = config.getMaxFadeDistance();
+
+        if (distance <= fadeStart) return 1.0f;
+        return MathHelper.clamp(1.0f - (float) (distance - fadeStart) / (fadeMax - fadeStart) * 0.25f, 0.75f, 1.0f);
+    }
+
+    private static float calculateEdgeScale(int iconX, int barX) {
+        int edgeDistance = Math.min(iconX - barX, BAR_WIDTH - (iconX - barX));
+        return MathHelper.lerp(Math.min(edgeDistance / 15f, 1f), 0.5f, 1.0f);
     }
 
     private static boolean shouldHideTarget(PlayerEntity target) {
@@ -159,114 +168,137 @@ public class BetterPlayerLocatorBarHud {
     private static float calculateRelativePosition(PlayerEntity viewer, PositionUpdatePayload.PlayerPosition target) {
         double dx = target.x() - viewer.getX();
         double dz = target.z() - viewer.getZ();
+
         double angle = Math.toDegrees(Math.atan2(dz, dx));
         double playerYaw = (viewer.getYaw() + 360) % 360;
         double relativeAngle = (angle - playerYaw + 360) % 360;
         float relativePos = ((float) ((relativeAngle + 90) / 180.0)) - 0.5f;
+
         return (relativePos >= 0 && relativePos <= 1) ? relativePos : Float.MIN_VALUE;
     }
 
     private static float getAlpha(PlayerEntity viewer, PositionUpdatePayload.PlayerPosition target) {
         Vec3d targetPos = new Vec3d(target.x(), target.y(), target.z());
         double distance = viewer.getPos().distanceTo(targetPos);
-        if (distance > MAX_FADE_DISTANCE) return MIN_ALPHA;
-        if (distance < FADE_START_DISTANCE) return 1f;
-        return 1f - ((float) (distance - FADE_START_DISTANCE) / (MAX_FADE_DISTANCE - FADE_START_DISTANCE)) * (1 - MIN_ALPHA);
+        float fadeStart = config.getFadeStartDistance();
+        float fadeMax = config.getMaxFadeDistance();
+        float minAlpha = config.getMinAlpha();
+
+        if (distance > fadeMax) return minAlpha;
+        if (distance < fadeStart) return 1f;
+
+        float distanceProgress = (float) ((distance - fadeStart) / (fadeMax - fadeStart));
+        return 1f - distanceProgress * (1 - minAlpha);
     }
 
-    private static int generateRandomColor() {
-        return (255 << 24) | ((RANDOM.nextInt(150) + 50) << 16 | ((RANDOM.nextInt(150) + 50) << 8 | (RANDOM.nextInt(150) + 50)));
+    private static int generateColorFromUUID(UUID uuid) {
+        Random random = new Random(uuid.hashCode());
+        return (255 << 24) | ((random.nextInt(150) + 50) << 16) | ((random.nextInt(150) + 50) << 8) | (random.nextInt(150) + 50);
     }
 
-    static void renderIcon(DrawContext context, int x, int y, int[] colorPalette, float alpha) {
-        context.getMatrices().push();
-        RenderSystem.enableBlend();
-        colorsPalette(context, x, y, colorPalette, alpha);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
-    }
-
-    private static void colorsPalette(DrawContext context, int x, int y, int[] colorPalette, float alpha) {
-        int color = colorPalette[0];
+    private static void renderIcon(DrawContext context, int x, int y, int color, float alpha) {
         RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, alpha);
         context.drawTexture(ICON_TEXTURE, x, y, ICON_SIZE, ICON_SIZE, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    static void renderArrowUp(DrawContext context, int x, int y, float alpha, double heightDifference) {
-        context.getMatrices().push();
-        arrowAlpha(alpha, heightDifference);
-        context.drawTexture(ARROW_UP_TEXTURE, x, y - ICON_SIZE + 1, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
-    }
+    private static void renderHeightArrow(DrawContext context, int x, int y, float alpha, double heightDifference) {
+        float arrowAlpha = alpha * MathHelper.lerp((float) MathHelper.clamp((Math.abs(heightDifference) - 4) / 196, 0, 1), 1.0f, 0.1f);
 
-    private static void renderArrowDown(DrawContext context, int x, int y, float alpha, double heightDifference) {
-        context.getMatrices().push();
-        int arrowY = y + ICON_SIZE + 1;
-        arrowAlpha(alpha, heightDifference);
-        context.drawTexture(ARROW_DOWN_TEXTURE, x, arrowY, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
-    }
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, arrowAlpha);
 
-    private static void arrowAlpha(float alpha, double heightDifference) {
-        float arrowAlpha = MathHelper.lerp((float) MathHelper.clamp((Math.abs(heightDifference) - 4) / 196, 0, 1), 1.0f, 0.1f);
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * arrowAlpha);
-    }
-
-    static void renderPlayerName(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int translateZ) {
-        PlayerEntity player = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
-        if (player != null) {
-            String name = player.getName().getString();
-            int textPadding = 3;
-            int textWidth = client.textRenderer.getWidth(name) + textPadding * 2;
-            int iconRelativeX = x - (client.getWindow().getScaledWidth() / 2 - BAR_WIDTH / 2);
-            int adjustedX = getAdjustedX(x, iconRelativeX, textWidth);
-            int[] colors = playerColors.get(pos.uuid());
-            int playerColor = colors != null ? colors[0] : 0xFFFFFF;
-
-            float scale = 0.65f;
-            int scaledTextWidth = (int) (textWidth * scale);
-            int scaledFontHeight = (int) (client.textRenderer.fontHeight * scale);
-
-            int padding = 1;
-            float borderAlpha = 0.7f;
-            float backgroundAlpha = 0.7f;
-
-            int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + 3;
-            int backgroundY = y + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
-            int textAlpha = (int) (alpha * 255) << 24;
-            int allAlpha = (int) (ICON_OPACITY * textAlpha);
-            int nameOffset = -6;
-
-            if (shouldApplyArrowOffset(client)) {
-                backgroundY += nameOffset;
-            }
-
-            float currentYOffset = playerNameOffsets.getOrDefault(pos.uuid(), (float) backgroundY);
-            currentYOffset = MathHelper.lerp(LERP_SPEED, currentYOffset, backgroundY);
-            playerNameOffsets.put(pos.uuid(), currentYOffset);
-
-            context.getMatrices().push();
-            context.getMatrices().translate(backgroundX, currentYOffset, translateZ);
-
-            RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1, 1, 1, ICON_OPACITY * backgroundAlpha);
-            context.fill(0, -0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.4f));
-            drawRoundedBorder(context, -padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, darkenColor(playerColor, 0.6f));
-            RenderSystem.setShaderColor(1, 1, 1, ICON_OPACITY * borderAlpha);
-            drawSquaredBorder(context, 0, 0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.5f));
-            RenderSystem.setShaderColor(1, 1, 1, 1);
-            context.getMatrices().scale(scale, scale, 1.0f);
-
-            context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | allAlpha, true);
-            RenderSystem.disableBlend();
-            context.getMatrices().pop();
+        if (heightDifference > 0) {
+            context.drawTexture(ARROW_UP_TEXTURE, x, y - ICON_SIZE + 1, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+        } else {
+            context.drawTexture(ARROW_DOWN_TEXTURE, x, y + ICON_SIZE + 1, ARROW_WIDTH, ARROW_HEIGHT, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
         }
+    }
+
+    private static void renderPlayerName(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int translateZ) {
+        PlayerEntity player = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
+        if (player == null) return;
+
+        String name = pos.name();
+        int textPadding = 3;
+        float scale = 0.65f;
+        int textWidth = client.textRenderer.getWidth(name) + textPadding * 2;
+        int scaledTextWidth = (int) (textWidth * scale);
+        int scaledFontHeight = (int) (client.textRenderer.fontHeight * scale);
+
+        int iconRelativeX = x - (client.getWindow().getScaledWidth() / 2 - BAR_WIDTH / 2);
+        int adjustedX = getAdjustedX(x, iconRelativeX, textWidth);
+        int playerColor = generateColorFromUUID(pos.uuid());
+
+        int padding = 1;
+        int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + textWidth / (scaledTextWidth / 2);
+        int backgroundY = y + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
+
+        if (shouldApplyArrowOffset(client)) {
+            backgroundY -= 6;
+        }
+
+        float currentYOffset = playerNameOffsets.getOrDefault(pos.uuid(), (float) backgroundY);
+        currentYOffset = MathHelper.lerp(config.getLerpSpeed(), currentYOffset, backgroundY);
+        playerNameOffsets.put(pos.uuid(), currentYOffset);
+
+        context.getMatrices().push();
+        context.getMatrices().translate(backgroundX, currentYOffset, translateZ);
+
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, 0.7f * alpha);
+
+        context.fill(0, 0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.4f));
+        drawRoundedBorder(context, -padding, -padding, scaledTextWidth + padding, scaledFontHeight + padding, darkenColor(playerColor, 0.6f));
+        drawSquaredBorder(context, 0, 0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.5f));
+
+        context.getMatrices().scale(scale, scale, 1.0f);
+        int textAlpha = (int) (alpha * 255) << 24;
+        context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | textAlpha, true);
+
+        RenderSystem.disableBlend();
+        context.getMatrices().pop();
+    }
+
+    private static void renderPlayerHead(DrawContext context, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
+            if (client.world == null) return Identifier.of("minecraft", "textures/entity/steve.png");
+            AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(id);
+            return p != null ? p.getSkinTextures().texture() : Identifier.of("minecraft", "textures/entity/steve.png");
+        });
+
+        int playerColor = generateColorFromUUID(pos.uuid());
+        int borderX = x + ICON_BORDER_SIZE;
+        int borderY = y + ICON_BORDER_SIZE;
+
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+
+        drawRoundedBorder(context, borderX, borderY, borderX + ICON_PRIMARY_SIZE, borderY + ICON_PRIMARY_SIZE, darkenColor(playerColor, 0.8f));
+        context.drawTexture(skin, borderX, borderY, ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE, 8, 8, 8, 8, 64, 64);
+    }
+
+    private static void renderJoinAnimation(DrawContext context, UUID uuid, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, float baseScale) {
+        Long startTime = joinAnimations.get(uuid);
+        if (startTime == null) return;
+
+        float progress = (System.currentTimeMillis() - startTime) / 400.0f;
+        if (progress > 2.0f) {
+            joinAnimations.remove(uuid);
+            return;
+        }
+
+        float cycleProgress = progress % 1.0f;
+        float animScale = baseScale * (1.0f + cycleProgress * 0.5f);
+        float animAlpha = (1.0f - cycleProgress) * 0.75f * alpha;
+
+        context.getMatrices().push();
+        context.getMatrices().translate(x + ICON_SIZE / 2f, y + ICON_SIZE / 2f, 0);
+        context.getMatrices().scale(animScale, animScale, 1.0f);
+        context.getMatrices().translate(-(x + ICON_SIZE / 2f), -(y + ICON_SIZE / 2f), 0);
+
+        renderIcon(context, x, y, generateColorFromUUID(pos.uuid()), animAlpha);
+
+        context.getMatrices().pop();
     }
 
     private static int darkenColor(int color, float factor) {
@@ -280,7 +312,6 @@ public class BetterPlayerLocatorBarHud {
     private static void drawRoundedBorder(DrawContext context, int x1, int y1, int x2, int y2, int color) {
         context.fill(x1 - 1, y1, x1, y2, color);
         context.fill(x2, y1, x2 + 1, y2, color);
-
         context.fill(x1, y1 - 1, x2, y1, color);
         context.fill(x1, y2, x2, y2 + 1, color);
     }
@@ -288,13 +319,13 @@ public class BetterPlayerLocatorBarHud {
     private static void drawSquaredBorder(DrawContext context, int x1, int y1, int x2, int y2, int color) {
         context.fill(x1 - 1, y1 - 1, x1, y2 + 1, color);
         context.fill(x2, y1 - 1, x2 + 1, y2 + 1, color);
-
-        context.fill(x1, y1 - 1, x2, y2, color);
+        context.fill(x1, y1 - 1, x2, y1, color);
         context.fill(x1, y2, x2, y2 + 1, color);
     }
 
     public static boolean shouldApplyArrowOffset(MinecraftClient client) {
-        return client.player != null && Objects.requireNonNull(client.world).getPlayers().stream().anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
+        if (client.player == null || client.world == null) return false;
+        return client.world.getPlayers().stream().anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
     }
 
     private static int getAdjustedX(int x, int iconRelativeX, int textWidth) {
@@ -308,50 +339,5 @@ public class BetterPlayerLocatorBarHud {
         } else {
             return x - textWidth / 2;
         }
-    }
-
-    private static void renderPlayerHead(DrawContext context, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha) {
-        Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
-            assert MinecraftClient.getInstance().world != null;
-            AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) MinecraftClient.getInstance().world.getPlayerByUuid(id);
-            return p != null ? p.getSkinTextures().texture() : Identifier.of("minecraft", "textures/entity/steve.png");
-        });
-
-        int[] colors = playerColors.get(pos.uuid());
-        int playerColor = colors != null ? colors[0] : 0xFFFFFF;
-
-        int borderX = x + ICON_BORDER_SIZE;
-        int borderY = y + ICON_BORDER_SIZE;
-
-        context.getMatrices().push();
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        drawRoundedBorder(context, borderX, borderY, borderX + ICON_PRIMARY_SIZE, borderY + ICON_PRIMARY_SIZE, darkenColor(playerColor, 0.8f));
-        context.drawTexture(skin, borderX, borderY, ICON_PRIMARY_SIZE, ICON_PRIMARY_SIZE, 8, 8, 8, 8, 64, 64);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
-    }
-
-    private static void renderJoinAnimation(DrawContext context, UUID uuid, int x, int y, float alpha, float baseScale) {
-        Long startTime = joinAnimations.get(uuid);
-        if (startTime == null) return;
-
-        float progress = (System.currentTimeMillis() - startTime) / 400.0f;
-        if (progress > 2.0f) {
-            joinAnimations.remove(uuid);
-            return;
-        }
-
-        float cycleProgress = progress % 1.0f;
-        float animScale = baseScale * (1.0f + cycleProgress * 0.5f);
-        float animAlpha = (1.0f - cycleProgress) * 0.75f;
-
-        context.getMatrices().push();
-        context.getMatrices().translate(x + ICON_SIZE / 2f, y + ICON_SIZE / 2f, 0);
-        context.getMatrices().scale(animScale, animScale, 1.0f);
-        context.getMatrices().translate(-(x + ICON_SIZE / 2f), -(y + ICON_SIZE / 2f), 0);
-        renderIcon(context, x, y, playerColors.get(uuid), animAlpha * alpha);
-        context.getMatrices().pop();
     }
 }
