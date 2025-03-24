@@ -12,10 +12,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class BetterPlayerLocatorBarServer implements DedicatedServerModInitializer {
+    private static final long UPDATE_DELAY = 2;
+    private long lastUpdateTime = 0;
+
     public static void syncPlayerPositions(List<ServerPlayerEntity> players) {
         if (players.isEmpty()) return;
 
-        List<PositionUpdatePayload.PlayerPosition> positions = players.stream().map(p -> new PositionUpdatePayload.PlayerPosition(p.getUuid(), p.getX(), p.getY(), p.getZ())).collect(Collectors.toList());
+        List<PositionUpdatePayload.PlayerPosition> positions = players.stream().map(p -> new PositionUpdatePayload.PlayerPosition(p.getUuid(), p.getName().getString(), p.getX(), p.getY(), p.getZ())).collect(Collectors.toList());
 
         PositionUpdatePayload payload = new PositionUpdatePayload(positions);
         for (ServerPlayerEntity player : players) {
@@ -31,6 +34,10 @@ public class BetterPlayerLocatorBarServer implements DedicatedServerModInitializ
     }
 
     private void tick(MinecraftServer server) {
-        syncPlayerPositions(server.getPlayerManager().getPlayerList());
+        long currentTime = server.getTicks();
+        if (currentTime - lastUpdateTime >= UPDATE_DELAY) {
+            syncPlayerPositions(server.getPlayerManager().getPlayerList());
+            lastUpdateTime = currentTime;
+        }
     }
 }

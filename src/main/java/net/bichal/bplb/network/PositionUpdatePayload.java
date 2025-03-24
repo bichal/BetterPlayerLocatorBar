@@ -15,7 +15,12 @@ public record PositionUpdatePayload(List<PlayerPosition> positions) implements C
         int size = buf.readInt();
         List<PlayerPosition> list = new java.util.ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(new PlayerPosition(buf.readUuid(), buf.readDouble(), buf.readDouble(), buf.readDouble()));
+            UUID uuid = buf.readUuid();
+            String name = buf.readString();
+            double x = buf.readDouble();
+            double y = buf.readDouble();
+            double z = buf.readDouble();
+            list.add(new PlayerPosition(uuid, name, x, y, z));
         }
         return new PositionUpdatePayload(list);
     }
@@ -29,12 +34,13 @@ public record PositionUpdatePayload(List<PlayerPosition> positions) implements C
         buf.writeInt(positions.size());
         for (PlayerPosition pos : positions) {
             buf.writeUuid(pos.uuid());
+            buf.writeString(pos.name());
             buf.writeDouble(pos.x());
             buf.writeDouble(pos.y());
             buf.writeDouble(pos.z());
         }
     }
 
-    public record PlayerPosition(UUID uuid, double x, double y, double z) {
+    public record PlayerPosition(UUID uuid, String name, double x, double y, double z) {
     }
 }

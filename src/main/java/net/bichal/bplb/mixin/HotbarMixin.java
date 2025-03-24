@@ -2,6 +2,8 @@ package net.bichal.bplb.mixin;
 
 import net.bichal.bplb.client.BetterPlayerLocatorBarHud;
 import net.bichal.bplb.client.Keybinds;
+import net.bichal.bplb.client.screens.BetterPlayerLocatorBarWarningScreen;
+import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -28,8 +30,14 @@ public class HotbarMixin {
     @Unique
     private float statusYOffset = 0;
 
-    @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
+    @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
+            ci.cancel();
+            return;
+        }
+
         experienceYOffset = updateYOffset(BASE_EXPERIENCE_OFFSET, experienceYOffset);
         applyTranslation(context, experienceYOffset);
     }
@@ -39,8 +47,14 @@ public class HotbarMixin {
         context.getMatrices().pop();
     }
 
-    @Inject(method = "renderStatusBars", at = @At("HEAD"))
+    @Inject(method = "renderStatusBars", at = @At("HEAD"), cancellable = true)
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
+            ci.cancel();
+            return;
+        }
+
         statusYOffset = updateYOffset(-1, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
@@ -53,12 +67,14 @@ public class HotbarMixin {
     @Unique
     private float updateYOffset(float baseOffset, float currentOffset) {
         MinecraftClient client = MinecraftClient.getInstance();
+        BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
         boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
         boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
 
         float targetOffset = hasPlayers ? baseOffset : 0;
-        if (isTabPressed) targetOffset += TAB_OFFSET;
-        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client)) targetOffset += ARROW_OFFSET;
+        if (isTabPressed || config.isAlwaysShowPlayerNames()) targetOffset += TAB_OFFSET;
+        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client))
+            targetOffset += ARROW_OFFSET;
 
         return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);
     }
