@@ -1,35 +1,54 @@
-# Better Player Locator Bar
+# <center>📌 Better Player Locator Bar</center>
+**Better Player Locator Bar** is a **Minecraft Fabric (1.21 - 1.21.4)** mod that displays the location of other players
+in an interactive bar above the experience bar. 🔍🎯
+## <center>✨ Main Features</center>
+### 🖥️ **Customizable Interface**
+- **Rounded icons** representing players.
+- **Dynamic colors** with join animations.
+- **Stylized borders** with smooth gradients.
+- **Smooth animations** using `lerp`.
+- **Height indicator** (arrow showing if a player is above or below).
+- **Progressive transparency** based on distance (fades at 100 blocks, nearly invisible at 5000).
+- **Option to display the player’s head** instead of a colored icon.
+### 🎮 **Enhanced User Experience**
+- **Smooth movements** with interpolation.
+- **"Show Names" mode when pressing `Tab`**.
+- **Automatic adjustment of the experience and status bars** when interacting with the HUD.
+### 📡 **Server Synchronization**
+- **Real-time location tracking** of other players in the bar.
+- **Detect nearby players** without needing a minimap.
+- **Supports official and TL Skin skins**.
+- **Persistent data storage** for players outside render distance.
+### ⚙️ **Advanced Configuration**
+- **Complete settings menu** (`F8`).
+- **Modify some of active functions**.
+- **Coming JSON configuration editor (Experimental and maybe not functional)**.
+## <center>📸 Screenshots & Demos</center>
+> Icon Players Interaction **(*Shift* and other *items in head* can hide players)**
 
-A Minecraft Fabric mod that adds an enhanced player locator bar.
-An improvement over **Mojang**'s existing player indicator system.
+![Icon](https://github.com/user-attachments/assets/c247dd1a-7c74-4d85-a36f-0fdc2a79cf66)
 
-![2025-03-18_13 53 19](https://github.com/user-attachments/assets/599ca07e-bb5e-460b-ae48-98b192591397)
-![2025-03-18_14 03 13](https://github.com/user-attachments/assets/294faad0-510e-489d-98bb-efdfe58d3bb7)
+> Player Head Icons **(*Tab* pressed)**
 
-## Features
-- ❇️ **HUD Icons**: Displays square icons above the experience bar for tracked players.
-- 🌈 **Player Colors**: Each player gets a unique color.
-- 💫 **Smooth Animations**: Icons resize and move smoothly with `lerp`.
-- 🪜 **Height Indicator**: Uses an arrow texture to indicate vertical position differences.
-- 📏 **Distance-Based Transparency**: Icons fade out between 100 and 5000 blocks.
-- 📦 **Server Support**: Works in multiplayer, persisting indicators even when chunks are unloaded.
+![Player](https://github.com/user-attachments/assets/87d95054-1f15-4ba3-8266-da24ab5f7f55)
 
-## Controls
-- ⌨️ **`Tab`** - Show player names and heads.
+## <center>🛠️ Installation</center>
+### 🔹 **Requirements**
+> **Minecraft 1.21 (More versions in development)**
 
-## Installation
-1. Download and install **Fabric Loader**.
-2. Download the latest **Fabric API**.
-3. Place the **.jar** file in the `mods` folder.
-
-## License
-This mod is licensed under **CC0-1.0** – Public Domain.  
-Feel free to use, modify, and share it without restrictions.
-
-[![compactCurseForge](https://github.com/user-attachments/assets/c10b7d18-1719-4010-a8a8-88cc6d0b11d3)](https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar)
 [![compactFabric](https://github.com/user-attachments/assets/11c5e3ec-da31-41e7-abf9-4afc2e723387)](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files)
+### 📥 **Download**
+[![compactCurseForge](https://github.com/user-attachments/assets/c10b7d18-1719-4010-a8a8-88cc6d0b11d3)](https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar)
+[![compactModrinth](https://github.com/user-attachments/assets/3fbbf92f-214d-4a43-9e47-4fc0ee259881)](https://modrinth.com/mod/bplb)
 [![compactGitHub](https://github.com/user-attachments/assets/7db2e2f5-40a2-4ffb-8d1d-2ee1d1f3099c)](https://github.com/bichal/BetterPlayerLocatorBar)
+### 📝 **Installation Steps**
+1. Install **Fabric Loader** and **Fabric API**.  
+2. Download the `.jar` file and place it in the `mods/` folder.  
+3. Launch Minecraft and enjoy the best player locator bar! 🎉
+## <center>📜 License</center>
+This mod is released under the **CC-BY-NC-4.0**.
+
+[![compactIssue](https://github.com/user-attachments/assets/a87a0ea4-7b99-48ee-8bac-3b3a4718d539)](https://github.com/bichal/BetterPlayerLocatorBar/issues)
 [![compactCoffe](https://github.com/user-attachments/assets/15390713-4abf-4e6f-97a4-83790125825e)](https://buymeacoffee.com/bichal)
 [![compactKo-Fi](https://github.com/user-attachments/assets/af481bd2-d547-466e-be01-ce898ff523e0)](https://ko-fi.com/bichal)
-[![compactIssue](https://github.com/user-attachments/assets/a87a0ea4-7b99-48ee-8bac-3b3a4718d539)](https://github.com/bichal/BetterPlayerLocatorBar/issues)
-[![compactModrinth](https://github.com/user-attachments/assets/3fbbf92f-214d-4a43-9e47-4fc0ee259881)](https://modrinth.com/mod/bplb)
+
