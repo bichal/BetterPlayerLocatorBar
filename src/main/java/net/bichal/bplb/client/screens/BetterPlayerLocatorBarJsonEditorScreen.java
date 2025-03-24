@@ -85,11 +85,11 @@ public class BetterPlayerLocatorBarJsonEditorScreen extends Screen {
                 }).dimensions(20 + (buttonWidth + buttonSpacing) * 3, y, buttonWidth, buttonHeight).build());
 
         ButtonWidget undoButton = ButtonWidget.builder(Text.translatable("screen.bplb.json_editor.undo"), button -> undo()).dimensions(20, y + buttonHeight + 5, buttonWidth, buttonHeight).build();
-        undoButton.setTooltip(Tooltip.of(Text.literal("Ctrl+Z")));
+        undoButton.setTooltip(Tooltip.of(Text.literal("Ctrl+Z (Not functional)")));
         addDrawableChild(undoButton);
 
         ButtonWidget redoButton = ButtonWidget.builder(Text.translatable("screen.bplb.json_editor.redo"), button -> redo()).dimensions(20 + buttonWidth + buttonSpacing, y + buttonHeight + 5, buttonWidth, buttonHeight).build();
-        redoButton.setTooltip(Tooltip.of(Text.literal("Ctrl+Y or Ctrl+Shift+Z")));
+        redoButton.setTooltip(Tooltip.of(Text.literal("Ctrl+Y or Ctrl+Shift+Z (Not functional)")));
         addDrawableChild(redoButton);
 
         saveToUndoHistory();
@@ -199,19 +199,19 @@ public class BetterPlayerLocatorBarJsonEditorScreen extends Screen {
             enhanced.append(line).append("\n");
 
             if (line.contains("\"minAlpha\":")) {
-                enhanced.append("// Controls the minimum opacity for players at maximum fade distance\n");
+                enhanced.append("\n");
             } else if (line.contains("\"maxFadeDistance\":")) {
-                enhanced.append("// Maximum distance in blocks before players fade to minimum opacity\n");
+                enhanced.append("\n");
             } else if (line.contains("\"fadeStartDistance\":")) {
-                enhanced.append("// Distance in blocks where players start to fade from full opacity\n");
+                enhanced.append("\n");
             } else if (line.contains("\"lerpSpeed\":")) {
-                enhanced.append("// Speed at which opacity changes when player distance changes\n");
+                enhanced.append("\n");
             } else if (line.contains("\"iconSize\":")) {
-                enhanced.append("// Size of player icons on the locator bar\n");
+                enhanced.append("\n");
             } else if (line.contains("\"iconOpacity\":")) {
-                enhanced.append("// Base opacity value for player icons\n");
+                enhanced.append("\n");
             } else if (line.contains("\"playerSettings\":")) {
-                enhanced.append("// Custom settings for individual players\n");
+                enhanced.append("\n");
             }
         }
 

@@ -34,7 +34,7 @@ public class BetterPlayerLocatorBarConfig {
     private int iconSize = 5;
     private float iconOpacity = 1.0f;
 
-    private Float playerHeadSize = 5F;
+    private float playerHeadSize = 5F;
     private float playerHeadOpacity = 1.0f;
     private boolean inheritBorderColor = true;
     private boolean setHideStatusBars = false;
@@ -145,12 +145,38 @@ public class BetterPlayerLocatorBarConfig {
         BetterPlayerLocatorBarConfig copy = new BetterPlayerLocatorBarConfig();
         copy.minAlpha = this.minAlpha;
         copy.maxFadeDistance = this.maxFadeDistance;
+        copy.alwaysShowPlayerHeads = this.alwaysShowPlayerHeads;
+        copy.alwaysShowPlayerNames = this.alwaysShowPlayerNames;
+        copy.applyHotbarOffset = this.applyHotbarOffset;
+        copy.fadeStartDistance = this.fadeStartDistance;
+        copy.iconOpacity = this.iconOpacity;
+        copy.iconSize = this.iconSize;
+        copy.inheritBorderColor = this.inheritBorderColor;
+        copy.lerpSpeed = this.lerpSpeed;
+        copy.maxFadeAlpha = this.maxFadeAlpha;
+        copy.maxFadeScale = this.maxFadeScale;
+        copy.minFadeAlpha = this.minFadeAlpha;
+        copy.playerHeadOpacity = this.playerHeadOpacity;
+        copy.playerHeadSize = this.playerHeadSize;
         return copy;
     }
 
     public void copyFrom(BetterPlayerLocatorBarConfig other) {
         this.minAlpha = other.minAlpha;
         this.maxFadeDistance = other.maxFadeDistance;
+        this.alwaysShowPlayerHeads = other.alwaysShowPlayerHeads;
+        this.alwaysShowPlayerNames = other.alwaysShowPlayerNames;
+        this.applyHotbarOffset = other.applyHotbarOffset;
+        this.fadeStartDistance = other.fadeStartDistance;
+        this.iconOpacity = other.iconOpacity;
+        this.iconSize = other.iconSize;
+        this.inheritBorderColor = other.inheritBorderColor;
+        this.lerpSpeed = other.lerpSpeed;
+        this.maxFadeAlpha = other.maxFadeAlpha;
+        this.maxFadeScale = other.maxFadeScale;
+        this.minFadeAlpha = other.minFadeAlpha;
+        this.playerHeadOpacity = other.playerHeadOpacity;
+        this.playerHeadSize = other.playerHeadSize;
     }
 
     public float getMinAlpha() {
@@ -265,11 +291,11 @@ public class BetterPlayerLocatorBarConfig {
         this.iconOpacity = iconOpacity;
     }
 
-    public Float getPlayerHeadSize() {
+    public float getPlayerHeadSize() {
         return playerHeadSize;
     }
 
-    public void setPlayerHeadSize(Float playerHeadSize) {
+    public void setPlayerHeadSize(float playerHeadSize) {
         this.playerHeadSize = playerHeadSize;
     }
 

@@ -1,5 +1,6 @@
 package net.bichal.bplb.client.screens;
 
+import net.bichal.bplb.client.BetterPlayerLocatorBarClient;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -29,10 +30,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         int buttonSpacing = 5;
         int leftColumn = width / 2 - buttonWidth - buttonSpacing;
         int rightColumn = width / 2 + buttonSpacing;
-        int startY = 50;
+        int startY = 65;
         int rowHeight = 25;
 
-        addDrawableChild(new TextWidget(width / 2, startY - 20, 200, 20,
+        addDrawableChild(new TextWidget(leftColumn, startY - 20, buttonWidth * 2 + buttonSpacing, 20,
                 Text.translatable("screen.bplb.config.basic_settings"), textRenderer).alignCenter());
 
         int currentY = startY;
@@ -47,16 +48,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         currentY += rowHeight;
 
         addSlider("lerpSpeed", leftColumn, currentY, buttonWidth, buttonHeight, 0.01f, 1.0f, configCopy.getLerpSpeed());
-        currentY += rowHeight;
-
-        addSlider("iconSize", leftColumn, currentY, buttonWidth, buttonHeight, 1, 10, configCopy.getIconSize());
 
         currentY = startY;
 
         addSlider("iconOpacity", rightColumn, currentY, buttonWidth, buttonHeight, 0.0f, 1.0f, configCopy.getIconOpacity());
-        currentY += rowHeight;
-
-        addSlider("playerHeadSize", rightColumn, currentY, buttonWidth, buttonHeight, 1f, 10f, configCopy.getPlayerHeadSize());
         currentY += rowHeight;
 
         addSlider("playerHeadOpacity", rightColumn, currentY, buttonWidth, buttonHeight, 0.0f, 1.0f, configCopy.getPlayerHeadOpacity());
@@ -67,7 +62,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
 
         addToggle("alwaysShowPlayerNames", rightColumn, currentY, buttonWidth, buttonHeight, configCopy.isAlwaysShowPlayerNames());
 
-        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.bplb.config.experimental_features"), button -> Objects.requireNonNull(client).setScreen(new BetterPlayerLocatorBarWarningScreen(this))).dimensions(width / 2 - 100, height - 80, 200, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.bplb.config.experimental_features"), button -> {
+            BetterPlayerLocatorBarClient.openExperimentalScreen(this);
+            Objects.requireNonNull(client).setScreen(new BetterPlayerLocatorBarWarningScreen(this));
+        }).dimensions(width / 2 - 100, height - 80, 200, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.bplb.config.save"), button -> {
             BetterPlayerLocatorBarConfig.getInstance().copyFrom(configCopy);
@@ -81,24 +79,28 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
     private void addSlider(String settingName, int x, int y, int width, int height, float min, float max, float value) {
         SliderWidget slider = new SliderWidget(
                 x, y, width, height,
-                Text.translatable("setting.bplb." + settingName, String.format("%.2f", value)),
+                Text.translatable("setting.bplb." + settingName, formatValue(value))
+                        .append(": ")
+                        .append(formatValue(value)),
                 (value - min) / (max - min)
         ) {
             @Override
             protected void updateMessage() {
                 float value = min + (max - min) * (float) this.value;
-                setMessage(Text.translatable("setting.bplb." + settingName, String.format("%.2f", value)));
+                value = formatValueForStorage(value);
+                setMessage(Text.translatable("setting.bplb." + settingName, formatValue(value))
+                        .append(": ")
+                        .append(formatValue(value)));
 
                 switch (settingName) {
                     case "minAlpha" -> configCopy.setMinAlpha(value);
                     case "maxFadeDistance" -> configCopy.setMaxFadeDistance(value);
                     case "fadeStartDistance" -> configCopy.setFadeStartDistance(value);
                     case "lerpSpeed" -> configCopy.setLerpSpeed(value);
-                    case "iconSize" -> configCopy.setIconSize((int) value);
                     case "iconOpacity" -> configCopy.setIconOpacity(value);
-                    case "playerHeadSize" -> configCopy.setPlayerHeadSize(value);
                     case "playerHeadOpacity" -> configCopy.setPlayerHeadOpacity(value);
                 }
+                BetterPlayerLocatorBarConfig.getInstance().copyFrom(configCopy);
             }
 
             @Override
@@ -108,6 +110,22 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         };
 
         addDrawableChild(slider);
+    }
+
+    private String formatValue(float value) {
+        if (value > 99f || value == (int) value) {
+            return String.format("%d", (int) value);
+        } else {
+            return String.format("%.2f", value).replaceAll("\\.00$", "");
+        }
+    }
+
+    private float formatValueForStorage(float value) {
+        if (value > 99f || value == (int) value) {
+            return Math.round(value);
+        } else {
+            return Math.round(value * 100) / 100.0f;
+        }
     }
 
     private void addToggle(String settingName, int x, int y, int width, int height, boolean initialValue) {
@@ -130,6 +148,8 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
                     button.setMessage(Text.translatable("setting.bplb." + settingName)
                             .append(": ")
                             .append(Text.translatable(newValue ? "options.on" : "options.off")));
+
+                    BetterPlayerLocatorBarConfig.getInstance().copyFrom(configCopy);
                 }
         ).dimensions(x, y, width, height).build();
 
