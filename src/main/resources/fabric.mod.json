@@ -7,7 +7,7 @@
   "authors": [
     "Bichal"
   ],
-  "license": "CC0-1.0",
+  "license": "CC-BY-NC-4.0",
   "icon": "assets/bplb/icon.png",
   "environment": "*",
   "entrypoints": {
