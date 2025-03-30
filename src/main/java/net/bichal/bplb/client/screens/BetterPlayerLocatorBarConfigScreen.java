@@ -1,6 +1,5 @@
 package net.bichal.bplb.client.screens;
 
-import net.bichal.bplb.client.BetterPlayerLocatorBarClient;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -61,11 +60,6 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         currentY += rowHeight;
 
         addToggle("alwaysShowPlayerNames", rightColumn, currentY, buttonWidth, buttonHeight, configCopy.isAlwaysShowPlayerNames());
-
-        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.bplb.config.experimental_features"), button -> {
-            BetterPlayerLocatorBarClient.openExperimentalScreen(this);
-            Objects.requireNonNull(client).setScreen(new BetterPlayerLocatorBarWarningScreen(this));
-        }).dimensions(width / 2 - 100, height - 80, 200, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.bplb.config.save"), button -> {
             BetterPlayerLocatorBarConfig.getInstance().copyFrom(configCopy);

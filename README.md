@@ -22,7 +22,6 @@ in an interactive bar above the experience bar. 🔍🎯
 ### ⚙️ **Advanced Configuration**
 - **Complete settings menu** (`F8`).
 - **Modify some of active functions**.
-- **Coming JSON configuration editor (Experimental and maybe not functional)**.
 ## <center>📸 Screenshots & Demos</center>
 > Icon Players Interaction **(*Shift* and other *items in head* can hide players)**
 

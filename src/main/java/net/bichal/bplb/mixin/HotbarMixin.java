@@ -2,7 +2,6 @@ package net.bichal.bplb.mixin;
 
 import net.bichal.bplb.client.BetterPlayerLocatorBarHud;
 import net.bichal.bplb.client.Keybinds;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarWarningScreen;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
