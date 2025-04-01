@@ -29,14 +29,8 @@ public class HotbarMixin {
     @Unique
     private float statusYOffset = 0;
 
-    @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
-            ci.cancel();
-            return;
-        }
-
         experienceYOffset = updateYOffset(BASE_EXPERIENCE_OFFSET, experienceYOffset);
         applyTranslation(context, experienceYOffset);
     }
@@ -46,14 +40,8 @@ public class HotbarMixin {
         context.getMatrices().pop();
     }
 
-    @Inject(method = "renderStatusBars", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
-            ci.cancel();
-            return;
-        }
-
         statusYOffset = updateYOffset(-1, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
