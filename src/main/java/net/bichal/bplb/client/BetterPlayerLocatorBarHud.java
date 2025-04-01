@@ -232,7 +232,8 @@ public class BetterPlayerLocatorBarHud {
         int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + textWidth / (scaledTextWidth / 2);
         int backgroundY = y + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
 
-        if (shouldApplyArrowOffset(client)) {
+        PlayerEntity currentPlayer = client.player;
+        if (currentPlayer != null && Math.abs(pos.y() - currentPlayer.getY()) > 4) {
             backgroundY -= 6;
         }
 
