@@ -46,7 +46,11 @@ public class BetterPlayerLocatorBarHud {
 
     public static void registerEvents() {
         ClientPlayNetworking.registerGlobalReceiver(PositionUpdatePayload.ID, (payload, context) -> {
-            Set<UUID> currentPlayers = payload.positions().stream().map(PositionUpdatePayload.PlayerPosition::uuid).collect(Collectors.toSet());
+            BetterPlayerLocatorBarClient.updateLastServerUpdateTime();
+
+            Set<UUID> currentPlayers = payload.positions().stream()
+                    .map(PositionUpdatePayload.PlayerPosition::uuid)
+                    .collect(Collectors.toSet());
 
             playerPositions.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
             activePlayers.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
@@ -63,7 +67,7 @@ public class BetterPlayerLocatorBarHud {
 
     public static void render(DrawContext context) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null) return;
+        if (client.player == null || client.world == null) return;
 
         boolean showDetails = Keybinds.SHOW_PLAYER_NAME.isPressed() || config.isToggleTab();
         int screenWidth = client.getWindow().getScaledWidth();
@@ -71,14 +75,30 @@ public class BetterPlayerLocatorBarHud {
         int barX = screenWidth / 2 - BAR_WIDTH / 2 - ICON_SIZE / 2;
         int barY = screenHeight + BAR_Y_OFFSET;
 
-        List<PositionUpdatePayload.PlayerPosition> players = new ArrayList<>(playerPositions.values());
-        players.sort(Comparator.comparingDouble(pos -> client.player.squaredDistanceTo(pos.x(), pos.y(), pos.z())));
+        boolean useLocalMode = !BetterPlayerLocatorBarClient.isServerHasMod() ||
+                (System.currentTimeMillis() - BetterPlayerLocatorBarClient.getLastServerUpdateTime() > 5000);
 
-        for (int i = 0; i < players.size(); i++) {
-            PositionUpdatePayload.PlayerPosition pos = players.get(i);
-            if (pos.uuid().equals(client.player.getUuid())) continue;
+        List<PositionUpdatePayload.PlayerPosition> positionsToRender;
+        if (useLocalMode) {
+            positionsToRender = client.world.getPlayers().stream()
+                    .filter(p -> !p.getUuid().equals(client.player.getUuid()))
+                    .map(p -> new PositionUpdatePayload.PlayerPosition(
+                            p.getUuid(),
+                            p.getName().getString(),
+                            p.getX(),
+                            p.getY(),
+                            p.getZ()))
+                    .collect(Collectors.toList());
+        } else {
+            positionsToRender = new ArrayList<>(playerPositions.values());
+        }
 
-            PlayerEntity targetPlayer = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
+        positionsToRender.sort(Comparator.comparingDouble(pos ->
+                client.player.squaredDistanceTo(pos.x(), pos.y(), pos.z())));
+
+        for (int i = 0; i < positionsToRender.size(); i++) {
+            PositionUpdatePayload.PlayerPosition pos = positionsToRender.get(i);
+            PlayerEntity targetPlayer = client.world.getPlayerByUuid(pos.uuid());
             if (targetPlayer != null && shouldHideTarget(targetPlayer)) continue;
 
             float relativePos = calculateRelativePosition(client.player, pos);
