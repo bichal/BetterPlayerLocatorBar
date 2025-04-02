@@ -2,7 +2,7 @@ package net.bichal.bplb.integration;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarConfigScreen;
+import net.bichal.bplb.config.BetterPlayerLocatorBarConfigScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
