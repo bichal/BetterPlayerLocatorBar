@@ -2,181 +2,78 @@ package net.bichal.bplb.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.bichal.bplb.BetterPlayerLocatorBar;
 import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class BetterPlayerLocatorBarConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BetterPlayerLocatorBarConfig.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("bplb.json").toFile();
-    private static BetterPlayerLocatorBarConfig INSTANCE;
+    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("better_player_locator_bar.json").toFile();
+    private static BetterPlayerLocatorBarConfig instance;
 
-    private float minAlpha = 0.1f;
-    private float maxFadeDistance = 5000f;
-    private float fadeStartDistance = 100f;
-    private float lerpSpeed = 0.15f;
+    private float minAlpha = 0.25f;
+    private float maxFadeDistance = 100.0f;
+    private float fadeStartDistance = 30.0f;
+    private float lerpSpeed = 0.12f;
     private boolean applyHotbarOffset = true;
     private boolean alwaysShowPlayerHeads = false;
     private boolean alwaysShowPlayerNames = false;
     private boolean toggleTab = false;
-    private float minFadeAlpha = 0.1f;
-    private float maxFadeAlpha = 1.0f;
-    private float minFadeScale = 0.75f;
-    private float maxFadeScale = 1.0f;
+    private float fadeAlphaMax = 1.0f;
+    private float fadeAlphaMin = 0.1f;
+    private float fadeScaleMax = 1.0f;
+    private float fadeScaleMin = 0.5f;
 
     private int iconSize = 5;
-    private float iconOpacity = 1.0f;
+    private float iconOpacity = 0.8f;
 
-    private float playerHeadSize = 5F;
-    private float playerHeadOpacity = 1.0f;
+    private int headSize = 5;
+    private float headOpacity = 1.0f;
     private boolean inheritBorderColor = true;
-    private boolean setHideStatusBars = false;
-
-    private final Map<UUID, PlayerSettings> playerSettings = new HashMap<>();
-
-    public static class PlayerSettings {
-        private boolean enabled = true;
-        private int color = -1;
-        private boolean customSettings = false;
-        private float minAlpha = 0.1f;
-        private float playerHeadOpacity = 1.0f;
-        private boolean showHead = true;
-        private boolean showName = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public int getColor() {
-            return color;
-        }
-
-        public void setColor(int color) {
-            this.color = color;
-        }
-
-        public boolean hasCustomSettings() {
-            return customSettings;
-        }
-
-        public void setCustomSettings(boolean customSettings) {
-            this.customSettings = customSettings;
-        }
-
-        public float getMinAlpha() {
-            return minAlpha;
-        }
-
-        public void setMinAlpha(float minAlpha) {
-            this.minAlpha = minAlpha;
-        }
-
-        public float getPlayerHeadOpacity() {
-            return playerHeadOpacity;
-        }
-
-        public void setPlayerHeadOpacity(float playerHeadOpacity) {
-            this.playerHeadOpacity = playerHeadOpacity;
-        }
-
-        public boolean isShowHead() {
-            return showHead;
-        }
-
-        public void setShowHead(boolean showHead) {
-            this.showHead = showHead;
-        }
-
-        public boolean isShowName() {
-            return showName;
-        }
-
-        public void setShowName(boolean showName) {
-            this.showName = showName;
-        }
-    }
-
-    private BetterPlayerLocatorBarConfig() {
-    }
 
     public static BetterPlayerLocatorBarConfig getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = loadConfig();
+        if (instance == null) {
+            instance = loadConfig();
         }
-        return INSTANCE;
+        return instance;
     }
 
     private static BetterPlayerLocatorBarConfig loadConfig() {
-        BetterPlayerLocatorBarConfig config = new BetterPlayerLocatorBarConfig();
-
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
-                config = GSON.fromJson(reader, BetterPlayerLocatorBarConfig.class);
-                BetterPlayerLocatorBar.LOGGER.info("[{}] Config loaded successfully", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+                return GSON.fromJson(reader, BetterPlayerLocatorBarConfig.class);
             } catch (IOException e) {
-                BetterPlayerLocatorBar.LOGGER.error("[{}] Failed to load config file, using defaults", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+                LOGGER.error("Error loading config file", e);
             }
         }
-
-        return config != null ? config : new BetterPlayerLocatorBarConfig();
+        return new BetterPlayerLocatorBarConfig();
     }
 
-    public void saveConfig() {
-        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-            GSON.toJson(this, writer);
-            BetterPlayerLocatorBar.LOGGER.info("[{}] Config saved successfully", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+    public void save() {
+        try {
+            if (!CONFIG_FILE.exists()) {
+                if (!CONFIG_FILE.getParentFile().mkdirs() && !CONFIG_FILE.getParentFile().exists()) {
+                    LOGGER.error("Failed to create config directory");
+                    return;
+                }
+                if (!CONFIG_FILE.createNewFile()) {
+                    LOGGER.error("Failed to create config file");
+                    return;
+                }
+            }
+
+            try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+                GSON.toJson(this, writer);
+            }
         } catch (IOException e) {
-            BetterPlayerLocatorBar.LOGGER.error("[{}] Failed to save config file", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+            LOGGER.error("Error saving config file", e);
         }
-    }
-
-    public BetterPlayerLocatorBarConfig copy() {
-        BetterPlayerLocatorBarConfig copy = new BetterPlayerLocatorBarConfig();
-        copy.minAlpha = this.minAlpha;
-        copy.maxFadeDistance = this.maxFadeDistance;
-        copy.alwaysShowPlayerHeads = this.alwaysShowPlayerHeads;
-        copy.alwaysShowPlayerNames = this.alwaysShowPlayerNames;
-        copy.applyHotbarOffset = this.applyHotbarOffset;
-        copy.fadeStartDistance = this.fadeStartDistance;
-        copy.iconOpacity = this.iconOpacity;
-        copy.iconSize = this.iconSize;
-        copy.inheritBorderColor = this.inheritBorderColor;
-        copy.lerpSpeed = this.lerpSpeed;
-        copy.maxFadeAlpha = this.maxFadeAlpha;
-        copy.maxFadeScale = this.maxFadeScale;
-        copy.minFadeAlpha = this.minFadeAlpha;
-        copy.playerHeadOpacity = this.playerHeadOpacity;
-        copy.playerHeadSize = this.playerHeadSize;
-        return copy;
-    }
-
-    public void copyFrom(BetterPlayerLocatorBarConfig other) {
-        this.minAlpha = other.minAlpha;
-        this.maxFadeDistance = other.maxFadeDistance;
-        this.alwaysShowPlayerHeads = other.alwaysShowPlayerHeads;
-        this.alwaysShowPlayerNames = other.alwaysShowPlayerNames;
-        this.applyHotbarOffset = other.applyHotbarOffset;
-        this.fadeStartDistance = other.fadeStartDistance;
-        this.iconOpacity = other.iconOpacity;
-        this.iconSize = other.iconSize;
-        this.inheritBorderColor = other.inheritBorderColor;
-        this.lerpSpeed = other.lerpSpeed;
-        this.maxFadeAlpha = other.maxFadeAlpha;
-        this.maxFadeScale = other.maxFadeScale;
-        this.minFadeAlpha = other.minFadeAlpha;
-        this.playerHeadOpacity = other.playerHeadOpacity;
-        this.playerHeadSize = other.playerHeadSize;
     }
 
     public float getMinAlpha() {
@@ -243,36 +140,36 @@ public class BetterPlayerLocatorBarConfig {
         this.toggleTab = toggleTab;
     }
 
-    public float getMinFadeAlpha() {
-        return minFadeAlpha;
+    public float getFadeAlphaMax() {
+        return fadeAlphaMax;
     }
 
-    public void setMinFadeAlpha(float minFadeAlpha) {
-        this.minFadeAlpha = minFadeAlpha;
+    public void setFadeAlphaMax(float fadeAlphaMax) {
+        this.fadeAlphaMax = fadeAlphaMax;
     }
 
-    public float getMaxFadeAlpha() {
-        return maxFadeAlpha;
+    public float getFadeAlphaMin() {
+        return fadeAlphaMin;
     }
 
-    public void setMaxFadeAlpha(float maxFadeAlpha) {
-        this.maxFadeAlpha = maxFadeAlpha;
+    public void setFadeAlphaMin(float fadeAlphaMin) {
+        this.fadeAlphaMin = fadeAlphaMin;
     }
 
-    public float getMinFadeScale() {
-        return minFadeScale;
+    public float getFadeScaleMax() {
+        return fadeScaleMax;
     }
 
-    public void setMinFadeScale(float minFadeScale) {
-        this.minFadeScale = minFadeScale;
+    public void setFadeScaleMax(float fadeScaleMax) {
+        this.fadeScaleMax = fadeScaleMax;
     }
 
-    public float getMaxFadeScale() {
-        return maxFadeScale;
+    public float getFadeScaleMin() {
+        return fadeScaleMin;
     }
 
-    public void setMaxFadeScale(float maxFadeScale) {
-        this.maxFadeScale = maxFadeScale;
+    public void setFadeScaleMin(float fadeScaleMin) {
+        this.fadeScaleMin = fadeScaleMin;
     }
 
     public int getIconSize() {
@@ -291,20 +188,20 @@ public class BetterPlayerLocatorBarConfig {
         this.iconOpacity = iconOpacity;
     }
 
-    public float getPlayerHeadSize() {
-        return playerHeadSize;
+    public int getHeadSize() {
+        return headSize;
     }
 
-    public void setPlayerHeadSize(float playerHeadSize) {
-        this.playerHeadSize = playerHeadSize;
+    public void setHeadSize(int headSize) {
+        this.headSize = headSize;
     }
 
-    public float getPlayerHeadOpacity() {
-        return playerHeadOpacity;
+    public float getHeadOpacity() {
+        return headOpacity;
     }
 
-    public void setPlayerHeadOpacity(float playerHeadOpacity) {
-        this.playerHeadOpacity = playerHeadOpacity;
+    public void setHeadOpacity(float headOpacity) {
+        this.headOpacity = headOpacity;
     }
 
     public boolean isInheritBorderColor() {
@@ -313,21 +210,5 @@ public class BetterPlayerLocatorBarConfig {
 
     public void setInheritBorderColor(boolean inheritBorderColor) {
         this.inheritBorderColor = inheritBorderColor;
-    }
-
-    public boolean isHideStatusBars() {
-        return setHideStatusBars;
-    }
-
-    public void setHideStatusBars(boolean setHideStatusBars) {
-        this.setHideStatusBars = setHideStatusBars;
-    }
-
-    public Map<UUID, PlayerSettings> getPlayerSettings() {
-        return playerSettings;
-    }
-
-    public PlayerSettings getPlayerSetting(UUID playerUuid) {
-        return playerSettings.computeIfAbsent(playerUuid, uuid -> new PlayerSettings());
     }
 }
