@@ -1,7 +1,7 @@
 package net.bichal.bplb.client;
 
 import net.bichal.bplb.BetterPlayerLocatorBar;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarConfigScreen;
+import net.bichal.bplb.config.BetterPlayerLocatorBarConfigScreen;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
