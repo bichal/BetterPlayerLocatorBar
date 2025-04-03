@@ -45,6 +45,7 @@ public class BetterPlayerLocatorBarClient implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             BetterPlayerLocatorBarConfig.getInstance().save();
+            BetterPlayerLocatorBarHud.clearPlayerPositions();
             BetterPlayerLocatorBar.LOGGER.info("[{}] Config saved on game exit", BetterPlayerLocatorBar.MOD_SHORT_NAME);
         });
 

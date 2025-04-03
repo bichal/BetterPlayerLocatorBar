@@ -37,6 +37,10 @@ public class BetterPlayerLocatorBarConfig {
     private float headOpacity = 1.0f;
     private boolean inheritBorderColor = true;
 
+    private String nameBorderStyle = "rounded";
+    private String iconBorderStyle = "rounded";
+    private String headBorderStyle = "rounded";
+
     public static BetterPlayerLocatorBarConfig getInstance() {
         if (instance == null) {
             instance = loadConfig();
@@ -210,5 +214,29 @@ public class BetterPlayerLocatorBarConfig {
 
     public void setInheritBorderColor(boolean inheritBorderColor) {
         this.inheritBorderColor = inheritBorderColor;
+    }
+
+    public String getNameBorderStyle() {
+        return nameBorderStyle;
+    }
+
+    public void setNameBorderStyle(String nameBorderStyle) {
+        this.nameBorderStyle = nameBorderStyle;
+    }
+
+    public String getIconBorderStyle() {
+        return iconBorderStyle;
+    }
+
+    public void setIconBorderStyle(String iconBorderStyle) {
+        this.iconBorderStyle = iconBorderStyle;
+    }
+
+    public String getHeadBorderStyle() {
+        return headBorderStyle;
+    }
+
+    public void setHeadBorderStyle(String headBorderStyle) {
+        this.headBorderStyle = headBorderStyle;
     }
 }

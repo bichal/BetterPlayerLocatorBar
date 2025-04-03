@@ -1,5 +1,6 @@
 package net.bichal.bplb.config;
 
+import net.bichal.bplb.config.widget.CustomButtonWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -7,6 +8,8 @@ import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.function.Consumer;
 
 public class BetterPlayerLocatorBarConfigScreen extends Screen {
     private final Screen parent;
@@ -34,6 +37,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         );
 
         addSection(Text.translatable("bplb.config.section.general"));
+        addSpacing();
 
         addSliderOption("bplb.config.min_alpha", config.getMinAlpha(), 0.0f, 1.0f, value -> {
             config.setMinAlpha(value);
@@ -84,6 +88,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         });
 
         addSection(Text.translatable("bplb.config.section.icon"));
+        addSpacing();
 
         addSliderOption("bplb.config.icon_size", config.getIconSize(), 3.0f, 10.0f, value -> {
             config.setIconSize((int) value);
@@ -95,7 +100,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             return Text.translatable("bplb.config.icon_opacity", String.format("%.2f", value));
         });
 
+        addBorderStyleOption("bplb.config.icon_border_style", config.getIconBorderStyle(), config::setIconBorderStyle);
+
         addSection(Text.translatable("bplb.config.section.player_head"));
+        addSpacing();
 
         addSliderOption("bplb.config.head_size", config.getHeadSize(), 3.0f, 10.0f, value -> {
             config.setHeadSize((int) value);
@@ -107,11 +115,22 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             return Text.translatable("bplb.config.head_opacity", String.format("%.2f", value));
         });
 
+        addBorderStyleOption("bplb.config.head_border_style", config.getHeadBorderStyle(), config::setHeadBorderStyle);
+
         addToggleOption("bplb.config.inherit_border_color", config.isInheritBorderColor(), config::setInheritBorderColor);
+
+        addSection(Text.translatable("bplb.config.section.player_name"));
+        addSpacing();
+
+        addBorderStyleOption("bplb.config.name_border_style", config.getNameBorderStyle(), config::setNameBorderStyle);
 
         this.addDrawableChild(this.scrollableList);
 
         this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> this.close()).dimensions(this.width / 2 - 100, this.height - 27, 200, 20).build());
+    }
+
+    private void addSpacing() {
+        this.scrollableList.addPublicEntry(new SpacingHeaderEntry());
     }
 
     private void addSection(Text title) {
@@ -124,6 +143,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
 
     private void addToggleOption(String key, boolean initialValue, ToggleValueConsumer valueConsumer) {
         this.scrollableList.addPublicEntry(new ToggleOptionEntry(key, initialValue, valueConsumer));
+    }
+
+    private void addBorderStyleOption(String key, String initialValue, Consumer<String> valueConsumer) {
+        this.scrollableList.addPublicEntry(new BorderStyleOptionEntry(Text.translatable(key), initialValue, valueConsumer));
     }
 
     @Override
@@ -150,6 +173,14 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         void accept(boolean value);
     }
 
+    private static class SpacingHeaderEntry extends ScrollableListWidget.Entry {
+        @Override
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            context.fill(x + PADDING, y + 9, x + entryWidth - PADDING, y + 10, 0x30FFFFFF);
+            context.fill(x + PADDING, y + 8, x + entryWidth - PADDING, y + 9, 0x30000000);
+        }
+    }
+
     private class SectionHeaderEntry extends ScrollableListWidget.Entry {
         private final Text text;
 
@@ -159,11 +190,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
 
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            context.drawCenteredTextWithShadow(textRenderer, text, x + entryWidth / 2, y + 6, 0xFFFFFF);
-
-            if (index > 0) {
-                context.fill(x + PADDING, y - 2, x + entryWidth - PADDING, y - 1, 0x66FFFFFF);
-            }
+            context.drawCenteredTextWithShadow(textRenderer, text, x + entryWidth / 2, y + 8, 0xFFFFFF);
         }
     }
 
@@ -216,6 +243,37 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         }
     }
 
+    private class BorderStyleOptionEntry extends ScrollableListWidget.Entry {
+        private final Text label;
+        private final CustomButtonWidget button;
+        private String value;
+
+        public BorderStyleOptionEntry(Text label, String initialValue, Consumer<String> valueConsumer) {
+            this.label = label;
+            this.value = initialValue;
+
+            this.button = CustomButtonWidget.builder(Text.translatable("bplb.config.border_style." + value), button -> {
+                this.value = this.value.equals("rounded") ? "squared" : "rounded";
+                button.setMessage(Text.translatable("bplb.config.border_style." + value));
+                valueConsumer.accept(this.value);
+            }).dimensions(0, 0, TOGGLE_WIDTH, 20).build();
+        }
+
+        @Override
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            context.drawTextWithShadow(textRenderer, label, x + PADDING, y + 6, 0xFFFFFF);
+
+            button.setX(x + entryWidth - TOGGLE_WIDTH - PADDING);
+            button.setY(y + 2);
+            button.render(context, mouseX, mouseY, tickDelta);
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            return this.button.mouseClicked(mouseX, mouseY, button);
+        }
+    }
+
     private class ToggleOptionEntry extends ScrollableListWidget.Entry {
         private final Text label;
         private final CustomToggleButtonWidget toggleButton;
@@ -251,11 +309,11 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         }
     }
 
-    private static class CustomToggleButtonWidget extends ButtonWidget {
+    private static class CustomToggleButtonWidget extends CustomButtonWidget {
         private boolean isToggled;
 
-        public CustomToggleButtonWidget(int x, int y, int width, int height, boolean initialValue, ButtonWidget.PressAction onPress) {
-            super(x, y, width, height, Text.empty(), onPress, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
+        public CustomToggleButtonWidget(int x, int y, int width, int height, boolean initialValue, CustomButtonWidget.PressAction onPress) {
+            super(x, y, width, height, Text.empty(), onPress, CustomButtonWidget.DEFAULT_NARRATION_SUPPLIER);
             this.isToggled = initialValue;
         }
 
