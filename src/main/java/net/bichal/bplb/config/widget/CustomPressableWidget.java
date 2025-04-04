@@ -1,3 +1,4 @@
+// CustomPressableWidget.java
 package net.bichal.bplb.config.widget;
 
 import net.fabricmc.api.EnvType;
@@ -37,8 +38,8 @@ public abstract class CustomPressableWidget extends ClickableWidget {
         renderButtonBase(context);
 
         context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int textColor = this.active ? 0xFFFFFF : 0xA0A0A0;
-        this.drawMessage(context, minecraftClient.textRenderer, textColor | MathHelper.ceil(this.alpha * 255.0F) << 24);
+        int color = this.active ? 16777215 : 10526880;
+        this.drawMessage(context, minecraftClient.textRenderer, color | MathHelper.ceil(this.alpha * 255.0F) << 24);
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
@@ -57,8 +58,8 @@ public abstract class CustomPressableWidget extends ClickableWidget {
             clickProgress = MathHelper.lerp(0.3f, clickProgress, 1f);
         }
 
-        float targetBrightness = clickProgress > 0.1f ? clickBorderBrightness : (hoverProgress > 0.5f ? hoverBorderBrightness : baseBorderBrightness);
-        borderBrightness = MathHelper.lerp(0.15f, borderBrightness, targetBrightness);
+        float targetBorderBrightness = clickProgress > 0.1f ? clickBorderBrightness : (hoverProgress > 0.5f ? hoverBorderBrightness : baseBorderBrightness);
+        borderBrightness = MathHelper.lerp(0.15f, borderBrightness, targetBorderBrightness);
 
         if (clickProgress > 0) {
             float pulsePhase = clickTime / 300f;
@@ -82,7 +83,7 @@ public abstract class CustomPressableWidget extends ClickableWidget {
         float centerY = this.getY() + this.height / 2f;
 
         context.getMatrices().translate(centerX, centerY, 0);
-        context.getMatrices().scale(pulseScale * 1.15f, pulseScale * 1.30f, 1f);
+        context.getMatrices().scale(pulseScale * 1.1f, pulseScale * 1.1f, 1f);
         context.getMatrices().translate(-centerX, -centerY, 0);
 
         int backgroundColor = ((int) (currentAlpha * 0x80) << 24) | 0x202020;

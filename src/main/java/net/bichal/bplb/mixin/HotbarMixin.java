@@ -55,13 +55,23 @@ public class HotbarMixin {
     private float updateYOffset(float baseOffset, float currentOffset) {
         MinecraftClient client = MinecraftClient.getInstance();
         BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
-        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
 
-        float targetOffset = hasPlayers ? baseOffset : 0;
-        if (isTabPressed || config.isAlwaysShowPlayerNames()) targetOffset += TAB_OFFSET;
-        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client))
+        if (!config.isModEnabled() || !config.isApplyHotbarOffset()) {
+            return 0;
+        }
+
+        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
+        boolean shouldShow = config.isToggleTab() || (Keybinds.shouldShowPlayerNames() && hasPlayers) || config.isAlwaysShowPlayerNames();
+
+        if (!shouldShow) {
+            return 0;
+        }
+
+        float targetOffset = baseOffset;
+        targetOffset += TAB_OFFSET;
+        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client)) {
             targetOffset += ARROW_OFFSET;
+        }
 
         return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);
     }

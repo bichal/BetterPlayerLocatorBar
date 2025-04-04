@@ -64,19 +64,10 @@ public class BetterPlayerLocatorBarHud {
         });
     }
 
-    public static void clearPlayerPositions() {
-        playerPositions.clear();
-        playerSkins.clear();
-        currentIconPositions.clear();
-        joinAnimations.clear();
-        activePlayers.clear();
-        playerNameOffsets.clear();
-    }
-
     public static void render(DrawContext context) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null || client.world == null) return;
-        boolean showDetails = Keybinds.SHOW_PLAYER_NAME.isPressed() || config.isToggleTab();
+        boolean showDetails = Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
         int screenWidth = client.getWindow().getScaledWidth();
         int screenHeight = client.getWindow().getScaledHeight();
         int barX = screenWidth / 2 - BAR_WIDTH / 2 - (config.getIconSize() + ICON_BORDER_SIZE * 2) / 2;
@@ -85,6 +76,10 @@ public class BetterPlayerLocatorBarHud {
         List<PositionUpdatePayload.PlayerPosition> positionsToRender = useLocalMode ? client.world.getPlayers().stream().filter(p -> !p.getUuid().equals(client.player.getUuid())).map(p -> new PositionUpdatePayload.PlayerPosition(p.getUuid(), p.getName().getString(), p.getX(), p.getY(), p.getZ())).collect(Collectors.toList()) : new ArrayList<>(playerPositions.values());
         positionsToRender.removeIf(pos -> pos.uuid().equals(client.player.getUuid()));
         positionsToRender.sort(Comparator.comparingDouble(pos -> client.player.squaredDistanceTo(pos.x(), pos.y(), pos.z())));
+        int maxIcons = config.getMaxVisibleIcons();
+        if (positionsToRender.size() > maxIcons) {
+            positionsToRender = positionsToRender.subList(0, maxIcons);
+        }
         for (int i = 0; i < positionsToRender.size(); i++) {
             PositionUpdatePayload.PlayerPosition pos = positionsToRender.get(i);
             PlayerEntity targetPlayer = client.world.getPlayerByUuid(pos.uuid());
