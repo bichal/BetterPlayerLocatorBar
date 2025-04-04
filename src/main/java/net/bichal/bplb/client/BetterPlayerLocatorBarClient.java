@@ -4,7 +4,6 @@ import net.bichal.bplb.BetterPlayerLocatorBar;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.bichal.bplb.network.HandshakePayload;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -41,12 +40,6 @@ public class BetterPlayerLocatorBarClient implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             serverHasMod = false;
             lastServerUpdateTime = 0;
-        });
-
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            BetterPlayerLocatorBarConfig.getInstance().save();
-            BetterPlayerLocatorBarHud.clearPlayerPositions();
-            BetterPlayerLocatorBar.LOGGER.info("[{}] Config saved on game exit", BetterPlayerLocatorBar.MOD_SHORT_NAME);
         });
 
         BetterPlayerLocatorBar.LOGGER.info("[{}] Client side initialized!", BetterPlayerLocatorBar.MOD_SHORT_NAME);

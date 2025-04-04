@@ -3,6 +3,7 @@ package net.bichal.bplb.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.math.MathHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,44 @@ public class BetterPlayerLocatorBarConfig {
     private String nameBorderStyle = "rounded";
     private String iconBorderStyle = "rounded";
     private String headBorderStyle = "rounded";
+
+    private int maxVisibleIcons = 15;
+    private String iconType = "default";
+    private String arrowType = "default";
+    private String barType = "default";
+    private boolean modEnabled = true;
+
+    public void resetToDefaults() {
+        this.minAlpha = 0.25f;
+        this.maxFadeDistance = 100.0f;
+        this.fadeStartDistance = 30.0f;
+        this.lerpSpeed = 0.12f;
+        this.applyHotbarOffset = true;
+        this.alwaysShowPlayerHeads = false;
+        this.alwaysShowPlayerNames = false;
+        this.toggleTab = false;
+        this.fadeAlphaMax = 1.0f;
+        this.fadeAlphaMin = 0.1f;
+        this.fadeScaleMax = 1.0f;
+        this.fadeScaleMin = 0.5f;
+
+        this.iconSize = 5;
+        this.iconOpacity = 0.8f;
+
+        this.headSize = 5;
+        this.headOpacity = 1.0f;
+        this.inheritBorderColor = true;
+
+        this.nameBorderStyle = "rounded";
+        this.iconBorderStyle = "rounded";
+        this.headBorderStyle = "rounded";
+
+        this.maxVisibleIcons = 15;
+        this.iconType = "default";
+        this.arrowType = "default";
+        this.barType = "default";
+        this.modEnabled = true;
+    }
 
     public static BetterPlayerLocatorBarConfig getInstance() {
         if (instance == null) {
@@ -238,5 +277,45 @@ public class BetterPlayerLocatorBarConfig {
 
     public void setHeadBorderStyle(String headBorderStyle) {
         this.headBorderStyle = headBorderStyle;
+    }
+
+    public int getMaxVisibleIcons() {
+        return maxVisibleIcons;
+    }
+
+    public void setMaxVisibleIcons(int maxVisibleIcons) {
+        this.maxVisibleIcons = MathHelper.clamp(maxVisibleIcons, 1, 45);
+    }
+
+    public String getIconType() {
+        return iconType;
+    }
+
+    public void setIconType(String iconType) {
+        this.iconType = iconType;
+    }
+
+    public String getArrowType() {
+        return arrowType;
+    }
+
+    public void setArrowType(String arrowType) {
+        this.arrowType = arrowType;
+    }
+
+    public String getBarType() {
+        return barType;
+    }
+
+    public void setBarType(String barType) {
+        this.barType = barType;
+    }
+
+    public boolean isModEnabled() {
+        return modEnabled;
+    }
+
+    public void setModEnabled(boolean modEnabled) {
+        this.modEnabled = modEnabled;
     }
 }
