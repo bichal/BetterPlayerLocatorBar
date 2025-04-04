@@ -79,6 +79,16 @@ public class CustomButtonWidget extends CustomPressableWidget {
             return this.position(x, y).size(width, height);
         }
 
+        public Builder tooltip(@Nullable Tooltip tooltip) {
+            this.tooltip = tooltip;
+            return this;
+        }
+
+        public Builder narrationSupplier(NarrationSupplier narrationSupplier) {
+            this.narrationSupplier = narrationSupplier;
+            return this;
+        }
+
         public CustomButtonWidget build() {
             CustomButtonWidget buttonWidget = new CustomButtonWidget(this.x, this.y, this.width, this.height, this.message, this.onPress, this.narrationSupplier);
             buttonWidget.setTooltip(this.tooltip);
