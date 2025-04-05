@@ -64,11 +64,6 @@ public class CustomButtonWidget extends CustomPressableWidget {
             return this;
         }
 
-        public Builder width(int width) {
-            this.width = width;
-            return this;
-        }
-
         public Builder size(int width, int height) {
             this.width = width;
             this.height = height;
@@ -81,11 +76,6 @@ public class CustomButtonWidget extends CustomPressableWidget {
 
         public Builder tooltip(@Nullable Tooltip tooltip) {
             this.tooltip = tooltip;
-            return this;
-        }
-
-        public Builder narrationSupplier(NarrationSupplier narrationSupplier) {
-            this.narrationSupplier = narrationSupplier;
             return this;
         }
 
