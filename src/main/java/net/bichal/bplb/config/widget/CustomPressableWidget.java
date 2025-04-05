@@ -38,7 +38,7 @@ public abstract class CustomPressableWidget extends ClickableWidget {
         renderButtonBase(context);
 
         context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int color = this.active ? 16777215 : 10526880;
+        int color = this.active ? 0xFFFFFF : 0x3D3D3D;
         this.drawMessage(context, minecraftClient.textRenderer, color | MathHelper.ceil(this.alpha * 255.0F) << 24);
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
@@ -98,8 +98,8 @@ public abstract class CustomPressableWidget extends ClickableWidget {
     }
 
     private void renderButtonBase(DrawContext context) {
-        int backgroundColor = 0x80000000 | ((int) (0x20 * borderBrightness) << 16) | ((int) (0x20 * borderBrightness) << 8 | (int) (0x20 * borderBrightness));
-        int borderColor = 0xFF000000 | ((int) (0x80 * borderBrightness) << 16 | ((int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness));
+        int backgroundColor = this.active ? 0x80000000 | ((int) (0x20 * borderBrightness) << 16) | ((int) (0x20 * borderBrightness) << 8 | (int) (0x20 * borderBrightness)) : 0x803D3D3D | ((int) (0x80 * borderBrightness) << 16) | ((int) (0x80 * borderBrightness) << 8 | (int) (0x80 * borderBrightness));
+        int borderColor = this.active ? 0xFF000000 | ((int) (0x80 * borderBrightness) << 16 | ((int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness)) : 0x20000000 | ((int) (0x20 * borderBrightness) << 16 | ((int) (0x20 * borderBrightness) << 8) | (int) (0x20 * borderBrightness));
         context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, backgroundColor);
 
         renderBorderButton(context, borderColor);

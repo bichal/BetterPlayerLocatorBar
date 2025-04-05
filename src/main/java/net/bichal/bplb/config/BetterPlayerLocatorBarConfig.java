@@ -15,7 +15,7 @@ import java.io.IOException;
 public class BetterPlayerLocatorBarConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(BetterPlayerLocatorBarConfig.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("better_player_locator_bar.json").toFile();
+    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("Better Player Locator Bar/options.json").toFile();
     private static BetterPlayerLocatorBarConfig instance;
 
     private float minAlpha = 0.25f;
@@ -47,38 +47,6 @@ public class BetterPlayerLocatorBarConfig {
     private String arrowType = "default";
     private String barType = "default";
     private boolean modEnabled = true;
-
-    public void resetToDefaults() {
-        this.minAlpha = 0.25f;
-        this.maxFadeDistance = 100.0f;
-        this.fadeStartDistance = 30.0f;
-        this.lerpSpeed = 0.12f;
-        this.applyHotbarOffset = true;
-        this.alwaysShowPlayerHeads = false;
-        this.alwaysShowPlayerNames = false;
-        this.toggleTab = false;
-        this.fadeAlphaMax = 1.0f;
-        this.fadeAlphaMin = 0.1f;
-        this.fadeScaleMax = 1.0f;
-        this.fadeScaleMin = 0.5f;
-
-        this.iconSize = 5;
-        this.iconOpacity = 0.8f;
-
-        this.headSize = 5;
-        this.headOpacity = 1.0f;
-        this.inheritBorderColor = true;
-
-        this.nameBorderStyle = "rounded";
-        this.iconBorderStyle = "rounded";
-        this.headBorderStyle = "rounded";
-
-        this.maxVisibleIcons = 15;
-        this.iconType = "default";
-        this.arrowType = "default";
-        this.barType = "default";
-        this.modEnabled = true;
-    }
 
     public static BetterPlayerLocatorBarConfig getInstance() {
         if (instance == null) {

@@ -29,8 +29,9 @@
   "bplb.config.inherit_border_color": "Heredar color del borde",
   "bplb.config.border_style.squared": "Cuadrado",
   "bplb.config.border_style.rounded": "Redondeado",
-  "bplb.config.section.visuals": "Visuales",
-  "bplb.config.section.warning": "Peligro",
-  "bplb.config.reset_defaults": "Resetear valores",
+  "bplb.config.reset_info": "Para restablecer todos los ajustes, elimine el archivo:",
+  "bplb.config.welcome": "¡Bienvenido a la pantalla de ajustes de %s!",
+  "bplb.config.introduction": "Esta pantalla aún está en proceso de finalización",
+  "bplb.config.footer": "Si necesita restablecer los valores de la configuración, desplácese hasta el pie de la pantalla",
   "modmenu.source": "Github"
 }
