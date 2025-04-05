@@ -29,8 +29,9 @@
   "bplb.config.inherit_border_color": "Inherit Border Color",
   "bplb.config.border_style.squared": "Squared",
   "bplb.config.border_style.rounded": "Rounded",
-  "bplb.config.section.visuals": "Visuals",
-  "bplb.config.section.warning": "Danger Zone",
-  "bplb.config.reset_defaults": "Reset to Defaults",
+  "bplb.config.reset_info": "To reset all settings, delete the file:",
+  "bplb.config.welcome": "Welcome to %s Config Screen!",
+  "bplb.config.introduction": "This screen is still in the process of being completed",
+  "bplb.config.footer": "If you need to reset the values of the settings, scroll down to the bottom.",
   "modmenu.source": "Github"
 }
