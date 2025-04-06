@@ -4,10 +4,13 @@ import net.bichal.bplb.BetterPlayerLocatorBar;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.bichal.bplb.network.HandshakePayload;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
+@Environment(EnvType.CLIENT)
 public class BetterPlayerLocatorBarClient implements ClientModInitializer {
     private static final long SERVER_TIMEOUT_MS = 5000;
     private static long lastServerUpdateTime = 0;
