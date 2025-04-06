@@ -22,6 +22,8 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
     private static final int TOGGLE_WIDTH = 80;
     private CustomButtonWidget applyButton;
     private CustomButtonWidget doneButton;
+    private ToggleOptionEntry alwaysShowPlayerHeadsEntry;
+    private ToggleOptionEntry alwaysShowPlayerNamesEntry;
 
     public BetterPlayerLocatorBarConfigScreen(Screen parent) {
         super(Text.translatable("bplb.config.title"));
@@ -69,8 +71,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         int startX = this.width / 2 - totalWidth / 2;
         int buttonY = this.height - 27;
 
-
-        addText(Text.translatable("bplb.config.welcome", "Better Player Locator Bar"), Text.translatable("bplb.config.introduction"), Text.translatable("bplb.config.footer"), -2, 8, 16, 0x76AF83);
+        addText(Text.translatable("bplb.config.welcome", "Better Player Locator Bar"), Text.translatable("bplb.config.introduction"), Text.translatable("bplb.config.footer"), 8, 16, 0x76AF83);
         addSection(Text.translatable("bplb.config.section.general"));
         addSliderOption("bplb.config.min_alpha", workingConfig.getMinAlpha(), 0.0f, 1.0f, value -> {
             workingConfig.setMinAlpha(value);
@@ -92,16 +93,17 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             workingConfig.setApplyHotbarOffset(value);
             markDirty();
         });
-        addToggleOption("bplb.config.always_show_player_heads", workingConfig.isAlwaysShowPlayerHeads(), value -> {
+        addToggleOption("bplb.config.toggle_tab", workingConfig.isToggleTab(), value -> {
+            workingConfig.setToggleTab(value);
+            updateToggleDependencies();
+            markDirty();
+        });
+        alwaysShowPlayerHeadsEntry = addToggleOption("bplb.config.always_show_player_heads", workingConfig.isAlwaysShowPlayerHeads(), value -> {
             workingConfig.setAlwaysShowPlayerHeads(value);
             markDirty();
         });
-        addToggleOption("bplb.config.always_show_player_names", workingConfig.isAlwaysShowPlayerNames(), value -> {
+        alwaysShowPlayerNamesEntry = addToggleOption("bplb.config.always_show_player_names", workingConfig.isAlwaysShowPlayerNames(), value -> {
             workingConfig.setAlwaysShowPlayerNames(value);
-            markDirty();
-        });
-        addToggleOption("bplb.config.toggle_tab", workingConfig.isToggleTab(), value -> {
-            workingConfig.setToggleTab(value);
             markDirty();
         });
         addSliderOption("bplb.config.fade_alpha_max", workingConfig.getFadeAlphaMax(), 0.1f, 1.0f, value -> {
@@ -163,7 +165,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             markDirty();
         });
 
-        addText(Text.empty(), Text.translatable("bplb.config.reset_info"), Text.literal("./config/Better Player Locator Bar/options.json"), 0, 2, 12, 0xAAAAAA);
+        addText(Text.empty(), Text.translatable("bplb.config.reset_info"), Text.literal("./config/Better Player Locator Bar/options.json"), 0, 8, 0xAAAAAA);
 
         this.addDrawableChild(this.scrollableList);
         this.addDrawableChild(CustomButtonWidget.builder(Text.translatable("gui.cancel"), button -> this.closeWithoutSaving()).dimensions(startX, buttonY, buttonWidth, 20).build());
@@ -183,6 +185,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         this.addDrawableChild(applyButton);
         this.addDrawableChild(doneButton);
         updateButtons();
+        updateToggleDependencies();
     }
 
     @Override
@@ -215,20 +218,35 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         doneButton.active = !hasChanges;
     }
 
+    private void updateToggleDependencies() {
+        boolean toggleTabActive = workingConfig.isToggleTab();
+
+        alwaysShowPlayerHeadsEntry.setActive(!toggleTabActive);
+        alwaysShowPlayerNamesEntry.setActive(!toggleTabActive);
+
+        if (toggleTabActive) {
+            workingConfig.setAlwaysShowPlayerHeads(false);
+            workingConfig.setAlwaysShowPlayerNames(false);
+            markDirty();
+        }
+    }
+
     private void addSection(Text title) {
         this.scrollableList.addPublicEntry(new SectionHeaderEntry(title));
     }
 
-    private void addText(Text textTop, Text textMiddle, Text textBottom, int yTopOffset, int yMiddleOffset, int yBottomOffset, int color) {
-        this.scrollableList.addPublicEntry(new TextEntry(textTop, textMiddle, textBottom, yTopOffset, yMiddleOffset, yBottomOffset, color));
+    private void addText(Text textTop, Text textMiddle, Text textBottom, int yMiddleOffset, int yBottomOffset, int color) {
+        this.scrollableList.addPublicEntry(new TextEntry(textTop, textMiddle, textBottom, 0, yMiddleOffset, yBottomOffset, color));
     }
 
     private void addSliderOption(String key, float initialValue, float min, float max, SliderValueConsumer valueConsumer) {
         this.scrollableList.addPublicEntry(new SliderOptionEntry(key, initialValue, min, max, valueConsumer));
     }
 
-    private void addToggleOption(String key, boolean initialValue, ToggleValueConsumer valueConsumer) {
-        this.scrollableList.addPublicEntry(new ToggleOptionEntry(key, initialValue, valueConsumer));
+    private ToggleOptionEntry addToggleOption(String key, boolean initialValue, ToggleValueConsumer valueConsumer) {
+        ToggleOptionEntry entry = new ToggleOptionEntry(key, initialValue, valueConsumer);
+        this.scrollableList.addPublicEntry(entry);
+        return entry;
     }
 
     private void addBorderStyleOption(String key, String initialValue, Consumer<String> valueConsumer) {
@@ -395,6 +413,10 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             }).dimensions(0, 0, TOGGLE_WIDTH, 20).build();
         }
 
+        public void setActive(boolean active) {
+            this.toggleButton.active = active;
+        }
+
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             context.drawTextWithShadow(textRenderer, label, x + PADDING, y + 6, 0xFFFFFF);
@@ -402,7 +424,7 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
             toggleButton.setY(y + 2);
             toggleButton.render(context, mouseX, mouseY, tickDelta);
             Text toggleText = value ? Text.translatable("gui.yes") : Text.translatable("gui.no");
-            int color = value ? 0x55FF55 : 0xFF5555;
+            int color = toggleButton.active ? (value ? 0x55FF55 : 0xFF5555) : 0xAAAAAA;
             context.drawTextWithShadow(textRenderer, toggleText, toggleButton.getX() + toggleButton.getWidth() / 2 - textRenderer.getWidth(toggleText) / 2, toggleButton.getY() + 6, color);
         }
 

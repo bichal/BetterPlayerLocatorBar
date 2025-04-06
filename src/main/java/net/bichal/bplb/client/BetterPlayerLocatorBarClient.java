@@ -13,6 +13,18 @@ public class BetterPlayerLocatorBarClient implements ClientModInitializer {
     private static long lastServerUpdateTime = 0;
     private static boolean serverHasMod = false;
 
+    public static long getLastServerUpdateTime() {
+        return lastServerUpdateTime;
+    }
+
+    public static boolean isServerHasMod() {
+        return serverHasMod;
+    }
+
+    public static void updateLastServerUpdateTime() {
+        lastServerUpdateTime = System.currentTimeMillis();
+    }
+
     @Override
     public void onInitializeClient() {
         BetterPlayerLocatorBar.LOGGER.info("           " + BetterPlayerLocatorBar.MOD_LARGE_NAME);
@@ -44,17 +56,5 @@ public class BetterPlayerLocatorBarClient implements ClientModInitializer {
 
         BetterPlayerLocatorBar.LOGGER.info("[{}] Client side initialized!", BetterPlayerLocatorBar.MOD_SHORT_NAME);
         BetterPlayerLocatorBar.LOGGER.info("|-----------------------------------------------|");
-    }
-
-    public static long getLastServerUpdateTime() {
-        return lastServerUpdateTime;
-    }
-
-    public static boolean isServerHasMod() {
-        return serverHasMod;
-    }
-
-    public static void updateLastServerUpdateTime() {
-        lastServerUpdateTime = System.currentTimeMillis();
     }
 }

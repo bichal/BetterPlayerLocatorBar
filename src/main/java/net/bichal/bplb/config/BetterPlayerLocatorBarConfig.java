@@ -19,7 +19,7 @@ public class BetterPlayerLocatorBarConfig {
     private static BetterPlayerLocatorBarConfig instance;
 
     private float minAlpha = 0.25f;
-    private float maxFadeDistance = 100.0f;
+    private float maxFadeDistance = 5000.0f;
     private float fadeStartDistance = 30.0f;
     private float lerpSpeed = 0.12f;
     private boolean applyHotbarOffset = true;
@@ -31,10 +31,10 @@ public class BetterPlayerLocatorBarConfig {
     private float fadeScaleMax = 1.0f;
     private float fadeScaleMin = 0.5f;
 
-    private int iconSize = 5;
-    private float iconOpacity = 0.8f;
+    private int iconSize = 7;
+    private float iconOpacity = 1.0f;
 
-    private int headSize = 5;
+    private int headSize = 7;
     private float headOpacity = 1.0f;
     private boolean inheritBorderColor = true;
 
