@@ -91,7 +91,7 @@ public class BetterPlayerLocatorBarHud {
     }
 
     private static void renderPlayerIcon(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int barX, int barY, float relativePos, int index, boolean showDetails) {
-        boolean showHead = (showDetails || config.isAlwaysShowPlayerNames() || config.isToggleTab());
+        boolean showHead = (showDetails || config.isAlwaysShowPlayerHeads() || config.isToggleTab());
 
         int currentSize = showHead ? config.getHeadSize() : config.getIconSize();
         int currentTotalSize = currentSize + ICON_BORDER_SIZE * 2;
@@ -196,23 +196,18 @@ public class BetterPlayerLocatorBarHud {
         int iconX = x + borderThickness;
         int iconY = y + borderThickness;
         int iconSize = size - borderThickness * 2;
+        float totalAlpha = alpha * config.getIconOpacity();
 
-        int borderColor;
-        if (config.isInheritBorderColor()) {
-            borderColor = darkenColor(color, 0.6f);
-        } else {
-            borderColor = 0xFF333333;
-        }
+        int borderColor = config.isInheritBorderColor() ? darkenColor(color, 0.6f) : 0xFF333333;
 
         RenderSystem.enableBlend();
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * config.getIconOpacity());
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
         if (config.getIconBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         } else {
             drawSquaredBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         }
-        RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, alpha * config.getIconOpacity());
+        RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, totalAlpha);
         context.drawTexture(ICON_TEXTURE, iconX, iconY, iconSize, iconSize, 0, 0, iconSize, iconSize, iconSize, iconSize);
     }
 
@@ -224,12 +219,12 @@ public class BetterPlayerLocatorBarHud {
         int scaledArrowWidth = (int) (ARROW_WIDTH * scaleFactor);
         int scaledArrowHeight = (int) (ARROW_HEIGHT * scaleFactor);
 
-        int verticalOffset = (int) (currentTotalSize * 0.8f);
+        int verticalOffset = (int) (currentTotalSize * 0.75f);
 
         if (heightDifference > 0) {
-            context.drawTexture(ARROW_UP_TEXTURE, x, y - verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+            context.drawTexture(ARROW_UP_TEXTURE, x + (currentTotalSize - scaledArrowWidth) / 2, y - verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
         } else {
-            context.drawTexture(ARROW_DOWN_TEXTURE, x, y + verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+            context.drawTexture(ARROW_DOWN_TEXTURE, x + (currentTotalSize - scaledArrowWidth) / 2, y + verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
         }
     }
 
@@ -274,8 +269,7 @@ public class BetterPlayerLocatorBarHud {
     private static void renderPlayerHead(DrawContext context, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int size) {
         MinecraftClient client = MinecraftClient.getInstance();
         Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
-            if (client.world == null) return Identifier.of("minecraft", "textures/entity/steve.png");
-            AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(id);
+            AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) Objects.requireNonNull(client.world).getPlayerByUuid(id);
             return p != null ? p.getSkinTextures().texture() : Identifier.of("minecraft", "textures/entity/steve.png");
         });
 
@@ -283,24 +277,18 @@ public class BetterPlayerLocatorBarHud {
         int borderX = x + borderThickness;
         int borderY = y + borderThickness;
         int headSize = size - borderThickness * 2;
+        float totalAlpha = alpha * config.getHeadOpacity();
 
-        int borderColor;
-        if (config.isInheritBorderColor()) {
-            int playerColor = generateColorFromUUID(pos.uuid());
-            borderColor = darkenColor(playerColor, 0.6f);
-        } else {
-            borderColor = 0xFF333333;
-        }
+        int borderColor = config.isInheritBorderColor() ? darkenColor(generateColorFromUUID(pos.uuid()), 0.6f) : 0xFF333333;
 
         RenderSystem.enableBlend();
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * config.getHeadOpacity());
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
         if (config.getHeadBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         } else {
             drawSquaredBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         }
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha * config.getHeadOpacity());
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
         context.drawTexture(skin, borderX, borderY, headSize, headSize, 8, 8, 8, 8, 64, 64);
     }
 
