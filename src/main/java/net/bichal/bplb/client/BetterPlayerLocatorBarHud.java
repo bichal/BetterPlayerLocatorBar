@@ -6,6 +6,7 @@ import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -41,7 +42,7 @@ public class BetterPlayerLocatorBarHud {
     private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
 
     public static void registerEvents() {
-        ClientPlayNetworking.registerReceiver(PositionUpdatePayload.ID, (payload, context) -> {
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> ClientPlayNetworking.registerReceiver(PositionUpdatePayload.ID, (payload, context) -> {
             BetterPlayerLocatorBarClient.updateLastServerUpdateTime();
             Set<UUID> currentPlayers = payload.positions().stream().map(PositionUpdatePayload.PlayerPosition::uuid).collect(Collectors.toSet());
             playerPositions.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
@@ -61,7 +62,7 @@ public class BetterPlayerLocatorBarHud {
                 }
                 playerPositions.put(pos.uuid(), pos);
             }
-        });
+        }));
     }
 
     public static void render(DrawContext context) {
@@ -92,7 +93,6 @@ public class BetterPlayerLocatorBarHud {
 
     private static void renderPlayerIcon(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int barX, int barY, float relativePos, int index, boolean showDetails) {
         boolean showHead = (showDetails || config.isAlwaysShowPlayerHeads() || config.isToggleTab());
-
         int currentSize = showHead ? config.getHeadSize() : config.getIconSize();
         int currentTotalSize = currentSize + ICON_BORDER_SIZE * 2;
 
@@ -122,7 +122,6 @@ public class BetterPlayerLocatorBarHud {
         context.getMatrices().translate(scaleOffsetX, scaleOffsetY, 0);
         context.getMatrices().scale(totalScale, totalScale, 1.0f);
         RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1, 1, 1, alpha);
 
         double heightDifference = pos.y() - client.player.getY();
         if (Math.abs(heightDifference) > 4) {
@@ -136,12 +135,11 @@ public class BetterPlayerLocatorBarHud {
         if (showHead) {
             renderPlayerHead(context, pos.uuid(), pos, iconX, barY, alpha, currentSize);
         } else {
-            renderIcon(context, iconX, barY, generateColorFromUUID(pos.uuid()), config.getIconOpacity() * alpha, currentSize);
+            renderIcon(context, iconX, barY, generateColorFromUUID(pos.uuid()), alpha, currentSize);
         }
 
         renderJoinAnimation(context, pos.uuid(), pos, iconX, barY, alpha, totalScale, currentTotalSize);
 
-        RenderSystem.setShaderColor(1, 1, 1, 1);
         RenderSystem.disableBlend();
         context.getMatrices().pop();
     }
@@ -196,18 +194,19 @@ public class BetterPlayerLocatorBarHud {
         int iconX = x + borderThickness;
         int iconY = y + borderThickness;
         int iconSize = size - borderThickness * 2;
-        float totalAlpha = alpha * config.getIconOpacity();
+        float r = ((color >> 16) & 0xFF) / 255.0f;
+        float g = ((color >> 8) & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
 
         int borderColor = config.isInheritBorderColor() ? darkenColor(color, 0.6f) : 0xFF333333;
 
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
         if (config.getIconBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         } else {
             drawSquaredBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         }
-        RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, (color & 0xFF) / 255.0f, totalAlpha);
+        RenderSystem.setShaderColor(r, g, b, alpha);
         context.drawTexture(ICON_TEXTURE, iconX, iconY, iconSize, iconSize, 0, 0, iconSize, iconSize, iconSize, iconSize);
     }
 
@@ -277,18 +276,15 @@ public class BetterPlayerLocatorBarHud {
         int borderX = x + borderThickness;
         int borderY = y + borderThickness;
         int headSize = size - borderThickness * 2;
-        float totalAlpha = alpha * config.getHeadOpacity();
-
         int borderColor = config.isInheritBorderColor() ? darkenColor(generateColorFromUUID(pos.uuid()), 0.6f) : 0xFF333333;
 
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
         if (config.getHeadBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         } else {
             drawSquaredBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         }
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
         context.drawTexture(skin, borderX, borderY, headSize, headSize, 8, 8, 8, 8, 64, 64);
     }
 
