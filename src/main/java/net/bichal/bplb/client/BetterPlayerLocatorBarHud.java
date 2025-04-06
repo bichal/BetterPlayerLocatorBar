@@ -41,7 +41,7 @@ public class BetterPlayerLocatorBarHud {
     private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
 
     public static void registerEvents() {
-        ClientPlayNetworking.registerGlobalReceiver(PositionUpdatePayload.ID, (payload, context) -> {
+        ClientPlayNetworking.registerReceiver(PositionUpdatePayload.ID, (payload, context) -> {
             BetterPlayerLocatorBarClient.updateLastServerUpdateTime();
             Set<UUID> currentPlayers = payload.positions().stream().map(PositionUpdatePayload.PlayerPosition::uuid).collect(Collectors.toSet());
             playerPositions.keySet().removeIf(uuid -> !currentPlayers.contains(uuid));
