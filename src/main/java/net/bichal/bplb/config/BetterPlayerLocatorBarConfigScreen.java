@@ -278,13 +278,15 @@ public class BetterPlayerLocatorBarConfigScreen extends Screen {
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             context.drawCenteredTextWithShadow(textRenderer, title, x + entryWidth / 2, y + 6, 0xFFFFFF);
-            int textWidth = title.getString().length() * 2 + 10;
+            int textWidth = textRenderer.getWidth(title) / 2 + 10;
             context.fill(x + PADDING, y + 9, x + entryWidth / 2 - textWidth - 10, y + 10, 0x30FFFFFF);
             context.fill(x + PADDING, y + 10, x + entryWidth / 2 - textWidth - 10, y + 11, 0x40000000);
-            context.fill(x + entryWidth / 2 - textWidth - 8, y + 7, x + entryWidth / 2 - textWidth - 7, y + 13, 0x30FFFFFF);
+            context.fill(x + entryWidth / 2 - textWidth - 8, y + 7, x + entryWidth / 2 - textWidth - 7, y + 12, 0x30FFFFFF);
+            context.fill(x + entryWidth / 2 - textWidth - 8, y + 12, x + entryWidth / 2 - textWidth - 7, y + 13, 0x40000000);
             context.fill(x + entryWidth / 2 + textWidth + 10, y + 9, x + entryWidth - PADDING, y + 10, 0x30FFFFFF);
             context.fill(x + entryWidth / 2 + textWidth + 10, y + 10, x + entryWidth - PADDING, y + 11, 0x40000000);
-            context.fill(x + entryWidth / 2 + textWidth + 8, y + 7, x + entryWidth / 2 + textWidth + 7, y + 13, 0x30FFFFFF);
+            context.fill(x + entryWidth / 2 + textWidth + 8, y + 7, x + entryWidth / 2 + textWidth + 7, y + 12, 0x30FFFFFF);
+            context.fill(x + entryWidth / 2 + textWidth + 8, y + 12, x + entryWidth / 2 + textWidth + 7, y + 13, 0x40000000);
         }
     }
 
