@@ -1,8 +1,8 @@
 # <center> Better Player Locator Bar</center>
-**Better Player Locator Bar** is a **Minecraft Fabric (1.21.X)** mod that displays the location of other players
+**Better Player Locator Bar** is a **Minecraft Fabric (1.21 - 1.21.1)** mod that displays the location of other players
 in an interactive bar above the experience bar. 🔍🎯
 ## <center>✨ Main Features</center>
-### 🖥️ **Customizable Interface**
+### 🖥️ **Full Customizable Interface**
 - **Rounded icons** representing players.
 - **Dynamic colors** with join animations.
 - **Stylized borders** with smooth gradients.
@@ -17,7 +17,7 @@ in an interactive bar above the experience bar. 🔍🎯
 ### 📡 **Server Synchronization**
 - **Real-time location tracking** of other players in the bar.
 - **Detect nearby players** without needing a minimap.
-- **Supports official and TL Skin skins**.
+- **Supports official skins**.
 - **Persistent data storage** for players outside render distance.
 ### ⚙️ **Advanced Configuration**
 - **Complete settings menu** (`F8`).
@@ -25,15 +25,15 @@ in an interactive bar above the experience bar. 🔍🎯
 ## <center>📸 Screenshots & Demos</center>
 > Icon Players Interaction **(*Shift* and other *items in head* can hide players)**
 
-![Icon](https://github.com/user-attachments/assets/c247dd1a-7c74-4d85-a36f-0fdc2a79cf66)
+![Comp 1 (1)](https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9)
 
 > Player Head Icons **(*Tab* pressed)**
-
-![Player](https://github.com/user-attachments/assets/87d95054-1f15-4ba3-8266-da24ab5f7f55)
+ 
+![Comp 1_1](https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d)
 
 ## <center>🛠️ Installation</center>
 ### 🔹 **Requirements**
-> **Minecraft 1.21 (More versions in development)**
+> **Minecraft 1.21 - 1.21.1 (More versions in development)**
 
 [![compactFabric](https://github.com/user-attachments/assets/11c5e3ec-da31-41e7-abf9-4afc2e723387)](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files)
 ### 📥 **Download**
@@ -50,4 +50,3 @@ This mod is released under the **CC-BY-NC-4.0**.
 [![compactIssue](https://github.com/user-attachments/assets/a87a0ea4-7b99-48ee-8bac-3b3a4718d539)](https://github.com/bichal/BetterPlayerLocatorBar/issues)
 [![compactCoffe](https://github.com/user-attachments/assets/15390713-4abf-4e6f-97a4-83790125825e)](https://buymeacoffee.com/bichal)
 [![compactKo-Fi](https://github.com/user-attachments/assets/af481bd2-d547-466e-be01-ce898ff523e0)](https://ko-fi.com/bichal)
-
