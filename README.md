@@ -1,8 +1,8 @@
 # <center> Better Player Locator Bar</center>
-**Better Player Locator Bar** is a **Minecraft Fabric (1.21.X)** mod that displays the location of other players
+**Better Player Locator Bar** is a **Minecraft Fabric (1.21 - 1.21.1)** mod that displays the location of other players
 in an interactive bar above the experience bar. 🔍🎯
 ## <center>✨ Main Features</center>
-### 🖥️ **Customizable Interface**
+### 🖥️ **Full Customizable Interface**
 - **Rounded icons** representing players.
 - **Dynamic colors** with join animations.
 - **Stylized borders** with smooth gradients.
@@ -25,15 +25,15 @@ in an interactive bar above the experience bar. 🔍🎯
 ## <center>📸 Screenshots & Demos</center>
 > Icon Players Interaction **(*Shift* and other *items in head* can hide players)**
 
-![Icon](https://github.com/user-attachments/assets/c247dd1a-7c74-4d85-a36f-0fdc2a79cf66)
+![Comp 1 (1)](https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9)
 
 > Player Head Icons **(*Tab* pressed)**
-
-![Player](https://github.com/user-attachments/assets/87d95054-1f15-4ba3-8266-da24ab5f7f55)
+ 
+![Comp 1_1](https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d)
 
 ## <center>🛠️ Installation</center>
 ### 🔹 **Requirements**
-> **Minecraft 1.21 (More versions in development)**
+> **Minecraft 1.21 - 1.21.1 (More versions in development)**
 
 [![compactFabric](https://github.com/user-attachments/assets/11c5e3ec-da31-41e7-abf9-4afc2e723387)](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files)
 ### 📥 **Download**
