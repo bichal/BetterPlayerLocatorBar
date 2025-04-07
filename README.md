@@ -17,7 +17,7 @@ in an interactive bar above the experience bar. 🔍🎯
 ### 📡 **Server Synchronization**
 - **Real-time location tracking** of other players in the bar.
 - **Detect nearby players** without needing a minimap.
-- **Supports official and TL Skin skins**.
+- **Supports official skins**.
 - **Persistent data storage** for players outside render distance.
 ### ⚙️ **Advanced Configuration**
 - **Complete settings menu** (`F8`).
