@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class HotbarMixin {
     @Unique
-    private static final float BASE_EXPERIENCE_OFFSET = -4;
+    private static final float BASE_EXPERIENCE_OFFSET = -5;
     @Unique
     private static final float TAB_OFFSET = -10;
     @Unique
@@ -31,8 +31,8 @@ public class HotbarMixin {
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        experienceYOffset = updateYOffset(BASE_EXPERIENCE_OFFSET, experienceYOffset);
-        applyTranslation(context, experienceYOffset);
+        experienceYOffset = updateYOffset(true, experienceYOffset);
+        applyTranslation(context, experienceYOffset + 1);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
@@ -42,7 +42,7 @@ public class HotbarMixin {
 
     @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
-        statusYOffset = updateYOffset(-1, statusYOffset);
+        statusYOffset = updateYOffset(false, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
 
@@ -52,25 +52,30 @@ public class HotbarMixin {
     }
 
     @Unique
-    private float updateYOffset(float baseOffset, float currentOffset) {
+    private float updateYOffset(boolean isExperience, float currentOffset) {
         MinecraftClient client = MinecraftClient.getInstance();
         BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
+        float defaultYOffset = -1;
 
-        if (!config.isModEnabled() || !config.isApplyHotbarOffset()) {
-            return 0;
+        if (!config.isModEnabled()) {
+            return MathHelper.lerp(LERP_SPEED, currentOffset, 0);
         }
 
         boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        boolean shouldShow = config.isToggleTab() || (Keybinds.shouldShowPlayerNames() && hasPlayers) || config.isAlwaysShowPlayerNames();
-
-        if (!shouldShow) {
-            return 0;
+        if (!hasPlayers || !config.isApplyHotbarOffset()) {
+            return MathHelper.lerp(LERP_SPEED, currentOffset, defaultYOffset);
         }
 
-        float targetOffset = baseOffset;
-        targetOffset += TAB_OFFSET;
-        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client)) {
-            targetOffset += ARROW_OFFSET;
+        float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
+
+        boolean shouldShowNames = config.isToggleTab() || Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
+        boolean hasVisibleIcons = BetterPlayerLocatorBarHud.hasVisiblePlayerIcons(client);
+
+        if (shouldShowNames && hasVisibleIcons) {
+            targetOffset += TAB_OFFSET;
+            if (BetterPlayerLocatorBarHud.shouldApplyGlobalArrowOffset(client)) {
+                targetOffset += ARROW_OFFSET;
+            }
         }
 
         return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);

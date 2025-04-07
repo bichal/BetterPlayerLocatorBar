@@ -18,6 +18,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,12 +33,10 @@ public class BetterPlayerLocatorBarHud {
     private static final int ARROW_HEIGHT = 5;
     private static final float BORDER_THICKNESS_RATIO = 0.1f;
     private static final Identifier ICON_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/icon_overlay.png");
-    private static final Identifier ARROW_UP_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_up.png");
-    private static final Identifier ARROW_DOWN_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrow_down.png");
+    private static final Identifier ARROWS_TEXTURE = Identifier.of(BetterPlayerLocatorBar.MOD_ID, "textures/gui/arrows.png");
     private static final Map<UUID, PositionUpdatePayload.PlayerPosition> playerPositions = new HashMap<>();
     private static final Map<UUID, Identifier> playerSkins = new HashMap<>();
     private static final Map<UUID, Float> currentIconPositions = new HashMap<>();
-    private static final Map<UUID, Long> joinAnimations = new HashMap<>();
     private static final Map<UUID, Boolean> activePlayers = new HashMap<>();
     private static final Map<UUID, Float> playerNameOffsets = new HashMap<>();
 
@@ -51,13 +50,11 @@ public class BetterPlayerLocatorBarHud {
                 if (!playerPositions.containsKey(uuid)) {
                     playerSkins.remove(uuid);
                     currentIconPositions.remove(uuid);
-                    joinAnimations.remove(uuid);
                     playerNameOffsets.remove(uuid);
                 }
             });
             for (PositionUpdatePayload.PlayerPosition pos : payload.positions()) {
                 if (!activePlayers.containsKey(pos.uuid())) {
-                    joinAnimations.put(pos.uuid(), System.currentTimeMillis());
                     activePlayers.put(pos.uuid(), true);
                 }
                 playerPositions.put(pos.uuid(), pos);
@@ -93,6 +90,7 @@ public class BetterPlayerLocatorBarHud {
 
     private static void renderPlayerIcon(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int barX, int barY, float relativePos, int index, boolean showDetails) {
         boolean showHead = (showDetails || config.isAlwaysShowPlayerHeads() || config.isToggleTab());
+
         int currentSize = showHead ? config.getHeadSize() : config.getIconSize();
         int currentTotalSize = currentSize + ICON_BORDER_SIZE * 2;
 
@@ -121,7 +119,8 @@ public class BetterPlayerLocatorBarHud {
         float scaleOffsetY = (barY + currentTotalSize / 2f) * (1 - totalScale);
         context.getMatrices().translate(scaleOffsetX, scaleOffsetY, 0);
         context.getMatrices().scale(totalScale, totalScale, 1.0f);
-        RenderSystem.enableBlend();
+        GL11.glEnable(GL11.GL_BLEND);
+        RenderSystem.setShaderColor(1, 1, 1, alpha);
 
         double heightDifference = pos.y() - client.player.getY();
         if (Math.abs(heightDifference) > 4) {
@@ -133,14 +132,13 @@ public class BetterPlayerLocatorBarHud {
         }
 
         if (showHead) {
-            renderPlayerHead(context, pos.uuid(), pos, iconX, barY, alpha, currentSize);
+            renderPlayerHead(context, pos.uuid(), generateColorFromUUID(pos.uuid()), iconX, barY, alpha, currentSize);
         } else {
-            renderIcon(context, iconX, barY, generateColorFromUUID(pos.uuid()), alpha, currentSize);
+            renderIcon(context, iconX, barY, generateColorFromUUID(pos.uuid()), config.getIconOpacity() * alpha, currentSize);
         }
 
-        renderJoinAnimation(context, pos.uuid(), pos, iconX, barY, alpha, totalScale, currentTotalSize);
-
-        RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        GL11.glDisable(GL11.GL_BLEND);
         context.getMatrices().pop();
     }
 
@@ -194,20 +192,25 @@ public class BetterPlayerLocatorBarHud {
         int iconX = x + borderThickness;
         int iconY = y + borderThickness;
         int iconSize = size - borderThickness * 2;
+
         float r = ((color >> 16) & 0xFF) / 255.0f;
         float g = ((color >> 8) & 0xFF) / 255.0f;
         float b = (color & 0xFF) / 255.0f;
 
         int borderColor = config.isInheritBorderColor() ? darkenColor(color, 0.6f) : 0xFF333333;
 
+        GL11.glEnable(GL11.GL_BLEND);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
         if (config.getIconBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         } else {
             drawSquaredBorder(context, iconX, iconY, iconX + iconSize, iconY + iconSize, borderColor);
         }
+        GL11.glEnable(GL11.GL_BLEND);
         RenderSystem.setShaderColor(r, g, b, alpha);
         context.drawTexture(ICON_TEXTURE, iconX, iconY, iconSize, iconSize, 0, 0, iconSize, iconSize, iconSize, iconSize);
+        GL11.glDisable(GL11.GL_BLEND);
+
     }
 
     private static void renderHeightArrow(DrawContext context, int x, int y, float alpha, double heightDifference, int currentTotalSize) {
@@ -221,15 +224,16 @@ public class BetterPlayerLocatorBarHud {
         int verticalOffset = (int) (currentTotalSize * 0.75f);
 
         if (heightDifference > 0) {
-            context.drawTexture(ARROW_UP_TEXTURE, x + (currentTotalSize - scaledArrowWidth) / 2, y - verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+            context.drawTexture(ARROWS_TEXTURE, (x - 1) + (currentTotalSize - scaledArrowWidth) / 2, y - verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH * 2, ARROW_HEIGHT);
         } else {
-            context.drawTexture(ARROW_DOWN_TEXTURE, x + (currentTotalSize - scaledArrowWidth) / 2, y + verticalOffset, scaledArrowWidth, scaledArrowHeight, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+            context.drawTexture(ARROWS_TEXTURE, (x - 1) + (currentTotalSize - scaledArrowWidth) / 2, y + verticalOffset + 1, scaledArrowWidth, scaledArrowHeight, ARROW_WIDTH, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH * 2, ARROW_HEIGHT);
         }
     }
 
     private static void renderPlayerName(DrawContext context, MinecraftClient client, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int translateZ) {
         PlayerEntity player = client.world != null ? client.world.getPlayerByUuid(pos.uuid()) : null;
         if (player == null) return;
+
         String name = pos.name();
         int textPadding = 3;
         float scale = 0.65f;
@@ -242,14 +246,18 @@ public class BetterPlayerLocatorBarHud {
         int padding = 1;
         int backgroundX = adjustedX + (textWidth - scaledTextWidth) / 2 + textWidth / (scaledTextWidth / 2);
         int backgroundY = y + (client.textRenderer.fontHeight - scaledFontHeight) / 2;
-        PlayerEntity currentPlayer = client.player;
-        if (currentPlayer != null && Math.abs(pos.y() - currentPlayer.getY()) > 4) backgroundY -= 6;
+
+        if (shouldApplyArrowOffset(client, pos.uuid())) {
+            backgroundY -= 6;
+        }
+
         float currentYOffset = playerNameOffsets.getOrDefault(pos.uuid(), (float) backgroundY);
         currentYOffset = MathHelper.lerp(config.getLerpSpeed(), currentYOffset, backgroundY);
         playerNameOffsets.put(pos.uuid(), currentYOffset);
+
         context.getMatrices().push();
         context.getMatrices().translate(backgroundX, currentYOffset, translateZ);
-        RenderSystem.enableBlend();
+        GL11.glEnable(GL11.GL_BLEND);
         RenderSystem.setShaderColor(1, 1, 1, 0.7f * alpha);
         context.fill(0, 0, scaledTextWidth, scaledFontHeight, darkenColor(playerColor, 0.4f));
         if (config.getNameBorderStyle().equals("rounded")) {
@@ -261,11 +269,12 @@ public class BetterPlayerLocatorBarHud {
         context.getMatrices().scale(scale, scale, 1.0f);
         int textAlpha = (int) (alpha * 255) << 24;
         context.drawText(client.textRenderer, name, textPadding, 0, 0xFFFFFF | textAlpha, true);
-        RenderSystem.disableBlend();
+        GL11.glDisable(GL11.GL_BLEND);
         context.getMatrices().pop();
     }
 
-    private static void renderPlayerHead(DrawContext context, UUID playerId, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, int size) {
+
+    private static void renderPlayerHead(DrawContext context, UUID playerId, int color, int x, int y, float alpha, int size) {
         MinecraftClient client = MinecraftClient.getInstance();
         Identifier skin = playerSkins.computeIfAbsent(playerId, id -> {
             AbstractClientPlayerEntity p = (AbstractClientPlayerEntity) Objects.requireNonNull(client.world).getPlayerByUuid(id);
@@ -276,44 +285,21 @@ public class BetterPlayerLocatorBarHud {
         int borderX = x + borderThickness;
         int borderY = y + borderThickness;
         int headSize = size - borderThickness * 2;
-        int borderColor = config.isInheritBorderColor() ? darkenColor(generateColorFromUUID(pos.uuid()), 0.6f) : 0xFF333333;
+        float totalAlpha = alpha * config.getHeadOpacity();
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+        int borderColor = config.isInheritBorderColor() ? darkenColor(color, 0.6f) : 0xFF333333;
+
+        GL11.glEnable(GL11.GL_BLEND);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
         if (config.getHeadBorderStyle().equals("rounded")) {
             drawRoundedBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         } else {
             drawSquaredBorder(context, borderX, borderY, borderX + headSize, borderY + headSize, borderColor);
         }
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+        GL11.glEnable(GL11.GL_BLEND);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, totalAlpha);
         context.drawTexture(skin, borderX, borderY, headSize, headSize, 8, 8, 8, 8, 64, 64);
-    }
-
-    private static void renderJoinAnimation(DrawContext context, UUID uuid, PositionUpdatePayload.PlayerPosition pos, int x, int y, float alpha, float baseScale, int currentTotalSize) {
-        Long startTime = joinAnimations.get(uuid);
-        if (startTime == null) return;
-
-        float progress = (System.currentTimeMillis() - startTime) / 400.0f;
-        if (progress > 2.0f) {
-            joinAnimations.remove(uuid);
-            return;
-        }
-
-        float cycleProgress = progress % 1.0f;
-        float animScale = baseScale * (1.0f + cycleProgress * 0.5f);
-        float animAlpha = (1.0f - cycleProgress) * 0.75f * alpha;
-
-        context.getMatrices().push();
-        context.getMatrices().translate(x + currentTotalSize / 2f, y + currentTotalSize / 2f, 0);
-        context.getMatrices().scale(animScale, animScale, 1.0f);
-        context.getMatrices().translate(-(x + currentTotalSize / 2f), -(y + currentTotalSize / 2f), 0);
-
-        if (activePlayers.getOrDefault(uuid, false) && (Keybinds.SHOW_PLAYER_NAME.isPressed() || config.isAlwaysShowPlayerHeads())) {
-            renderPlayerHead(context, uuid, pos, x, y, animAlpha, config.getHeadSize());
-        } else {
-            renderIcon(context, x, y, generateColorFromUUID(pos.uuid()), animAlpha, config.getIconSize());
-        }
-
-        context.getMatrices().pop();
+        GL11.glDisable(GL11.GL_BLEND);
     }
 
     private static int darkenColor(int color, float factor) {
@@ -338,16 +324,36 @@ public class BetterPlayerLocatorBarHud {
         context.fill(x1, y2, x2, y2 + 1, color);
     }
 
-    public static boolean shouldApplyArrowOffset(MinecraftClient client) {
+    public static boolean shouldApplyArrowOffset(MinecraftClient client, UUID playerId) {
         if (client.player == null || client.world == null) return false;
-        return client.world.getPlayers().stream().anyMatch(p -> Math.abs(p.getY() - client.player.getY()) > 4 && p.getY() - client.player.getY() > 0);
+        PlayerEntity player = client.world.getPlayerByUuid(playerId);
+        return player != null && (player.getY() - client.player.getY() > 4);
+    }
+
+    public static boolean shouldApplyGlobalArrowOffset(MinecraftClient client) {
+        if (client.player == null || client.world == null) return false;
+        return client.world.getPlayers().stream().anyMatch(p -> p.getY() - client.player.getY() > 4);
+    }
+
+    public static boolean hasVisiblePlayerIcons(MinecraftClient client) {
+        if (client.player == null || client.world == null) return false;
+
+        boolean useLocalMode = !BetterPlayerLocatorBarClient.isServerHasMod() || (System.currentTimeMillis() - BetterPlayerLocatorBarClient.getLastServerUpdateTime() > 5000);
+        List<PositionUpdatePayload.PlayerPosition> positions = new ArrayList<>(useLocalMode ? client.world.getPlayers().stream().filter(p -> !p.getUuid().equals(client.player.getUuid())).map(p -> new PositionUpdatePayload.PlayerPosition(p.getUuid(), p.getName().getString(), p.getX(), p.getY(), p.getZ())).toList() : new ArrayList<>(playerPositions.values()));
+        positions.removeIf(pos -> client.world.getPlayerByUuid(pos.uuid()) == null);
+
+        return positions.stream().anyMatch(pos -> {
+            float relativePos = calculateRelativePosition(client.player, pos);
+            return relativePos != Float.MIN_VALUE;
+        });
     }
 
     private static int getAdjustedX(int x, int iconRelativeX, int textWidth) {
         float edgeMargin = 40.0f;
         float progress = MathHelper.clamp(1.0f - (Math.min(iconRelativeX, BAR_WIDTH - iconRelativeX) / edgeMargin), 0.0f, 1.0f);
-        if (iconRelativeX < edgeMargin) return MathHelper.lerp(progress, x - textWidth / 2, x);
-        else if (iconRelativeX > BAR_WIDTH - edgeMargin) return MathHelper.lerp(progress, x - textWidth, x);
+        if (iconRelativeX < edgeMargin) return MathHelper.lerp(progress, x - textWidth / 2, x - 10);
+        else if (iconRelativeX > BAR_WIDTH - edgeMargin)
+            return MathHelper.lerp(progress, x - textWidth / 2, x - textWidth + 10);
         else return x - textWidth / 2;
     }
 }
