@@ -21,7 +21,7 @@ public class BetterPlayerLocatorBarConfig {
     private float minAlpha = 0.25f;
     private float maxFadeDistance = 5000.0f;
     private float fadeStartDistance = 30.0f;
-    private float lerpSpeed = 0.12f;
+    private float lerpSpeed = 0.85f;
     private boolean applyHotbarOffset = true;
     private boolean alwaysShowPlayerHeads = false;
     private boolean alwaysShowPlayerNames = false;
