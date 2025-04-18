@@ -32,7 +32,7 @@ in an interactive bar above the experience bar. 🔍🎯
 ![Comp 1_1](https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d)
 
 ## <center>🛠️ Installation</center>
-### 🔹 **Requirements**
+### **Requirements**
 > **Minecraft 1.21 - 1.21.1 (More versions in development)**
 
 [![compactFabric](https://github.com/user-attachments/assets/11c5e3ec-da31-41e7-abf9-4afc2e723387)](https://www.curseforge.com/minecraft/mc-mods/fabric-api/files)
