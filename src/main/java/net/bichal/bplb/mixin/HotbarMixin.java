@@ -2,7 +2,6 @@ package net.bichal.bplb.mixin;
 
 import net.bichal.bplb.client.BetterPlayerLocatorBarHud;
 import net.bichal.bplb.client.Keybinds;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarWarningScreen;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -18,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class HotbarMixin {
     @Unique
-    private static final float BASE_EXPERIENCE_OFFSET = -4;
+    private static final float BASE_EXPERIENCE_OFFSET = -5;
     @Unique
     private static final float TAB_OFFSET = -10;
     @Unique
@@ -30,16 +29,10 @@ public class HotbarMixin {
     @Unique
     private float statusYOffset = 0;
 
-    @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
-            ci.cancel();
-            return;
-        }
-
-        experienceYOffset = updateYOffset(BASE_EXPERIENCE_OFFSET, experienceYOffset);
-        applyTranslation(context, experienceYOffset);
+        experienceYOffset = updateYOffset(true, experienceYOffset);
+        applyTranslation(context, experienceYOffset + 1);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
@@ -47,15 +40,9 @@ public class HotbarMixin {
         context.getMatrices().pop();
     }
 
-    @Inject(method = "renderStatusBars", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.currentScreen instanceof BetterPlayerLocatorBarWarningScreen) {
-            ci.cancel();
-            return;
-        }
-
-        statusYOffset = updateYOffset(-1, statusYOffset);
+        statusYOffset = updateYOffset(false, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
 
@@ -65,16 +52,31 @@ public class HotbarMixin {
     }
 
     @Unique
-    private float updateYOffset(float baseOffset, float currentOffset) {
+    private float updateYOffset(boolean isExperience, float currentOffset) {
         MinecraftClient client = MinecraftClient.getInstance();
         BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
-        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        boolean isTabPressed = Keybinds.SHOW_PLAYER_NAME.isPressed() && hasPlayers;
+        float defaultYOffset = -1;
 
-        float targetOffset = hasPlayers ? baseOffset : 0;
-        if (isTabPressed || config.isAlwaysShowPlayerNames()) targetOffset += TAB_OFFSET;
-        if (BetterPlayerLocatorBarHud.shouldApplyArrowOffset(client))
-            targetOffset += ARROW_OFFSET;
+        if (!config.isModEnabled()) {
+            return MathHelper.lerp(LERP_SPEED, currentOffset, 0);
+        }
+
+        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
+        if (!hasPlayers || !config.isApplyHotbarOffset()) {
+            return MathHelper.lerp(LERP_SPEED, currentOffset, defaultYOffset);
+        }
+
+        float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
+
+        boolean shouldShowNames = config.isToggleTab() || Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
+        boolean hasVisibleIcons = BetterPlayerLocatorBarHud.hasVisiblePlayerIcons(client);
+
+        if (shouldShowNames && hasVisibleIcons) {
+            targetOffset += TAB_OFFSET;
+            if (BetterPlayerLocatorBarHud.shouldApplyGlobalArrowOffset(client)) {
+                targetOffset += ARROW_OFFSET;
+            }
+        }
 
         return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);
     }

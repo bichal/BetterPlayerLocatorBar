@@ -1,24 +1,31 @@
 package net.bichal.bplb.client;
 
 import net.bichal.bplb.BetterPlayerLocatorBar;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarConfigScreen;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarJsonEditorScreen;
-import net.bichal.bplb.client.screens.BetterPlayerLocatorBarWarningScreen;
 import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
+import net.bichal.bplb.network.HandshakePayload;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 
+@Environment(EnvType.CLIENT)
 public class BetterPlayerLocatorBarClient implements ClientModInitializer {
-    public static void openExperimentalScreen(Screen parent) {
-        if (BetterPlayerLocatorBarWarningScreen.hasWarningBeenShown()) {
-            MinecraftClient.getInstance().setScreen(new BetterPlayerLocatorBarJsonEditorScreen(parent));
-        } else {
-            MinecraftClient.getInstance().setScreen(new BetterPlayerLocatorBarWarningScreen(parent));
-        }
+    private static final long SERVER_TIMEOUT_MS = 5000;
+    private static long lastServerUpdateTime = 0;
+    private static boolean serverHasMod = false;
+
+    public static long getLastServerUpdateTime() {
+        return lastServerUpdateTime;
+    }
+
+    public static boolean isServerHasMod() {
+        return serverHasMod;
+    }
+
+    public static void updateLastServerUpdateTime() {
+        lastServerUpdateTime = System.currentTimeMillis();
     }
 
     @Override
@@ -27,20 +34,27 @@ public class BetterPlayerLocatorBarClient implements ClientModInitializer {
         BetterPlayerLocatorBar.LOGGER.info("|-----------------------------------------------|");
         BetterPlayerLocatorBar.LOGGER.info("[{}] Initializing mod client side!", BetterPlayerLocatorBar.MOD_SHORT_NAME);
 
-        HudRenderCallback.EVENT.register((context, tickDelta) -> BetterPlayerLocatorBarHud.render(context));
+        HudRenderCallback.EVENT.register((context, tickDelta) -> {
+            if (serverHasMod && System.currentTimeMillis() - lastServerUpdateTime > SERVER_TIMEOUT_MS) {
+                serverHasMod = false;
+                BetterPlayerLocatorBar.LOGGER.info("[{}] Server timeout, switching to local mode", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+            }
+            BetterPlayerLocatorBarHud.render(context);
+        });
+
         BetterPlayerLocatorBarHud.registerEvents();
         BetterPlayerLocatorBarConfig.getInstance();
         Keybinds.register();
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            BetterPlayerLocatorBarConfig.getInstance().saveConfig();
-            BetterPlayerLocatorBar.LOGGER.info("[{}] Config saved on game exit", BetterPlayerLocatorBar.MOD_SHORT_NAME);
+        ClientPlayNetworking.registerGlobalReceiver(HandshakePayload.ID, (payload, context) -> {
+            serverHasMod = true;
+            lastServerUpdateTime = System.currentTimeMillis();
+            BetterPlayerLocatorBar.LOGGER.info("[{}] Server has mod installed", BetterPlayerLocatorBar.MOD_SHORT_NAME);
         });
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.currentScreen instanceof BetterPlayerLocatorBarConfigScreen && client.options.attackKey.isPressed() && !BetterPlayerLocatorBarWarningScreen.hasWarningBeenShown()) {
-                client.setScreen(new BetterPlayerLocatorBarWarningScreen(client.currentScreen));
-            }
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            serverHasMod = false;
+            lastServerUpdateTime = 0;
         });
 
         BetterPlayerLocatorBar.LOGGER.info("[{}] Client side initialized!", BetterPlayerLocatorBar.MOD_SHORT_NAME);

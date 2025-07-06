@@ -1,5 +1,6 @@
 package net.bichal.bplb;
 
+import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.server.BetterPlayerLocatorBarServer;
 import net.fabricmc.api.ModInitializer;
@@ -22,6 +23,8 @@ public class BetterPlayerLocatorBar implements ModInitializer {
 
         PayloadTypeRegistry.playS2C().register(PositionUpdatePayload.ID, PacketCodec.of(PositionUpdatePayload::write, PositionUpdatePayload::read));
         PayloadTypeRegistry.playC2S().register(PositionUpdatePayload.ID, PacketCodec.of(PositionUpdatePayload::write, PositionUpdatePayload::read));
+        PayloadTypeRegistry.playS2C().register(HandshakePayload.ID, HandshakePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(HandshakePayload.ID, HandshakePayload.CODEC);
 
         new BetterPlayerLocatorBarServer().onInitializeServer();
 

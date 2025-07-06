@@ -1,40 +1,23 @@
-# gradle
-
+# Gradle
 .gradle/
 build/
 out/
 classes/
 
-# eclipse
-
-*.launch
-
-# idea
-
+# IntelliJ IDEA
 .idea/
 *.iml
 *.ipr
 *.iws
 
-# vscode
-
-.settings/
-.vscode/
-bin/
-.classpath
-.project
-
-# macos
-
-*.DS_Store
-
-# fabric
-
+# Fabric
 run/
 
-# java
-
+# Java
 hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# Utils
+src/main/resources/assets/bplb/textures/image_optimizer.bat
