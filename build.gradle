@@ -6,6 +6,7 @@ plugins {
 
 version = project.mod_version
 group = project.maven_group
+def modVersion = project.version
 
 base {
     archivesName = project.archives_base_name
@@ -29,11 +30,12 @@ dependencies {
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property("version", modVersion)
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+        expand(["version": modVersion])
     }
 }
+
 
 tasks.withType(JavaCompile).configureEach {
     options.release = 21
