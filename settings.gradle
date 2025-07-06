@@ -8,3 +8,11 @@ pluginManagement {
 		gradlePluginPortal()
 	}
 }
+
+buildCache {
+	local {
+		enabled = true
+	}
+}
+
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
