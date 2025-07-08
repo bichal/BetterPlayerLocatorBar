@@ -1,7 +1,6 @@
 package net.bichal.bplb.config.widget;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.navigation.GuiNavigationType;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -22,20 +21,17 @@ public abstract class CustomSliderWidget extends ClickableWidget {
     private static final int TRACK_HEIGHT = 2;
     private static final int HANDLE_WIDTH = 6;
     private static final int HANDLE_HEIGHT = 16;
-    private static final int TEXT_OFFSET = 5;
 
     public CustomSliderWidget(int x, int y, int width, int height, Text text, double value) {
         super(x, y, width, height, text);
         this.value = value;
     }
 
-    @Override
-    protected MutableText getNarrationMessage() {
+    @Override protected MutableText getNarrationMessage() {
         return Text.translatable("gui.narrate.slider", this.getMessage());
     }
 
-    @Override
-    public void appendClickableNarrations(NarrationMessageBuilder builder) {
+    @Override public void appendClickableNarrations(NarrationMessageBuilder builder) {
         builder.put(NarrationPart.TITLE, this.getNarrationMessage());
         if (this.active) {
             if (this.isFocused()) {
@@ -46,10 +42,7 @@ public abstract class CustomSliderWidget extends ClickableWidget {
         }
     }
 
-    @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-
+    @Override public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         updateAnimations(mouseX, mouseY);
 
         int trackY = this.getY() + (this.height - TRACK_HEIGHT) / 2;
@@ -63,11 +56,6 @@ public abstract class CustomSliderWidget extends ClickableWidget {
         int handleY = this.getY() + (this.height - HANDLE_HEIGHT) / 2;
         int handleColor = getHandleColor();
         context.fill(handleX, handleY, handleX + HANDLE_WIDTH, handleY + HANDLE_HEIGHT, handleColor);
-
-        context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int textColor = this.active ? 0xFFFFFF : 0xA0A0A0;
-        drawSliderText(context, minecraftClient.textRenderer, textColor | MathHelper.ceil(this.alpha * 255.0F) << 24);
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void updateAnimations(int mouseX, int mouseY) {
@@ -82,27 +70,18 @@ public abstract class CustomSliderWidget extends ClickableWidget {
     }
 
     private int getBorderColor() {
-        return 0xFF000000 | ((int) (0x80 * borderBrightness) << 16 | ((int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness));
+        return 0xFF000000 | ((int) (0x80 * borderBrightness) << 16 | (int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness);
     }
 
     private int getHandleColor() {
-        return 0xFF000000 | ((int) (0xC0 * borderBrightness) << 16 | ((int) (0xC0 * borderBrightness) << 8) | (int) (0xC0 * borderBrightness));
+        return 0xFF000000 | ((int) (0xC0 * borderBrightness) << 16 | (int) (0xC0 * borderBrightness) << 8) | (int) (0xC0 * borderBrightness);
     }
 
-    protected void drawSliderText(DrawContext context, TextRenderer textRenderer, int color) {
-        int textWidth = textRenderer.getWidth(this.getMessage());
-        int textX = this.getX() - textWidth - TEXT_OFFSET;
-        int textY = this.getY() + (this.height - 8) / 2;
-        context.drawText(textRenderer, this.getMessage(), textX, textY, color, false);
-    }
-
-    @Override
-    public void onClick(double mouseX, double mouseY) {
+    @Override public void onClick(double mouseX, double mouseY) {
         this.setValueFromMouse(mouseX);
     }
 
-    @Override
-    public void setFocused(boolean focused) {
+    @Override public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused) {
             this.sliderFocused = false;
@@ -114,8 +93,7 @@ public abstract class CustomSliderWidget extends ClickableWidget {
         }
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (KeyCodes.isToggle(keyCode)) {
             this.sliderFocused = !this.sliderFocused;
             return true;
@@ -124,7 +102,7 @@ public abstract class CustomSliderWidget extends ClickableWidget {
                 boolean bl = keyCode == GLFW.GLFW_KEY_LEFT;
                 if (bl || keyCode == GLFW.GLFW_KEY_RIGHT) {
                     float f = bl ? -1.0F : 1.0F;
-                    this.setValue(this.value + f / (this.width - 8));
+                    this.setValue(this.value + (double) (f / (float) (this.width - 8)));
                     return true;
                 }
             }
@@ -133,7 +111,7 @@ public abstract class CustomSliderWidget extends ClickableWidget {
     }
 
     private void setValueFromMouse(double mouseX) {
-        this.setValue((mouseX - (this.getX() + 4)) / (this.width - 8));
+        this.setValue((mouseX - (double) (this.getX() + 4)) / (double) (this.width - 8));
     }
 
     private void setValue(double value) {
@@ -145,22 +123,19 @@ public abstract class CustomSliderWidget extends ClickableWidget {
         this.updateMessage();
     }
 
-    @Override
-    protected void onDrag(double mouseX, double mouseY, double deltaX, double deltaY) {
+    @Override protected void onDrag(double mouseX, double mouseY, double deltaX, double deltaY) {
         this.setValueFromMouse(mouseX);
         super.onDrag(mouseX, mouseY, deltaX, deltaY);
     }
 
-    @Override
-    public void playDownSound(SoundManager soundManager) {
+    @Override public void playDownSound(SoundManager soundManager) {
     }
 
-    @Override
-    public void onRelease(double mouseX, double mouseY) {
+    @Override public void onRelease(double mouseX, double mouseY) {
         super.onRelease(mouseX, mouseY);
     }
 
-    protected abstract void updateMessage();
+    public abstract void updateMessage();
 
     protected abstract void applyValue();
 }

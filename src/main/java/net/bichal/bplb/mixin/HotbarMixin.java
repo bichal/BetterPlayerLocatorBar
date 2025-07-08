@@ -1,8 +1,9 @@
 package net.bichal.bplb.mixin;
 
-import net.bichal.bplb.client.BetterPlayerLocatorBarHud;
+import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
-import net.bichal.bplb.config.BetterPlayerLocatorBarConfig;
+import net.bichal.bplb.config.Config;
+import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -17,22 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class HotbarMixin {
     @Unique
-    private static final float BASE_EXPERIENCE_OFFSET = -5;
+    private float experienceYOffset = 0f;
     @Unique
-    private static final float TAB_OFFSET = -10;
-    @Unique
-    private static final float ARROW_OFFSET = -6;
-    @Unique
-    private static final float LERP_SPEED = 0.15f;
-    @Unique
-    private float experienceYOffset = 0;
-    @Unique
-    private float statusYOffset = 0;
+    private float statusYOffset = 0f;
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         experienceYOffset = updateYOffset(true, experienceYOffset);
-        applyTranslation(context, experienceYOffset + 1);
+        applyTranslation(context, experienceYOffset);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
@@ -53,32 +46,29 @@ public class HotbarMixin {
 
     @Unique
     private float updateYOffset(boolean isExperience, float currentOffset) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        BetterPlayerLocatorBarConfig config = BetterPlayerLocatorBarConfig.getInstance();
-        float defaultYOffset = -1;
+        final MinecraftClient client = MinecraftClient.getInstance();
+        final Config config = Config.getInstance();
 
-        if (!config.isModEnabled()) {
-            return MathHelper.lerp(LERP_SPEED, currentOffset, 0);
+        if (!config.isModEnabled() || !config.isApplyHotbarOffset() || client.player == null || !Hud.hasVisiblePlayerIcons()) {
+            return MathHelper.lerp(Constants.HOTBAR_LERP_SPEED, currentOffset, 0);
         }
 
-        boolean hasPlayers = client.world != null && client.world.getPlayers().size() > 1;
-        if (!hasPlayers || !config.isApplyHotbarOffset()) {
-            return MathHelper.lerp(LERP_SPEED, currentOffset, defaultYOffset);
-        }
+        float targetOffset = 0;
+        final boolean isBarActive = config.isToggleTab() || Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
 
-        float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
-
-        boolean shouldShowNames = config.isToggleTab() || Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
-        boolean hasVisibleIcons = BetterPlayerLocatorBarHud.hasVisiblePlayerIcons(client);
-
-        if (shouldShowNames && hasVisibleIcons) {
-            targetOffset += TAB_OFFSET;
-            if (BetterPlayerLocatorBarHud.shouldApplyGlobalArrowOffset(client)) {
-                targetOffset += ARROW_OFFSET;
+        if (isBarActive) {
+            float nameplateHeight = (client.textRenderer.fontHeight * config.getNameplateScale()) + 10;
+            targetOffset -= (Constants.ICON_BASE_SIZE / 2.0f + nameplateHeight + config.getVerticalPadding());
+            if (Hud.shouldApplyGlobalArrowOffset(client)) {
+                targetOffset += Constants.HOTBAR_ARROW_OFFSET;
             }
         }
 
-        return MathHelper.lerp(LERP_SPEED, currentOffset, targetOffset);
+        if (isExperience) {
+            targetOffset += Constants.HOTBAR_BASE_EXPERIENCE_OFFSET;
+        }
+
+        return MathHelper.lerp(Constants.HOTBAR_LERP_SPEED, currentOffset, targetOffset);
     }
 
     @Unique
