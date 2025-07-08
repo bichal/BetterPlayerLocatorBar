@@ -10,17 +10,17 @@
   "license": "CC-BY-NC-4.0",
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar",
-    "sources": "https://github.com/bichal",
-    "issues": "https://github.com/bichal/issues"
+    "sources": "https://github.com/bichal/BetterPlayerLocatorBar",
+    "issues": "https://github.com/bichal/BetterPlayerLocatorBar/issues"
   },
   "icon": "assets/bplb/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.bichal.bplb.BetterPlayerLocatorBar"
+      "net.bichal.bplb.Common"
     ],
     "client": [
-      "net.bichal.bplb.client.BetterPlayerLocatorBarClient"
+      "net.bichal.bplb.client.Client"
     ],
     "modmenu": [
       "net.bichal.bplb.integration.ModMenuImpl"
