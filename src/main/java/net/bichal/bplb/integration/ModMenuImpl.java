@@ -2,7 +2,7 @@ package net.bichal.bplb.integration;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.bichal.bplb.config.BetterPlayerLocatorBarConfigScreen;
+import net.bichal.bplb.config.ConfigScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -10,6 +10,6 @@ import net.fabricmc.api.Environment;
 public class ModMenuImpl implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return BetterPlayerLocatorBarConfigScreen::new;
+        return ConfigScreen::new;
     }
 }
