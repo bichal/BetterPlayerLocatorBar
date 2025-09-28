@@ -1,4 +1,4 @@
-# <center> Better Player Locator Bar (REMAKING WHOLE MOD)</center>
+# <center> Better Player Locator Bar</center>
 **Better Player Locator Bar** is a **Minecraft Fabric (1.21 - 1.21.1)** mod that displays the location of other players
 in an interactive bar above the experience bar. 🔍🎯
 ## <center>✨ Main Features</center>
