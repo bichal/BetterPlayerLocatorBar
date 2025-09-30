@@ -54,9 +54,9 @@ java {
 }
 
 jar {
-    inputs.property "archivesName", project.base.archivesName
+    inputs.property("archivesName", project.base.archivesName.get())
     from("LICENSE") {
-        rename { "${it}_${inputs.properties.archivesName}" }
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
     archiveClassifier = ''
 }
