@@ -73,6 +73,15 @@ public class PlayerTracker {
         return moved;
     }
 
+    public record PlayerData(UUID uuid, String name, double x, double y, double z, long timestamp) {
+        public boolean hasSignificantChange(PlayerData other, double threshold) {
+            if (other == null) return true;
+            return Math.abs(x - other.x) > threshold ||
+                    Math.abs(y - other.y) > threshold ||
+                    Math.abs(z - other.z) > threshold;
+        }
+    }
+
     public PlayerPosition getPosition(UUID uuid) {
         return currentPositions.get(uuid);
     }

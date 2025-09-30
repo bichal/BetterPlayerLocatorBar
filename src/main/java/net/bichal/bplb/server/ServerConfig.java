@@ -15,11 +15,11 @@ public class ServerConfig {
     private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("bplb-server.json").toFile();
     private static ServerConfig instance;
 
-    public int positionUpdateRateTicks = 2;
-    public double positionChangeThreshold = 0.1;
+    public final int positionUpdateRateTicks = 2;
+    public final double positionChangeThreshold = 0.1;
     public int maxPlayersPerUpdate = 50;
     public boolean enablePositionPrediction = true;
-    public int cleanupIntervalTicks = 600;
+    public final int cleanupIntervalTicks = 600;
 
     public static ServerConfig getInstance() {
         if (instance == null) {

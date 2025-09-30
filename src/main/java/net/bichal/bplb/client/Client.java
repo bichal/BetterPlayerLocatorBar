@@ -19,11 +19,15 @@ import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Environment(EnvType.CLIENT) public class Client implements ClientModInitializer {
+@Environment(EnvType.CLIENT)
+public class Client implements ClientModInitializer {
     public static List<String> availableDots = new ArrayList<>();
     public static List<String> availableArrows = new ArrayList<>();
+    public static List<String> availableIconBorders = new ArrayList<>();
+    public static List<String> availableNameBorders = new ArrayList<>();
+    public static List<String> availableDeathMarkers = new ArrayList<>();
+
     private static long lastServerUpdateTime = 0;
     private static boolean isLocalMode = true;
 
@@ -39,21 +43,33 @@ import java.util.stream.Collectors;
         lastServerUpdateTime = System.currentTimeMillis();
     }
 
-    @Override public void onInitializeClient() {
-        Constants.LOGGER.info("           " + Constants.MOD_NAME_LARGE);
+    @Override
+    public void onInitializeClient() {
+        Constants.LOGGER.info(" " + Constants.MOD_NAME_LARGE);
         Constants.LOGGER.info("|-----------------------------------------------|");
         Constants.LOGGER.info("[{}] Initializing mod client side!", Constants.MOD_NAME_SHORT);
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-            @Override public Identifier getFabricId() {
+            @Override
+            public Identifier getFabricId() {
                 return Identifier.of(Constants.MOD_ID, "asset_scanner");
             }
 
-            @Override public void reload(ResourceManager manager) {
-                availableDots = AssetScanner.getSpriteNames(manager, "dots").stream().map(path -> path.split("/")[0]).distinct().filter(s -> !s.equals("bowtie")).sorted().collect(Collectors.toList());
+            @Override
+            public void reload(ResourceManager manager) {
+                availableDots = AssetScanner.getPlayerDots(manager);
+                availableArrows = AssetScanner.getArrowTypes(manager);
+                availableIconBorders = AssetScanner.getIconBorderStyles(manager);
+                availableNameBorders = AssetScanner.getNameplateBorderStyles(manager);
+                availableDeathMarkers = AssetScanner.getDeathMarkerTypes(manager);
 
-                availableArrows = AssetScanner.getSpriteNames(manager, "arrows");
-                Constants.LOGGER.info("[{}] Scanned assets: Found {} dot types and {} arrow sprites.", Constants.MOD_NAME_SHORT, availableDots.size(), availableArrows.size());
+                Constants.LOGGER.info("[{}] Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers",
+                        Constants.MOD_NAME_SHORT,
+                        availableDots.size(),
+                        availableArrows.size(),
+                        availableIconBorders.size(),
+                        availableNameBorders.size(),
+                        availableDeathMarkers.size());
             }
         });
 
