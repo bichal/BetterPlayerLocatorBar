@@ -12,14 +12,12 @@ public final class Constants {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME_LARGE);
     public static final Config CONFIG = Config.getInstance();
     public static final Identifier STEVE_SKIN_TEXTURE = Identifier.of("minecraft", "textures/entity/player/wide/steve.png");
-    public static final int BAR_Y_OFFSET = -27;
+    public static final int BAR_Y_OFFSET = -26;
     public static final int BAR_WIDTH = 182;
     public static final int EDGE_ALPHA_FADE_MARGIN = 10;
-
-    public static final int ICON_BASE_SIZE = 7;
-
-    public static final float HIGH_Z_DEPTH_START = 1000f;
-    public static final float Z_DEPTH_INCREMENT = 10f;
+    public static final int ICON_BASE_SIZE = 9;
+    public static final float HIGH_Z_DEPTH_START = 1000;
+    public static final float Z_DEPTH_INCREMENT = 1;
 
     public static final float HOTBAR_LERP_SPEED = 0.15f;
     public static final float HOTBAR_BASE_EXPERIENCE_OFFSET = -5f;

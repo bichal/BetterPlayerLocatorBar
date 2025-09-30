@@ -10,6 +10,7 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
+
     private static final KeyBinding SHOW_PLAYER_NAME = new KeyBinding(
             "key.bplb.show_player_name", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_TAB, Constants.MOD_NAME_LARGE
     );

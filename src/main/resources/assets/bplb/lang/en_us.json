@@ -42,5 +42,10 @@
   "bplb.config.reset_settings": "Reset Settings",
   "bplb.config.reset_confirm.title": "Reset all settings?",
   "bplb.config.reset_confirm.message": "This will restore all settings to their default values. This action cannot be undone.",
+  "bplb.config.local_mode_warning": "Server mod not detected - Running in local mode",
+  "bplb.config.player_appearance.edit": "Edit",
+  "bplb.config.death_marker_border_style": "Death Marker Border Style",
+  "bplb.config.death_marker_border_type": "Death Marker Border Type",
+  "bplb.config.death_marker_inherit_border_color": "Death Marker Inherit Border Color",
   "modmenu.source": "Github"
 }
