@@ -68,4 +68,38 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
     public void addPublicEntry(Entry entry) {
         super.addEntry(entry);
     }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (Entry entry : this.children()) {
+            if (entry.mouseClicked(mouseX, mouseY, button)) {
+                this.setFocused(entry);
+                if (button == 0) {
+                    this.setDragging(true);
+                }
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.getFocused() instanceof Entry entry) {
+            if (entry.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (this.getFocused() instanceof Entry entry) {
+            if (entry.charTyped(chr, modifiers)) {
+                return true;
+            }
+        }
+        return super.charTyped(chr, modifiers);
+    }
 }

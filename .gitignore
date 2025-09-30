@@ -20,4 +20,7 @@ replay_*.log
 *.jfr
 
 # Utils
-src/main/resources/assets/bplb/textures/image_optimizer.bat
+java_files.txt
+json_files.txt
+images_files.txt
+clear.ps1

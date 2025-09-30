@@ -1,26 +1,18 @@
 package net.bichal.bplb.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.bichal.bplb.util.Constants;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 
 public class RenderUtils {
-
-    public static int getTextureIndexForSize(int size) {
-        return Math.max(0, 4 - size);
-    }
-
-    public static Identifier getBplbTexture(String path) {
-        return Identifier.of(Constants.MOD_ID, "textures/sprites/hud/" + path);
-    }
-
     public static void renderTintedTexture(DrawContext context, Identifier texture, float x, float y, float width, float height, int color, float alpha) {
         float r = ((color >> 16) & 0xFF) / 255.0f;
         float g = ((color >> 8) & 0xFF) / 255.0f;
         float b = (color & 0xFF) / 255.0f;
+        GL11.glEnable(GL11.GL_BLEND);
         RenderSystem.setShaderColor(r, g, b, alpha);
         Dimension dim = AssetScanner.getTextureDimensions(texture);
         context.drawTexture(texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height);
@@ -52,5 +44,15 @@ public class RenderUtils {
         context.drawTexture(texture, x, y + corner, corner, destMiddleHeight, u0, (float) corner, corner, middleHeight, textureWidth, textureHeight);
         context.drawTexture(texture, x + width - corner, y + corner, corner, destMiddleHeight, u2, (float) corner, corner, middleHeight, textureWidth, textureHeight);
         context.drawTexture(texture, x + corner, y + corner, destMiddleWidth, destMiddleHeight, (float) corner, (float) corner, middleWidth, middleHeight, textureWidth, textureHeight);
+    }
+
+    public static void withMatrixPush(DrawContext context, float x, float y, Runnable action) {
+        context.getMatrices().push();
+        context.getMatrices().translate(x, y, 0);
+        try {
+            action.run();
+        } finally {
+            context.getMatrices().pop();
+        }
     }
 }
