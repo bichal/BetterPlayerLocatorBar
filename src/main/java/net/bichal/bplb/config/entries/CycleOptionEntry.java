@@ -1,5 +1,6 @@
 package net.bichal.bplb.config.entries;
 
+import net.bichal.bplb.config.ConfigScreen;
 import net.bichal.bplb.config.widget.ButtonWidget;
 import net.bichal.bplb.config.widget.ScrollableListWidget;
 import net.bichal.bplb.util.Constants;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -24,11 +24,10 @@ public class CycleOptionEntry<T> extends ScrollableListWidget.Entry {
     private final Function<T, Text> textProvider;
     private final Consumer<T> valueConsumer;
     private final Runnable onDirty;
+    private final boolean activeCycle;
     private final MinecraftClient client;
-    private Text hintText = null;
 
-    public CycleOptionEntry(MinecraftClient client, String key, T initialValue, List<T> options,
-                            Function<T, Text> textProvider, Consumer<T> valueConsumer, Runnable onDirty) {
+    public CycleOptionEntry(MinecraftClient client, String key, T initialValue, List<T> options, Function<T, Text> textProvider, Consumer<T> valueConsumer, Runnable onDirty, boolean activeCycle) {
         this.client = client;
         this.key = key;
         this.label = Text.translatable(Constants.CONFIG_KEY_PREFIX + key);
@@ -37,29 +36,23 @@ public class CycleOptionEntry<T> extends ScrollableListWidget.Entry {
         this.textProvider = textProvider;
         this.valueConsumer = valueConsumer;
         this.onDirty = onDirty;
+        this.activeCycle = activeCycle;
 
-        // Add hint text for dot type
-        if (key.equals("dot_type")) {
-            this.hintText = Text.literal("Shift+Click for secret").formatted(Formatting.GRAY, Formatting.ITALIC);
-        }
-
-        this.button = ButtonWidget.builder(textProvider.apply(this.value), button -> { })
-                .dimensions(0, 0, Constants.CONFIG_TOGGLE_WIDTH, 20).build();
+        this.button = ButtonWidget.builder(textProvider.apply(this.value), button -> {
+        }).dimensions(0, 0, Constants.CONFIG_TOGGLE_WIDTH, 20).build();
     }
 
     @Override
-    public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight,
-                       int mouseX, int mouseY, boolean hovered, float tickDelta) {
-        button.active = this.options != null && !this.options.isEmpty();
+    public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        button.active = this.activeCycle || (this.options != null && !this.options.isEmpty());
         button.setX(x + entryWidth - Constants.CONFIG_TOGGLE_WIDTH - Constants.CONFIG_PADDING);
         button.setY(y + 2);
 
-        context.drawTextWithShadow(this.client.textRenderer, label, x + Constants.CONFIG_PADDING, y + 6, 0xFFFFFF);
-
-        // Draw hint text for dot type
-        if (this.key.equals("dot_type") && hintText != null && button.isMouseOver(mouseX, mouseY)) {
-            int hintX = button.getX() - client.textRenderer.getWidth(hintText) - 5;
-            context.drawTextWithShadow(this.client.textRenderer, hintText, hintX, y + 6, 0x808080);
+        if (this.client.currentScreen instanceof ConfigScreen screen) {
+            String key = this.key.replace("player.", "").replaceAll("\\..*", "");
+            screen.drawLabelWithHighlight(context, label, x + Constants.CONFIG_PADDING, y + 6, key);
+        } else {
+            context.drawTextWithShadow(this.client.textRenderer, label, x + Constants.CONFIG_PADDING, y + 6, Constants.WHITE_COLOR);
         }
 
         button.render(context, mouseX, mouseY, tickDelta);
@@ -81,7 +74,6 @@ public class CycleOptionEntry<T> extends ScrollableListWidget.Entry {
     public boolean mouseClicked(double mouseX, double mouseY, int buttonId) {
         if (this.button.isMouseOver(mouseX, mouseY) && this.button.active) {
             this.button.playDownSound(MinecraftClient.getInstance().getSoundManager());
-
             if (this.key.equals("dot_type") && buttonId == 0 && Screen.hasShiftDown()) {
                 @SuppressWarnings("unchecked")
                 T bowtieValue = (T) "bowtie";

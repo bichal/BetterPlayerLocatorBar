@@ -1,18 +1,10 @@
 pluginManagement {
-	repositories {
-		maven {
-			name = 'Fabric'
-			url = 'https://maven.fabricmc.net/'
-		}
-		mavenCentral()
-		gradlePluginPortal()
-	}
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
-
-buildCache {
-	local {
-		enabled = true
-	}
-}
-
-enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')

@@ -1,24 +1,22 @@
 plugins {
-    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'maven-publish'
-    id 'java-library'
 }
 
-version = project.mod_version
+version = project.version
 group = project.maven_group
-def modVersion = project.version
 
 base {
     archivesName = project.archives_base_name
 }
 
 repositories {
-    maven { url = "https://maven.shedaniel.me/" }
-    maven { url = "https://maven.terraformersmc.com/releases/" }
-}
-
-configurations.configureEach {
-    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    maven {
+        url = "https://maven.shedaniel.me/"
+    }
+    maven {
+        url = "https://maven.terraformersmc.com/releases/"
+    }
 }
 
 dependencies {
@@ -26,44 +24,38 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
     modApi "com.terraformersmc:modmenu:11.0.3"
 }
 
+def modVersion = version
+def archiveName = base.archivesName.get()
+
 processResources {
     inputs.property("version", modVersion)
+
     filesMatching("fabric.mod.json") {
-        expand(["version": modVersion])
+        expand(version: modVersion)
     }
 }
 
-
 tasks.withType(JavaCompile).configureEach {
-    options.release = 21
-    options.encoding = 'UTF-8'
-    options.compilerArgs.addAll([
-            '-Xlint:all',
-            '-Xlint:-processing',
-            '-parameters'
-    ])
+    it.options.release = 21
 }
 
 java {
     withSourcesJar()
+
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}" }
-    }
-    archiveClassifier = ''
-}
 
-tasks.withType(Test).configureEach {
-    useJUnitPlatform()
-    maxParallelForks = Runtime.runtime.availableProcessors()
-    testLogging {
-        events "passed", "skipped", "failed"
+
+jar {
+    inputs.property("archivesName", archiveName)
+
+    from("LICENSE") {
+        rename { "${it}_${archiveName}" }
     }
 }

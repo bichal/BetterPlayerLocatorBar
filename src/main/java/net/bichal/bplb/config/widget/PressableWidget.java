@@ -1,5 +1,6 @@
 package net.bichal.bplb.config.widget;
 
+import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -11,44 +12,32 @@ import net.minecraft.util.math.MathHelper;
 
 @Environment(EnvType.CLIENT)
 public abstract class PressableWidget extends AnimatedWidget {
-
     public PressableWidget(int i, int j, int k, int l, Text text) {
         super(i, j, k, l, text);
     }
-
     public abstract void onPress();
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         updateHoverAnimation(mouseX, mouseY, 0.2f);
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
-
         renderButtonBase(context);
-
         context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        int color = this.active ? 0xFFFFFF : 0x3D3D3D;
+        int color = this.active ? Constants.WHITE_COLOR : Constants.GRAY_COLOR;
         this.drawMessage(context, minecraftClient.textRenderer, color | MathHelper.ceil(this.alpha * 255.0F) << 24);
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderButtonBase(DrawContext context) {
         int backgroundColor = this.active ? 0x80000000 | ((int) (0x20 * borderBrightness) << 16) | ((int) (0x20 * borderBrightness) << 8 | (int) (0x20 * borderBrightness)) : 0x803D3D3D | ((int) (0x80 * borderBrightness) << 16) | ((int) (0x80 * borderBrightness) << 8 | (int) (0x80 * borderBrightness));
-        int borderColor = this.active ? 0xFF000000 | ((int) (0x80 * borderBrightness) << 16 | ((int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness)) : 0x20000000 | ((int) (0x20 * borderBrightness) << 16 | ((int) (0x20 * borderBrightness) << 8) | (int) (0x20 * borderBrightness));
+        int borderColor = this.active ? Constants.BLACK_COLOR | ((int) (0x80 * borderBrightness) << 16 | ((int) (0x80 * borderBrightness) << 8) | (int) (0x80 * borderBrightness)) : 0x20000000 | ((int) (0x20 * borderBrightness) << 16 | ((int) (0x20 * borderBrightness) << 8) | (int) (0x20 * borderBrightness));
         context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, backgroundColor);
-
         renderBorderButton(context, borderColor);
-
-        int cornerColor = 0xFF000000 | ((int) (0xA0 * borderBrightness) << 16 | ((int) (0xA0 * borderBrightness) << 8) | (int) (0xA0 * borderBrightness));
-        context.fill(this.getX(), this.getY(), this.getX() + 2, this.getY() + 2, cornerColor);
-        context.fill(this.getX() + this.width - 2, this.getY(), this.getX() + this.width, this.getY() + 2, cornerColor);
-        context.fill(this.getX(), this.getY() + this.height - 2, this.getX() + 2, this.getY() + this.height, cornerColor);
-        context.fill(this.getX() + this.width - 2, this.getY() + this.height - 2, this.getX() + this.width, this.getY() + this.height, cornerColor);
     }
 
     private void renderBorderButton(DrawContext context, int borderColor) {
         context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + 1, borderColor);
         context.fill(this.getX(), this.getY() + this.height - 1, this.getX() + this.width, this.getY() + this.height, borderColor);
-
         context.fill(this.getX(), this.getY(), this.getX() + 1, this.getY() + this.height, borderColor);
         context.fill(this.getX() + this.width - 1, this.getY(), this.getX() + this.width, this.getY() + this.height, borderColor);
     }

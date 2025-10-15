@@ -21,66 +21,48 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
     public void tick() {
         this.children().forEach(Entry::tick);
     }
-
     public void clearEntries() {
         super.clearEntries();
     }
-
-    @Override public int getScrollbarX() {
+    @Override
+    public int getScrollbarX() {
         return scrollbarX;
     }
-
     public void setScrollbarX(int scrollbarX) {
         this.scrollbarX = scrollbarX;
     }
-
-    @Override public int getRowWidth() {
+    @Override
+    public int getRowWidth() {
         return rowWidth;
     }
-
     public void setRowWidth(int rowWidth) {
         this.rowWidth = rowWidth;
     }
-
-    @Override public int getRowLeft() {
+    @Override
+    public int getRowLeft() {
         return rowLeft;
     }
-
     public void setRowLeft(int rowLeft) {
         this.rowLeft = rowLeft;
-    }
-
-    public abstract static class Entry extends ElementListWidget.Entry<Entry> {
-        protected MinecraftClient client;
-
-        public void tick() {
-        }
-
-        @Override public List<? extends Element> children() {
-            return new ArrayList<>();
-        }
-
-        @Override public List<? extends Selectable> selectableChildren() {
-            return new ArrayList<>();
-        }
     }
 
     public void addPublicEntry(Entry entry) {
         super.addEntry(entry);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (Entry entry : this.children()) {
-            if (entry.mouseClicked(mouseX, mouseY, button)) {
-                this.setFocused(entry);
-                if (button == 0) {
-                    this.setDragging(true);
-                }
-                return true;
-            }
+    public abstract static class Entry extends ElementListWidget.Entry<Entry> {
+        public void tick() {
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+
+        @Override
+        public List<? extends Element> children() {
+            return new ArrayList<>();
+        }
+
+        @Override
+        public List<? extends Selectable> selectableChildren() {
+            return new ArrayList<>();
+        }
     }
 
     @Override
