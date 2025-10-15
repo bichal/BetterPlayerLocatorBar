@@ -3,7 +3,6 @@ package net.bichal.bplb.mixin;
 import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
 import net.bichal.bplb.util.MathUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
@@ -53,7 +52,6 @@ public class HotbarMixin {
 
     @Unique
     private float updateYOffset(boolean isExperience, float currentOffset) {
-        MinecraftClient client = MinecraftClient.getInstance();
         float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
         float defaultYOffset = -1;
 
@@ -70,7 +68,7 @@ public class HotbarMixin {
             lastPlayerVisibleTime = currentTime;
         }
 
-        boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 10000;
+        boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 3000;
 
         if (!shouldOffset) {
             float targetOffset;
@@ -84,7 +82,7 @@ public class HotbarMixin {
         }
 
         if (!CONFIG.isApplyHotbarOffset()) {
-            float targetOffset = recentlyVisible ? (isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset) : 0;
+            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
             float delta = targetOffset - currentOffset;
             return currentOffset + delta * MathUtils.easeInOutQuad(t);
         }
