@@ -24,3 +24,4 @@ java_files.txt
 json_files.txt
 images_files.txt
 clear.ps1
+*.png~
