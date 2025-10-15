@@ -65,6 +65,9 @@ public class Hud {
             if (!currentIconPositions.containsKey(pos.uuid())) {
                 float initialPos = calculateRelativePosition(client.player, pos);
                 if (initialPos >= 0) currentIconPositions.put(pos.uuid(), initialPos * Constants.BAR_WIDTH);
+            } else {
+                float currentPos = calculateRelativePosition(client.player, pos);
+                if (currentPos < 0) currentIconPositions.remove(pos.uuid());
             }
         }
 
@@ -168,21 +171,10 @@ public class Hud {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        boolean anyIconInRange = false;
-        final int barRight = barX + Constants.BAR_WIDTH;
-
         for (int i = 0; i < positionsToRenderCache.size(); i++) {
             final PlayerPosition pos = positionsToRenderCache.get(i);
             final PlayerEntity targetPlayer = client.world.getPlayerByUuid(pos.uuid());
             if (targetPlayer != null && shouldHideTarget(targetPlayer)) continue;
-
-            Float currentPos = currentIconPositions.get(pos.uuid());
-            if (currentPos != null) {
-                int iconCenterX = barX + Math.round(currentPos);
-                if (iconCenterX >= barX && iconCenterX <= barRight) {
-                    anyIconInRange = true;
-                }
-            }
 
             double distance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
             float alpha = getDistanceAlpha(distance);
@@ -191,33 +183,36 @@ public class Hud {
 
         for (int i = 0; i < deathMarkers.size(); i++) {
             Vec3d marker = deathMarkers.get(i);
-            Float currentPos = currentIconPositions.get(marker);
-            if (currentPos != null) {
-                int iconCenterX = barX + Math.round(currentPos);
-                if (iconCenterX >= barX && iconCenterX <= barRight) {
-                    anyIconInRange = true;
-                }
-            }
             renderDeathMarker(context, marker, barX, barY, i + positionsToRenderCache.size(), showDetails);
         }
 
-        shouldApplyHudOffset = anyIconInRange;
+        shouldApplyHudOffset = hasVisibleIconsInVisibleRange(client);
         RenderSystem.disableBlend();
     }
 
     public static boolean hasVisibleIconsInVisibleRange(MinecraftClient client) {
         if (client.player == null) return false;
+
         final int barLeft = (client.getWindow().getScaledWidth() - Constants.BAR_WIDTH) / 2;
         final int barRight = barLeft + Constants.BAR_WIDTH;
 
         for (PlayerPosition pos : positionsToRenderCache) {
+            float targetPos = calculateRelativePosition(client.player, pos);
+            if (targetPos < 0) continue;
+
             Float currentPos = currentIconPositions.get(pos.uuid());
             if (currentIconPos(barLeft, barRight, currentPos)) return true;
         }
+
         for (Vec3d marker : deathMarkers) {
+            PlayerPosition markerPos = new PlayerPosition(new UUID(marker.hashCode(), marker.hashCode()), "Death", marker.x, marker.y, marker.z);
+            float targetPos = calculateRelativePosition(client.player, markerPos);
+            if (targetPos < 0) continue;
+
             Float currentPos = currentIconPositions.get(marker);
             if (currentIconPos(barLeft, barRight, currentPos)) return true;
         }
+
         return false;
     }
 
