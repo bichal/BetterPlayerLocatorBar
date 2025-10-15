@@ -17,7 +17,7 @@ public class SectionHeaderEntry extends ScrollableListWidget.Entry {
 
     @Override
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-        context.drawCenteredTextWithShadow(this.client.textRenderer, title, x + entryWidth / 2, y + 6, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(this.client.textRenderer, title, x + entryWidth / 2, y + 6, Constants.WHITE_COLOR);
         int textWidth = this.client.textRenderer.getWidth(title) / 2 + 10;
         context.fill(x + Constants.CONFIG_PADDING, y + 9, x + entryWidth / 2 - textWidth - 10, y + 10, 0x30FFFFFF);
         context.fill(x + Constants.CONFIG_PADDING, y + 10, x + entryWidth / 2 - textWidth - 10, y + 11, 0x40000000);

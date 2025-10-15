@@ -2,30 +2,37 @@ package net.bichal.bplb.mixin;
 
 import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
-import net.bichal.bplb.config.Config;
-import net.bichal.bplb.util.Constants;
+import net.bichal.bplb.util.MathUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.bichal.bplb.util.Constants.CONFIG;
+
 @Mixin(InGameHud.class)
 public class HotbarMixin {
     @Unique
-    private float experienceYOffset = 0f;
+    private static final float BASE_EXPERIENCE_OFFSET = -5;
     @Unique
-    private float statusYOffset = 0f;
+    private static final int TAB_OFFSET = (int) -(18 * CONFIG.getNameplateScale());
+    @Unique
+    private float experienceYOffset = 0;
+    @Unique
+    private float statusYOffset = 0;
+    @Unique
+    private static long lastPlayerVisibleTime = 0;
+
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         experienceYOffset = updateYOffset(true, experienceYOffset);
-        applyTranslation(context, experienceYOffset);
+        applyTranslation(context, experienceYOffset + 1);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
@@ -46,29 +53,50 @@ public class HotbarMixin {
 
     @Unique
     private float updateYOffset(boolean isExperience, float currentOffset) {
-        final MinecraftClient client = MinecraftClient.getInstance();
-        final Config config = Config.getInstance();
+        MinecraftClient client = MinecraftClient.getInstance();
+        float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
+        float defaultYOffset = -1;
 
-        if (!config.isModEnabled() || !config.isApplyHotbarOffset() || client.player == null || !Hud.hasVisiblePlayerIcons()) {
-            return MathHelper.lerp(Constants.HOTBAR_LERP_SPEED, currentOffset, 0);
+        if (!CONFIG.isModEnabled()) {
+            float targetOffset = 0;
+            float delta = targetOffset - currentOffset;
+            return currentOffset + delta * MathUtils.easeInOutQuad(t);
         }
 
-        float targetOffset = 0;
-        final boolean isBarActive = config.isToggleTab() || Keybinds.shouldShowPlayerNames() || config.isAlwaysShowPlayerNames();
+        boolean shouldOffset = Hud.shouldApplyHudOffset();
+        long currentTime = System.currentTimeMillis();
 
-        if (isBarActive) {
-            float nameplateHeight = (client.textRenderer.fontHeight * config.getNameplateScale()) + 10;
-            targetOffset -= (Constants.ICON_BASE_SIZE / 2.0f + nameplateHeight + config.getVerticalPadding());
-            if (Hud.shouldApplyGlobalArrowOffset(client)) {
-                targetOffset += Constants.HOTBAR_ARROW_OFFSET;
+        if (shouldOffset) {
+            lastPlayerVisibleTime = currentTime;
+        }
+
+        boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 10000;
+
+        if (!shouldOffset) {
+            float targetOffset;
+            if (recentlyVisible) {
+                targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
+            } else {
+                targetOffset = 0;
             }
+            float delta = targetOffset - currentOffset;
+            return currentOffset + delta * MathUtils.easeInOutQuad(t);
         }
 
-        if (isExperience) {
-            targetOffset += Constants.HOTBAR_BASE_EXPERIENCE_OFFSET;
+        if (!CONFIG.isApplyHotbarOffset()) {
+            float targetOffset = recentlyVisible ? (isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset) : 0;
+            float delta = targetOffset - currentOffset;
+            return currentOffset + delta * MathUtils.easeInOutQuad(t);
         }
 
-        return MathHelper.lerp(Constants.HOTBAR_LERP_SPEED, currentOffset, targetOffset);
+        int targetOffset = (int) (isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset);
+        boolean shouldShowNames = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
+        if (shouldShowNames) {
+            targetOffset += TAB_OFFSET;
+        }
+
+        float delta = targetOffset - currentOffset;
+        return currentOffset + delta * MathUtils.easeInOutQuad(t);
     }
 
     @Unique

@@ -27,26 +27,18 @@ public class Client implements ClientModInitializer {
     public static List<String> availableIconBorders = new ArrayList<>();
     public static List<String> availableNameBorders = new ArrayList<>();
     public static List<String> availableDeathMarkers = new ArrayList<>();
-
     private static long lastServerUpdateTime = 0;
     private static boolean isLocalMode = true;
-
-    public static long getLastServerUpdateTime() {
-        return lastServerUpdateTime;
-    }
-
+    private static boolean playerHasOp = false;
     public static boolean isLocalMode() {
         return isLocalMode;
     }
-
     public static void updateLastServerUpdateTime() {
         lastServerUpdateTime = System.currentTimeMillis();
     }
 
     @Override
     public void onInitializeClient() {
-        Constants.LOGGER.info(" " + Constants.MOD_NAME_LARGE);
-        Constants.LOGGER.info("|-----------------------------------------------|");
         Constants.LOGGER.info("[{}] Initializing mod client side!", Constants.MOD_NAME_SHORT);
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -63,13 +55,14 @@ public class Client implements ClientModInitializer {
                 availableNameBorders = AssetScanner.getNameplateBorderStyles(manager);
                 availableDeathMarkers = AssetScanner.getDeathMarkerTypes(manager);
 
-                Constants.LOGGER.info("[{}] Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers",
-                        Constants.MOD_NAME_SHORT,
-                        availableDots.size(),
-                        availableArrows.size(),
-                        availableIconBorders.size(),
-                        availableNameBorders.size(),
-                        availableDeathMarkers.size());
+                Constants.LOGGER.info("[{}] Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers", Constants.MOD_NAME_SHORT, availableDots.size(), availableArrows.size(), availableIconBorders.size(), availableNameBorders.size(), availableDeathMarkers.size());
+
+                if (!availableDots.isEmpty() && !availableDots.contains(Config.getInstance().getDotType())) {
+                    Config.getInstance().setDotType(availableDots.getFirst());
+                }
+                if (!availableArrows.isEmpty() && !availableArrows.contains(Config.getInstance().getArrowType())) {
+                    Config.getInstance().setArrowType(availableArrows.getFirst());
+                }
             }
         });
 
@@ -78,7 +71,7 @@ public class Client implements ClientModInitializer {
                 isLocalMode = true;
                 Constants.LOGGER.info("[{}] Server timeout, switching to local mode", Constants.MOD_NAME_SHORT);
             }
-            Hud.render(context, tickCounter.getTickDelta(false));
+            Hud.render(context);
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(Hud::tick);
@@ -88,16 +81,18 @@ public class Client implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(HandshakePayload.ID, (payload, context) -> {
             isLocalMode = false;
+            playerHasOp = payload.playerHasOp();
             lastServerUpdateTime = System.currentTimeMillis();
-            Constants.LOGGER.info("[{}] Server has mod installed, switching to remote mode", Constants.MOD_NAME_SHORT);
+            Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, playerHasOp);
         });
+
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             isLocalMode = true;
+            playerHasOp = false;
             lastServerUpdateTime = 0;
         });
 
         Constants.LOGGER.info("[{}] Client side initialized!", Constants.MOD_NAME_SHORT);
-        Constants.LOGGER.info("|-----------------------------------------------|");
     }
 }

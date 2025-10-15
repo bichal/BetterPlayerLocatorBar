@@ -12,7 +12,6 @@ import java.util.function.Supplier;
     protected static final NarrationSupplier DEFAULT_NARRATION_SUPPLIER = Supplier::get;
     protected final PressAction onPress;
     protected final NarrationSupplier narrationSupplier;
-
     public static Builder builder(Text message, PressAction onPress) {
         return new Builder(message, onPress);
     }
@@ -23,15 +22,18 @@ import java.util.function.Supplier;
         this.narrationSupplier = narrationSupplier;
     }
 
-    @Override public void onPress() {
+    @Override
+    public void onPress() {
         this.onPress.onPress(this);
     }
 
-    @Override protected MutableText getNarrationMessage() {
+    @Override
+    protected MutableText getNarrationMessage() {
         return this.narrationSupplier.createNarrationMessage(super::getNarrationMessage);
     }
 
-    @Override public void appendClickableNarrations(NarrationMessageBuilder builder) {
+    @Override
+    public void appendClickableNarrations(NarrationMessageBuilder builder) {
         this.appendDefaultNarrations(builder);
     }
 

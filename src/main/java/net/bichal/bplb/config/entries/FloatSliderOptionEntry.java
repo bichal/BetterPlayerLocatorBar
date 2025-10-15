@@ -6,18 +6,23 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
+import java.text.DecimalFormat;
 import java.util.function.Consumer;
 
 public class FloatSliderOptionEntry extends AbstractSliderOptionEntry {
     public FloatSliderOptionEntry(MinecraftClient client, String key, float initialValue, float min, float max, Consumer<Float> valueConsumer, Runnable onDirty) {
         super(client, key, new SliderWidget(0, 0, Constants.CONFIG_SLIDER_WIDTH, 20, Text.empty(), MathHelper.clamp((initialValue - min) / (max - min), 0.0f, 1.0f)) {
-            @Override public void updateMessage() {
+            @Override
+            public void updateMessage() {
+                DecimalFormat df = new DecimalFormat();
+                df.setMaximumFractionDigits(2);
                 float value = min + (max - min) * (float) this.value;
-                this.setMessage(Text.literal(String.format("%.2f", value)));
+                this.setMessage(Text.literal(String.valueOf(df.format(value))));
             }
 
-            @Override protected void applyValue() {
-                float value = min + (max - min) * (float) this.value;
+            @Override
+            protected void applyValue() {
+                Float value = min + (max - min) * (float) this.value;
                 valueConsumer.accept(value);
                 onDirty.run();
             }

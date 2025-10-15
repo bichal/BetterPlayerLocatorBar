@@ -24,11 +24,13 @@ public abstract class SliderWidget extends AnimatedWidget {
         this.value = value;
     }
 
-    @Override protected MutableText getNarrationMessage() {
+    @Override
+    protected MutableText getNarrationMessage() {
         return Text.translatable("gui.narrate.slider", this.getMessage());
     }
 
-    @Override public void appendClickableNarrations(NarrationMessageBuilder builder) {
+    @Override
+    public void appendClickableNarrations(NarrationMessageBuilder builder) {
         builder.put(NarrationPart.TITLE, this.getNarrationMessage());
         if (this.active) {
             if (this.isFocused()) {
@@ -39,16 +41,14 @@ public abstract class SliderWidget extends AnimatedWidget {
         }
     }
 
-    @Override public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    @Override
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         updateHoverAnimation(mouseX, mouseY, 0.2f);
-
         int trackY = this.getY() + (this.height - TRACK_HEIGHT) / 2;
         int trackColor = getBorderColor();
         context.fill(this.getX() + 2, trackY, this.getX() + this.width - 2, trackY + TRACK_HEIGHT, trackColor);
-
         int filledWidth = (int) ((this.width - 4) * this.value);
         context.fill(this.getX() + 2, trackY, this.getX() + 2 + filledWidth, trackY + TRACK_HEIGHT, trackColor);
-
         int handleX = this.getX() + (int) ((this.width - HANDLE_WIDTH) * this.value);
         int handleY = this.getY() + (this.height - HANDLE_HEIGHT) / 2;
         int handleColor = getHandleColor();
@@ -59,11 +59,13 @@ public abstract class SliderWidget extends AnimatedWidget {
         return 0xFF000000 | ((int) (0xC0 * borderBrightness) << 16 | (int) (0xC0 * borderBrightness) << 8) | (int) (0xC0 * borderBrightness);
     }
 
-    @Override public void onClick(double mouseX, double mouseY) {
+    @Override
+    public void onClick(double mouseX, double mouseY) {
         this.setValueFromMouse(mouseX);
     }
 
-    @Override public void setFocused(boolean focused) {
+    @Override
+    public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused) {
             this.sliderFocused = false;
@@ -75,7 +77,8 @@ public abstract class SliderWidget extends AnimatedWidget {
         }
     }
 
-    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (KeyCodes.isToggle(keyCode)) {
             this.sliderFocused = !this.sliderFocused;
             return true;
@@ -105,19 +108,20 @@ public abstract class SliderWidget extends AnimatedWidget {
         this.updateMessage();
     }
 
-    @Override protected void onDrag(double mouseX, double mouseY, double deltaX, double deltaY) {
+    @Override
+    protected void onDrag(double mouseX, double mouseY, double deltaX, double deltaY) {
         this.setValueFromMouse(mouseX);
         super.onDrag(mouseX, mouseY, deltaX, deltaY);
     }
 
-    @Override public void playDownSound(SoundManager soundManager) {
+    @Override
+    public void playDownSound(SoundManager soundManager) {
     }
 
-    @Override public void onRelease(double mouseX, double mouseY) {
+    @Override
+    public void onRelease(double mouseX, double mouseY) {
         super.onRelease(mouseX, mouseY);
     }
-
     public abstract void updateMessage();
-
     protected abstract void applyValue();
 }

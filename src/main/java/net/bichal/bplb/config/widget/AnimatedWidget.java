@@ -12,10 +12,10 @@ public abstract class AnimatedWidget extends ClickableWidget {
         super(x, y, width, height, message);
     }
 
+    @SuppressWarnings("SameParameterValue") // Temporal
     protected void updateHoverAnimation(int mouseX, int mouseY, float hoverSpeed) {
         float targetHover = this.isMouseOver(mouseX, mouseY) ? 1f : 0f;
         hoverProgress = MathHelper.lerp(hoverSpeed, hoverProgress, targetHover);
-
         float targetBrightness = hoverProgress > 0.5f ? 0.6f : 0.3f;
         borderBrightness = MathHelper.lerp(0.15f, borderBrightness, targetBrightness);
     }

@@ -1,6 +1,7 @@
 package net.bichal.bplb.util;
 
 public class MathUtils {
+    @SuppressWarnings("unused") // Future implementation
     public static float easeOutQuad(float t) {
         return 1.0f - (1.0f - t) * (1.0f - t);
     }

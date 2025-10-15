@@ -10,8 +10,6 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 public class Main implements ModInitializer {
     @Override
     public void onInitialize() {
-        Constants.LOGGER.info("           " + Constants.MOD_NAME_LARGE);
-        Constants.LOGGER.info("|-----------------------------------------------|");
         Constants.LOGGER.info("[{}] Mod initialization initialized", Constants.MOD_NAME_SHORT);
 
         PayloadTypeRegistry.playS2C().register(PositionUpdatePayload.ID, PositionUpdatePayload.CODEC);
@@ -22,6 +20,5 @@ public class Main implements ModInitializer {
         new Server().onInitializeServer();
 
         Constants.LOGGER.info("[{}] Mod initialization finished", Constants.MOD_NAME_SHORT);
-        Constants.LOGGER.info("|-----------------------------------------------|");
     }
 }

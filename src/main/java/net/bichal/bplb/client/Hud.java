@@ -1,10 +1,13 @@
 package net.bichal.bplb.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.render.RenderUtils;
-import net.bichal.bplb.config.PlayerConfig;
+import net.bichal.bplb.config.Config;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.util.Constants;
+import net.bichal.bplb.util.DistanceUtils;
+import net.bichal.bplb.util.MathUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -16,13 +19,14 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.round;
 import static net.bichal.bplb.util.ColorUtils.generateColorFromUUID;
 import static net.bichal.bplb.util.Constants.CONFIG;
 
@@ -30,29 +34,59 @@ import static net.bichal.bplb.util.Constants.CONFIG;
 public class Hud {
     public record PlayerPosition(UUID uuid, String name, double x, double y, double z) {
     }
-
     private static final Map<UUID, PlayerPosition> playerPositions = new HashMap<>();
-    private static final Map<UUID, Identifier> playerSkins = new HashMap<>();
     private static final Map<Object, Float> currentIconPositions = new HashMap<>();
-    private static final Map<Object, Float> nameplateYOffsets = new HashMap<>();
-    private static final Map<Object, Float> nameplateAlphas = new HashMap<>();
-    private static final List<Vec3d> deathMarkers = new ArrayList<>();
+    public static final List<Vec3d> deathMarkers = new ArrayList<>();
     private static final int MAX_DEATH_MARKERS = 4;
     private static List<PlayerPosition> positionsToRenderCache = new ArrayList<>();
-    private static int tickCounter = 0;
+    private static final Map<Object, Vec3d> lastKnownPositions = new HashMap<>();
+    private static final Map<Object, Long> lastPositionUpdateTime = new HashMap<>();
+    private static boolean shouldApplyHudOffset = false;
+
+    private static void updateRenderCache(MinecraftClient client) {
+        if (client.player == null) {
+            positionsToRenderCache.clear();
+            return;
+        }
+
+        List<PlayerPosition> positions = getPositionsToRender(client);
+        positions.removeIf(pos -> pos.uuid().equals(client.player.getUuid()));
+
+        Vec3d playerPos = client.player.getPos();
+        final int maxIcons = CONFIG.getMaxVisibleIcons();
+
+        positions.sort(Comparator.comparingDouble(pos -> {
+            double dx = playerPos.x - pos.x;
+            double dz = playerPos.z - pos.z;
+            return dx * dx + dz * dz;
+        }));
+
+        for (PlayerPosition pos : positions) {
+            if (!currentIconPositions.containsKey(pos.uuid())) {
+                float initialPos = calculateRelativePosition(client.player, pos);
+                if (initialPos >= 0) currentIconPositions.put(pos.uuid(), initialPos * Constants.BAR_WIDTH);
+            }
+        }
+
+        for (Vec3d marker : deathMarkers) {
+            if (!currentIconPositions.containsKey(marker)) {
+                PlayerPosition markerPos = new PlayerPosition(new UUID(marker.hashCode(), marker.hashCode()), "Death", marker.x, marker.y, marker.z);
+                float initialPos = calculateRelativePosition(client.player, markerPos);
+                if (initialPos >= 0) currentIconPositions.put(marker, initialPos * Constants.BAR_WIDTH);
+            }
+        }
+
+        positionsToRenderCache = positions.size() > maxIcons ? new ArrayList<>(positions.subList(0, maxIcons)) : new ArrayList<>(positions);
+    }
 
     public static void tick(MinecraftClient client) {
-        tickCounter++;
-        if (tickCounter >= CONFIG.getPositionUpdateRateTicks()) {
-            tickCounter = 0;
-            updateRenderCache(client);
-        }
+        if (client.world == null) return;
+        long time = client.world.getTime();
+        if (time % CONFIG.getPositionUpdateRateTicks() == 0) updateRenderCache(client);
         if (client.player != null) {
             deathMarkers.removeIf(marker -> {
                 if (client.player.getPos().distanceTo(marker) < 10) {
                     currentIconPositions.remove(marker);
-                    nameplateYOffsets.remove(marker);
-                    nameplateAlphas.remove(marker);
                     return true;
                 }
                 return false;
@@ -68,116 +102,189 @@ public class Hud {
         while (deathMarkers.size() > MAX_DEATH_MARKERS) {
             Vec3d oldest = deathMarkers.removeFirst();
             currentIconPositions.remove(oldest);
-            nameplateYOffsets.remove(oldest);
-            nameplateAlphas.remove(oldest);
         }
-    }
-
-    private static void updateRenderCache(MinecraftClient client) {
-        if (client.player == null) {
-            positionsToRenderCache.clear();
-            return;
-        }
-        List<PlayerPosition> positions = getPositionsToRender(client);
-        positions.removeIf(pos -> pos.uuid().equals(client.player.getUuid()));
-        positions.sort(Comparator.comparingDouble(pos -> client.player.squaredDistanceTo(pos.x, pos.y, pos.z)));
-        final int maxIcons = CONFIG.getMaxVisibleIcons();
-        positionsToRenderCache = new ArrayList<>(positions.size() > maxIcons ? positions.subList(0, maxIcons) : positions);
     }
 
     public static void registerEvents() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             playerPositions.clear();
-            playerSkins.clear();
             currentIconPositions.clear();
-            nameplateYOffsets.clear();
-            nameplateAlphas.clear();
             deathMarkers.clear();
             ClientPlayNetworking.registerReceiver(PositionUpdatePayload.ID, (payload, context) -> {
                 Client.updateLastServerUpdateTime();
-                context.client().execute(() -> {
-                    for (UUID disconnectedId : payload.disconnectedPlayers()) {
-                        playerPositions.remove(disconnectedId);
-                        playerSkins.remove(disconnectedId);
-                        currentIconPositions.remove(disconnectedId);
-                        nameplateYOffsets.remove(disconnectedId);
-                        nameplateAlphas.remove(disconnectedId);
+                client.execute(() -> {
+                    if (payload == null) return;
+
+                    List<UUID> disconnectedList = payload.disconnectedPlayers();
+                    if (disconnectedList != null) {
+                        for (UUID disconnectedId : disconnectedList) {
+                            if (disconnectedId == null) continue;
+                            playerPositions.remove(disconnectedId);
+                            currentIconPositions.remove(disconnectedId);
+                        }
                     }
-                    for (PositionUpdatePayload.PlayerInfo newPlayer : payload.newPlayers()) {
-                        PlayerPosition existingData = playerPositions.get(newPlayer.uuid());
-                        double x = existingData != null ? existingData.x() : 0;
-                        double y = existingData != null ? existingData.y() : 0;
-                        double z = existingData != null ? existingData.z() : 0;
-                        playerPositions.put(newPlayer.uuid(), new PlayerPosition(newPlayer.uuid(), newPlayer.name(), x, y, z));
+
+                    List<PositionUpdatePayload.PlayerInfo> newPlayersList = payload.newPlayers();
+                    if (newPlayersList != null) {
+                        for (PositionUpdatePayload.PlayerInfo newPlayer : newPlayersList) {
+                            if (newPlayer == null || newPlayer.uuid() == null) continue;
+                            PlayerPosition existingData = playerPositions.get(newPlayer.uuid());
+                            if (existingData != null) {
+                                playerPositions.put(newPlayer.uuid(), new PlayerPosition(newPlayer.uuid(), newPlayer.name(), existingData.x(), existingData.y(), existingData.z()));
+                            }
+                        }
                     }
-                    for (PositionUpdatePayload.PositionData posUpdate : payload.positions()) {
-                        PlayerPosition existingData = playerPositions.get(posUpdate.uuid());
-                        String name = existingData != null ? existingData.name() : "Player";
-                        playerPositions.put(posUpdate.uuid(), new PlayerPosition(posUpdate.uuid(), name, posUpdate.x(), posUpdate.y(), posUpdate.z()));
+
+                    List<PositionUpdatePayload.PositionData> positionsList = payload.positions();
+                    if (positionsList != null) {
+                        for (PositionUpdatePayload.PositionData posUpdate : positionsList) {
+                            if (posUpdate == null || posUpdate.uuid() == null) continue;
+                            PlayerPosition existingPosData = playerPositions.get(posUpdate.uuid());
+                            String name = existingPosData != null ? existingPosData.name() : "Player";
+                            playerPositions.put(posUpdate.uuid(), new PlayerPosition(posUpdate.uuid(), name, posUpdate.x(), posUpdate.y(), posUpdate.z()));
+                        }
                     }
                 });
             });
         });
     }
 
-    public static void render(DrawContext context, float tickDelta) {
+    public static void render(DrawContext context) {
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null || !CONFIG.isModEnabled()) return;
-        if (positionsToRenderCache.isEmpty() && deathMarkers.isEmpty()) return;
+        if (client.player == null || client.world == null || !CONFIG.isModEnabled()) {
+            shouldApplyHudOffset = false;
+            return;
+        }
+
+        if (positionsToRenderCache.isEmpty() && deathMarkers.isEmpty()) {
+            shouldApplyHudOffset = false;
+            return;
+        }
+
         final int barX = (context.getScaledWindowWidth() - Constants.BAR_WIDTH) / 2;
         final int barY = context.getScaledWindowHeight() + Constants.BAR_Y_OFFSET;
-
         final boolean showDetails = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
+
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+        boolean anyIconInRange = false;
+        final int barRight = barX + Constants.BAR_WIDTH;
 
         for (int i = 0; i < positionsToRenderCache.size(); i++) {
             final PlayerPosition pos = positionsToRenderCache.get(i);
             final PlayerEntity targetPlayer = client.world.getPlayerByUuid(pos.uuid());
             if (targetPlayer != null && shouldHideTarget(targetPlayer)) continue;
-            renderPlayerIcon(context, pos, barX, barY, i, showDetails, tickDelta);
+
+            Float currentPos = currentIconPositions.get(pos.uuid());
+            if (currentPos != null) {
+                int iconCenterX = barX + Math.round(currentPos);
+                if (iconCenterX >= barX && iconCenterX <= barRight) {
+                    anyIconInRange = true;
+                }
+            }
+
+            double distance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
+            float alpha = getDistanceAlpha(distance);
+            renderPlayerIcon(context, pos, barX, barY, i, showDetails, alpha);
         }
+
         for (int i = 0; i < deathMarkers.size(); i++) {
-            renderDeathMarker(context, deathMarkers.get(i), barX, barY, i + positionsToRenderCache.size(), showDetails, tickDelta);
+            Vec3d marker = deathMarkers.get(i);
+            Float currentPos = currentIconPositions.get(marker);
+            if (currentPos != null) {
+                int iconCenterX = barX + Math.round(currentPos);
+                if (iconCenterX >= barX && iconCenterX <= barRight) {
+                    anyIconInRange = true;
+                }
+            }
+            renderDeathMarker(context, marker, barX, barY, i + positionsToRenderCache.size(), showDetails);
         }
+
+        shouldApplyHudOffset = anyIconInRange;
+        RenderSystem.disableBlend();
     }
 
-    private static void renderPlayerIcon(DrawContext context, PlayerPosition pos, int barX, int barY, int index, boolean showDetails, float tickDelta) {
-        renderBarIcon(context, pos, pos.uuid(), barX, barY, index, showDetails, tickDelta);
+    public static boolean hasVisibleIconsInVisibleRange(MinecraftClient client) {
+        if (client.player == null) return false;
+        final int barLeft = (client.getWindow().getScaledWidth() - Constants.BAR_WIDTH) / 2;
+        final int barRight = barLeft + Constants.BAR_WIDTH;
+
+        for (PlayerPosition pos : positionsToRenderCache) {
+            Float currentPos = currentIconPositions.get(pos.uuid());
+            if (currentIconPos(barLeft, barRight, currentPos)) return true;
+        }
+        for (Vec3d marker : deathMarkers) {
+            Float currentPos = currentIconPositions.get(marker);
+            if (currentIconPos(barLeft, barRight, currentPos)) return true;
+        }
+        return false;
     }
 
-    private static void renderDeathMarker(DrawContext context, Vec3d pos, int barX, int barY, int index, boolean showDetails, float tickDelta) {
+    private static boolean currentIconPos(int barLeft, int barRight, Float currentPos) {
+        if (currentPos != null) {
+            int iconCenterX = barLeft + Math.round(currentPos);
+            int iconLeft = iconCenterX - 5;
+            int iconRight = iconCenterX + 5;
+            return iconRight >= barLeft && iconLeft <= barRight;
+        }
+        return false;
+    }
+
+    private static void renderPlayerIcon(DrawContext context, PlayerPosition pos, int barX, int barY, int index, boolean showDetails, float alpha) {
+        renderBarIcon(context, pos, pos.uuid(), barX, barY, index, showDetails, alpha);
+    }
+
+    private static void renderDeathMarker(DrawContext context, Vec3d pos, int barX, int barY, int index, boolean showDetails) {
         PlayerPosition markerPos = new PlayerPosition(new UUID(pos.hashCode(), pos.hashCode()), "Death", pos.x, pos.y, pos.z);
-        renderBarIcon(context, markerPos, pos, barX, barY, index, showDetails, tickDelta);
+        renderBarIcon(context, markerPos, pos, barX, barY, index, showDetails, 1);
     }
 
-    private static void renderBarIcon(DrawContext context, PlayerPosition pos, Object key, int barX, int barY, int index, boolean showDetails, float tickDelta) {
+    private static void renderBarIcon(DrawContext context, PlayerPosition pos, Object key, int barX, int barY, int index, boolean showDetails, float alpha) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
-        float targetPos = calculateRelativePosition(client.player, pos);
+
+        Float targetPos = calculateRelativePosition(client.player, pos);
         if (targetPos < 0) return;
+
         targetPos *= Constants.BAR_WIDTH;
-        float currentPos = currentIconPositions.getOrDefault(key, targetPos);
-        if (Math.abs(currentPos - targetPos) > Constants.BAR_WIDTH) currentPos = targetPos;
-        currentPos = MathHelper.lerp(CONFIG.getLerpSpeed() * tickDelta * 2f, currentPos, targetPos);
-        currentIconPositions.put(key, currentPos);
-        int iconCenterX = barX + (int) currentPos;
-        double distance = client.player.getPos().distanceTo(new Vec3d(pos.x, pos.y, pos.z));
-        float alpha = getDistanceAlpha(distance) * calculateEdgeAlpha(iconCenterX, barX);
-        if (alpha <= 0.01f) return;
+        Float currentPos = currentIconPositions.getOrDefault(key, targetPos);
+
+        float distance = Math.abs(currentPos - targetPos);
+        if (distance > Constants.BAR_WIDTH * 0.75f) {
+            currentPos = targetPos;
+            currentIconPositions.put(key, currentPos);
+        } else {
+            float delta = targetPos - currentPos;
+            float t = Math.min(CONFIG.getLerpSpeed(), 1.0f);
+            currentPos = currentPos + delta * MathUtils.easeInOutQuad(t);
+            currentIconPositions.put(key, currentPos);
+        }
+
+        int iconCenterX = barX + round(currentPos);
+        float edgeAlpha = calculateEdgeAlpha(iconCenterX, barX);
+        alpha *= edgeAlpha;
+
+        if (alpha <= 0.01f && Math.abs(currentPos - targetPos) < 1.0f) return;
+
         float topLeftX = iconCenterX - Constants.ICON_BASE_SIZE / 2f;
         float topLeftY = barY - Constants.ICON_BASE_SIZE / 2f;
+        float finalAlpha = alpha;
+
         RenderUtils.withMatrixPush(context, 0, 0, () -> {
             context.getMatrices().translate(0, 0, Constants.HIGH_Z_DEPTH_START + index * Constants.Z_DEPTH_INCREMENT);
 
             boolean isDeathMarker = key instanceof Vec3d;
-            boolean showHead = !isDeathMarker && (CONFIG.isToggleTab() || CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
+            boolean showHead = !isDeathMarker && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
 
             if (isDeathMarker) {
-                RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, alpha, CONFIG);
+                RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, finalAlpha, CONFIG);
             } else {
-                RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), distance, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, alpha, showHead, CONFIG);
+                double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
+                RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, showHead, CONFIG, finalAlpha);
             }
 
-            String text = isDeathMarker ? String.format("%d, %d, %d", (int) pos.x, (int) pos.y, (int) pos.z) : pos.name();
+            String text = isDeathMarker ? (int) pos.x + " " + (int) pos.y + " " + (int) pos.z : pos.name();
             int color;
             String borderStyle;
 
@@ -185,64 +292,61 @@ public class Hud {
                 color = CONFIG.getDeathMarkerColor();
                 borderStyle = CONFIG.getDeathMarkerBorderStyle();
             } else {
-                PlayerConfig appearance = CONFIG.getPlayerConfig(pos.name());
+                Config.PlayerAppearance appearance = CONFIG.getPlayerConfig(pos.name());
                 color = appearance != null && appearance.color != null ? appearance.color : generateColorFromUUID(pos.uuid());
                 borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : CONFIG.getNameBorderStyle();
             }
-            PlayerConfig appearance = isDeathMarker ? null : CONFIG.getPlayerConfig(pos.name());
-            float nameplateAlpha = showDetails ? alpha : 0f;
 
+            Config.PlayerAppearance appearance = isDeathMarker ? null : CONFIG.getPlayerConfig(pos.name());
+            float nameplateAlpha = showDetails ? finalAlpha : 0f;
             RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, nameplateAlpha, CONFIG.getNameplateScale());
 
-            renderHeightIndicator(context, pos, iconCenterX, (int) (topLeftY + Constants.ICON_BASE_SIZE / 2f), alpha, appearance);
+            renderHeightIndicator(context, pos, iconCenterX, (int) (topLeftY + Constants.ICON_BASE_SIZE / 2f), finalAlpha, appearance);
         });
     }
 
-    private static void renderHeightIndicator(DrawContext context, PlayerPosition pos, int centerX, int centerY, float alpha, PlayerConfig appearance) {
+    public static boolean shouldApplyHudOffset() {
+        return shouldApplyHudOffset;
+    }
+
+    private static boolean showUp(MinecraftClient client, PlayerPosition pos) {
+        return isArrowUp(client, pos);
+    }
+
+    private static boolean showDown(MinecraftClient client, PlayerPosition pos) {
+        return isArrowDown(client, pos);
+    }
+
+    private static void renderHeightIndicator(DrawContext context, PlayerPosition pos, int centerX, int centerY, float alpha, Config.PlayerAppearance appearance) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
 
-        boolean showUp = isArrowUp(client, pos);
-        boolean showDown = isArrowDown(client, pos);
-
-        if (showUp || showDown) {
+        if (showUp(client, pos) || showDown(client, pos)) {
             String arrowId = (appearance != null && appearance.arrowType != null) ? appearance.arrowType : CONFIG.getArrowType();
-            renderHeightArrow(context, centerX, centerY, alpha, showUp, arrowId);
+            renderHeightArrow(context, centerX, centerY, alpha, showUp(client, pos), arrowId);
         }
     }
 
     private static void renderHeightArrow(DrawContext context, int centerX, int centerY, float alpha, boolean isUp, String arrowId) {
         int arrowX = centerX - 5;
-        int arrowY = isUp ? (centerY - Constants.ICON_BASE_SIZE / 2 - Constants.ICON_BASE_SIZE - 2)
-                : (centerY + Constants.ICON_BASE_SIZE / 2 + 2);
+        int arrowY = isUp ? (centerY - Constants.ICON_BASE_SIZE - 2 - CONFIG.getVerticalPadding()) : (centerY + 2 + CONFIG.getVerticalPadding());
         RenderAddons.renderArrow(context, arrowId, isUp, arrowX, arrowY, Constants.ICON_BASE_SIZE, alpha);
     }
 
     private static List<PlayerPosition> getPositionsToRender(MinecraftClient client) {
-        if (Client.isLocalMode() || (System.currentTimeMillis() - Client.getLastServerUpdateTime() > 5000)) {
-            if (client.world == null || client.player == null) return Collections.emptyList();
-            return client.world.getPlayers().stream()
-                    .filter(p -> !p.getUuid().equals(client.player.getUuid()))
-                    .map(p -> new PlayerPosition(p.getUuid(), p.getName().getString(), p.getX(), p.getY(), p.getZ()))
-                    .collect(Collectors.toList());
+        if (client.world == null || client.player == null) return Collections.emptyList();
+        boolean useServerData = !Client.isLocalMode();
+        if (useServerData && !playerPositions.isEmpty()) {
+            return new ArrayList<>(playerPositions.values());
         }
-        return new ArrayList<>(playerPositions.values());
+        return client.world.getPlayers().stream().filter(p -> !p.getUuid().equals(client.player.getUuid())).map(p -> new PlayerPosition(p.getUuid(), p.getName().getString(), p.getX(), p.getY(), p.getZ())).collect(Collectors.toList());
     }
 
-    public static boolean hasVisiblePlayerIcons() {
-        return !positionsToRenderCache.isEmpty() || !deathMarkers.isEmpty();
-    }
-
-    public static boolean shouldApplyGlobalArrowOffset(MinecraftClient client) {
-        if (client.player == null) return false;
-        for (PlayerPosition pos : positionsToRenderCache) {
-            if (isArrowUp(client, pos)) return true;
-        }
-        for (Vec3d vec : deathMarkers) {
-            PlayerPosition pos = new PlayerPosition(new UUID(vec.hashCode(), vec.hashCode()), "Death", vec.x, vec.y, vec.z);
-            if (isArrowUp(client, pos)) return true;
-        }
-        return false;
+    private static float getDistanceAlpha(double distance) {
+        if (distance > CONFIG.getFadeEndDistance()) return CONFIG.getFadeAlphaMin();
+        if (distance < CONFIG.getFadeStartDistance()) return CONFIG.getFadeAlphaMax();
+        float progress = (float) ((distance - CONFIG.getFadeStartDistance()) / (CONFIG.getFadeEndDistance() - CONFIG.getFadeStartDistance()));
+        return MathHelper.lerp(MathUtils.easeInOutQuad(progress), CONFIG.getFadeAlphaMax(), CONFIG.getFadeAlphaMin());
     }
 
     private static boolean isArrowUp(MinecraftClient client, PlayerPosition pos) {
@@ -277,12 +381,42 @@ public class Hud {
         return -(Math.toDegrees(Math.atan2(targetY - cameraPos.y, horizontalDist)) + camera.getPitch());
     }
 
-    private static float getDistanceAlpha(double distance) {
-        if (distance > CONFIG.getMaxFadeDistance()) return CONFIG.getFadeAlphaMin();
-        if (distance < CONFIG.getFadeStartDistance()) return CONFIG.getFadeAlphaMax();
-        float progress = (float) ((distance - CONFIG.getFadeStartDistance()) /
-                (CONFIG.getMaxFadeDistance() - CONFIG.getFadeStartDistance()));
-        return MathHelper.lerp(progress, CONFIG.getFadeAlphaMax(), CONFIG.getFadeAlphaMin());
+    private static float calculateRelativePosition(PlayerEntity viewer, PlayerPosition target) {
+        if (viewer == null) return -1f;
+
+        Vec3d currentPos = new Vec3d(target.x, target.y, target.z);
+        Vec3d smoothedPos = currentPos;
+
+        Long currentTime = System.currentTimeMillis();
+        Vec3d lastPos = lastKnownPositions.get(target.uuid());
+        Long lastTime = lastPositionUpdateTime.get(target.uuid());
+
+        if (lastPos != null && lastTime != null) {
+            long timeDelta = currentTime - lastTime;
+            if (timeDelta < 1000) {
+                float alpha = Math.min(timeDelta / 100f * CONFIG.getLerpSpeed(), 1f);
+                smoothedPos = lastPos.lerp(currentPos, MathUtils.easeInOutQuad(alpha));
+            }
+        }
+
+        lastKnownPositions.put(target.uuid(), smoothedPos);
+        lastPositionUpdateTime.put(target.uuid(), currentTime);
+
+        double relativeAngle = getRelativeAngle(viewer, smoothedPos);
+        if (Math.abs(relativeAngle) > 90) return -1f;
+
+        return (float) (relativeAngle + 90) / 180.0f;
+    }
+
+    private static double getRelativeAngle(PlayerEntity viewer, Vec3d smoothedPos) {
+        double relativeAngle = MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(smoothedPos.z - viewer.getZ(), smoothedPos.x - viewer.getX())) - 90 - MathHelper.wrapDegrees(viewer.getYaw()));
+        if (CONFIG.isAdjustToFov()) {
+            MinecraftClient client = RenderUtils.getClient();
+            float fov = (float) client.options.getFov().getValue();
+            float fovFactor = (90.0f / fov) * CONFIG.getFovMultiplier();
+            relativeAngle *= fovFactor;
+        }
+        return relativeAngle;
     }
 
     private static float calculateEdgeAlpha(int iconX, int barX) {
@@ -293,8 +427,7 @@ public class Hud {
 
     private static boolean shouldHideTarget(PlayerEntity target) {
         final ItemStack headStack = target.getEquippedStack(EquipmentSlot.HEAD);
-        return target.isSneaking() || target.isInvisible() ||
-                (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+        return target.isSneaking() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
     }
 
     private static boolean shouldShowArrow(MinecraftClient client, PlayerPosition pos, boolean up) {
@@ -302,21 +435,11 @@ public class Hud {
 
         if (CONFIG.getHeightDifferenceMode().equals("PLAYER")) {
             double diff = pos.y - (client.player.getY() + 1.0);
-            return up ? diff > 2.5 : diff < -2.5;
+            return up ? diff > 5.5 : diff < -5.5;
         }
 
         double angleDiff = getCameraAngleDifference(client.gameRenderer.getCamera(), pos);
         double threshold = getDynamicAngleThreshold(client, pos);
         return up ? angleDiff < -threshold : angleDiff > threshold;
-    }
-
-    private static float calculateRelativePosition(PlayerEntity viewer, PlayerPosition target) {
-        if (viewer == null) return -1f;
-        double relativeAngle = MathHelper.wrapDegrees(
-                Math.toDegrees(Math.atan2(target.z - viewer.getZ(), target.x - viewer.getX())) - 90 -
-                        MathHelper.wrapDegrees(viewer.getYaw())
-        );
-        if (Math.abs(relativeAngle) > 90) return -1f;
-        return (float) (relativeAngle + 90) / 180.0f;
     }
 }

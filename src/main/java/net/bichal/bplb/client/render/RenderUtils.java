@@ -1,19 +1,24 @@
 package net.bichal.bplb.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 
 public class RenderUtils {
+    private static MinecraftClient clientInstance;
+
+    public static MinecraftClient getClient() {
+        if (clientInstance == null) {
+            clientInstance = MinecraftClient.getInstance();
+        }
+        return clientInstance;
+    }
+
     public static void renderTintedTexture(DrawContext context, Identifier texture, float x, float y, float width, float height, int color, float alpha) {
-        float r = ((color >> 16) & 0xFF) / 255.0f;
-        float g = ((color >> 8) & 0xFF) / 255.0f;
-        float b = (color & 0xFF) / 255.0f;
-        GL11.glEnable(GL11.GL_BLEND);
-        RenderSystem.setShaderColor(r, g, b, alpha);
+        setShaderColorRGBA(color, alpha);
         Dimension dim = AssetScanner.getTextureDimensions(texture);
         context.drawTexture(texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -54,5 +59,12 @@ public class RenderUtils {
         } finally {
             context.getMatrices().pop();
         }
+    }
+
+    public static void setShaderColorRGBA(int color, float alpha) {
+        float r = ((color >> 16) & 0xFF) / 255.0f;
+        float g = ((color >> 8) & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
+        RenderSystem.setShaderColor(r, g, b, alpha);
     }
 }
