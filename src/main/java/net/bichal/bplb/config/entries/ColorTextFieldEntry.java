@@ -19,7 +19,7 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
     private final MinecraftClient client;
     private final Consumer<Integer> valueConsumer;
     private final ConfigScreen parent;
-    private int currentColor;
+    private Integer currentColor;
 
     public ColorTextFieldEntry(MinecraftClient client, String key, int initialColor, Consumer<Integer> valueConsumer, ConfigScreen parent) {
         this.client = client;
@@ -27,8 +27,7 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
         this.label = Text.translatable(Constants.CONFIG_KEY_PREFIX + key);
         this.currentColor = initialColor;
         this.valueConsumer = valueConsumer;
-
-        String hexValue = String.format("#%06X", initialColor & 0xFFFFFF);
+        String hexValue = "#" + Integer.toHexString(initialColor & Constants.WHITE_COLOR).toUpperCase();
         this.textField = new TextInputWidget(client.textRenderer, 0, 0, 80, 20, Text.literal(hexValue));
         this.textField.setText(hexValue);
         this.textField.setMaxLength(7);
@@ -39,7 +38,7 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
         if (text.startsWith("#") && text.length() == 7) {
             try {
                 int color = Integer.parseInt(text.substring(1), 16);
-                this.currentColor = 0xFF000000 | color;
+                this.currentColor = Constants.BLACK_COLOR | color;
                 this.valueConsumer.accept(this.currentColor);
                 this.parent.markDirty();
             } catch (NumberFormatException ignored) {
@@ -49,26 +48,14 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
 
     @Override
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-        context.drawTextWithShadow(this.client.textRenderer, this.label, x + Constants.CONFIG_PADDING, y + 6, 0xFFFFFF);
-
+        context.drawTextWithShadow(this.client.textRenderer, this.label, x + Constants.CONFIG_PADDING, y + 6, Constants.WHITE_COLOR);
         this.textField.setX(x + entryWidth - 80 - Constants.CONFIG_PADDING - 24);
         this.textField.setY(y + 2);
         this.textField.render(context, mouseX, mouseY, tickDelta);
-
         int previewX = x + entryWidth - 20 - Constants.CONFIG_PADDING;
         int previewY = y + 2;
         context.fill(previewX, previewY, previewX + 20, previewY + 20, this.currentColor);
-        context.drawBorder(previewX, previewY, 20, 20, 0xFFFFFFFF);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.textField.mouseClicked(mouseX, mouseY, button)) {
-            this.parent.setFocused(this.textField);
-            this.setFocused(true);
-            return true;
-        }
-        return false;
+        context.drawBorder(previewX, previewY, 20, 20, Constants.WHITE_COLOR);
     }
 
     @Override
@@ -84,8 +71,8 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
-        if (!focused) {
-            this.textField.setFocused(false);
+        if (focused) {
+            this.textField.setFocused(true);
         }
     }
 

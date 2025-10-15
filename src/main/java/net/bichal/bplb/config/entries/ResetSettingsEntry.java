@@ -30,6 +30,7 @@ public class ResetSettingsEntry extends ScrollableListWidget.Entry {
                         workingConfig.resetToDefaults();
                         onDirty.run();
                         this.parentScreen.rebuildList();
+                        this.client.setScreen(this.parentScreen);
                     } else {
                         this.client.setScreen(this.parentScreen);
                     }
@@ -38,7 +39,8 @@ public class ResetSettingsEntry extends ScrollableListWidget.Entry {
         }).dimensions(0, 0, Constants.CONFIG_BUTTON_WIDTH + 20, 20).build();
     }
 
-    @Override public void tick() {
+    @Override
+    public void tick() {
         this.resetButton.active = Screen.hasShiftDown();
     }
 
@@ -49,11 +51,13 @@ public class ResetSettingsEntry extends ScrollableListWidget.Entry {
         this.resetButton.render(context, mouseX, mouseY, tickDelta);
     }
 
-    @Override public List<? extends Selectable> selectableChildren() {
+    @Override
+    public List<? extends Selectable> selectableChildren() {
         return List.of(this.resetButton);
     }
 
-    @Override public List<? extends Element> children() {
+    @Override
+    public List<? extends Element> children() {
         return List.of(this.resetButton);
     }
 }

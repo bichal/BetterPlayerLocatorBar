@@ -1,6 +1,7 @@
 package net.bichal.bplb.server;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
@@ -10,10 +11,54 @@ public class PlayerTracker {
     private final Map<UUID, PlayerInfo> playerInfoCache = new ConcurrentHashMap<>();
     private final Map<UUID, PlayerPosition> currentPositions = new ConcurrentHashMap<>();
     private final Map<UUID, PlayerPosition> movedPlayers = new ConcurrentHashMap<>();
-    private final double positionThreshold;
+
+    private final double positionThresholdSq;
 
     public PlayerTracker() {
-        this.positionThreshold = ServerConfig.getInstance().positionChangeThreshold;
+        ServerConfig config = ServerConfig.getInstance();
+        this.positionThresholdSq = Math.pow(config.positionChangeThreshold(), 2);
+    }
+
+    public void updatePlayer(ServerPlayerEntity player) {
+        if (player == null) return;
+        UUID uuid = player.getUuid();
+        PlayerPosition newPos = new PlayerPosition(player.getX(), player.getY(), player.getZ());
+
+        PlayerPosition oldPos = currentPositions.put(uuid, newPos);
+        if (newPos.hasSignificantChange(oldPos, positionThresholdSq)) {
+            movedPlayers.put(uuid, newPos);
+        }
+
+        playerInfoCache.computeIfAbsent(uuid, k -> new PlayerInfo(k, player.getName().getString()));
+    }
+
+    public void removePlayer(@Nullable UUID uuid) {
+        if (uuid == null) return;
+        playerInfoCache.remove(uuid);
+        currentPositions.remove(uuid);
+        movedPlayers.remove(uuid);
+    }
+
+    public Map<UUID, PlayerPosition> getAndClearMovedPlayers() {
+        if (movedPlayers.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, PlayerPosition> moved = new ConcurrentHashMap<>(movedPlayers);
+        movedPlayers.clear();
+        return moved;
+    }
+
+    @Nullable
+    public PlayerInfo getPlayerInfo(@Nullable UUID uuid) {
+        if (uuid == null) return null;
+        return playerInfoCache.get(uuid);
+    }
+
+    public void cleanup() {
+        long cutoff = System.currentTimeMillis() - (ServerConfig.getInstance().cleanupIntervalTicks() * 50L);
+        currentPositions.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().timestamp < cutoff);
+        playerInfoCache.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().firstSeen < cutoff);
+        movedPlayers.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().timestamp < cutoff);
     }
 
     public static class PlayerInfo {
@@ -23,7 +68,7 @@ public class PlayerTracker {
 
         public PlayerInfo(UUID uuid, String name) {
             this.uuid = uuid;
-            this.name = name;
+            this.name = name != null ? name : "Unknown";
             this.firstSeen = System.currentTimeMillis();
         }
     }
@@ -39,61 +84,12 @@ public class PlayerTracker {
             this.timestamp = System.currentTimeMillis();
         }
 
-        public boolean hasSignificantChange(PlayerPosition other, double threshold) {
+        public boolean hasSignificantChange(@Nullable PlayerPosition other, double thresholdSq) {
             if (other == null) return true;
-            return Math.abs(x - other.x) > threshold || Math.abs(y - other.y) > threshold || Math.abs(z - other.z) > threshold;
+            double dx = x - other.x;
+            double dy = y - other.y;
+            double dz = z - other.z;
+            return (dx * dx + dy * dy + dz * dz) > thresholdSq;
         }
-    }
-
-    public void updatePlayer(ServerPlayerEntity player) {
-        UUID uuid = player.getUuid();
-        playerInfoCache.putIfAbsent(uuid, new PlayerInfo(uuid, player.getName().getString()));
-
-        PlayerPosition newPos = new PlayerPosition(player.getX(), player.getY(), player.getZ());
-        PlayerPosition oldPos = currentPositions.get(uuid);
-
-        if (newPos.hasSignificantChange(oldPos, this.positionThreshold)) {
-            currentPositions.put(uuid, newPos);
-            movedPlayers.put(uuid, newPos);
-        }
-    }
-
-    public void removePlayer(UUID uuid) {
-        playerInfoCache.remove(uuid);
-        currentPositions.remove(uuid);
-        movedPlayers.remove(uuid);
-    }
-
-    public Map<UUID, PlayerPosition> getAndClearMovedPlayers() {
-        if (movedPlayers.isEmpty()) {
-            return Map.of();
-        }
-        Map<UUID, PlayerPosition> moved = new ConcurrentHashMap<>(movedPlayers);
-        movedPlayers.clear();
-        return moved;
-    }
-
-    public record PlayerData(UUID uuid, String name, double x, double y, double z, long timestamp) {
-        public boolean hasSignificantChange(PlayerData other, double threshold) {
-            if (other == null) return true;
-            return Math.abs(x - other.x) > threshold ||
-                    Math.abs(y - other.y) > threshold ||
-                    Math.abs(z - other.z) > threshold;
-        }
-    }
-
-    public PlayerPosition getPosition(UUID uuid) {
-        return currentPositions.get(uuid);
-    }
-
-    public PlayerInfo getPlayerInfo(UUID uuid) {
-        return playerInfoCache.get(uuid);
-    }
-
-    public void cleanup() {
-        long cutoff = System.currentTimeMillis() - (ServerConfig.getInstance().cleanupIntervalTicks * 50L);
-        currentPositions.entrySet().removeIf(entry -> entry.getValue().timestamp < cutoff);
-        playerInfoCache.entrySet().removeIf(entry -> entry.getValue().firstSeen < cutoff);
-        movedPlayers.entrySet().removeIf(entry -> entry.getValue().timestamp < cutoff);
     }
 }
