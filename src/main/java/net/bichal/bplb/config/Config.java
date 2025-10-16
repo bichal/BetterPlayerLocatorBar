@@ -45,7 +45,7 @@ public class Config {
     private String heightDifferenceMode = "PLAYER";
     private boolean modEnabled = true;
     private int maxVisibleIcons = 100;
-    private int positionUpdateRateTicks = 2;
+    private int positionUpdateRateTicks = 0;
     private float nameplateScale = 1.0f;
     private String deathMarkerBorderStyle = "rounded";
     private String deathMarkerBorderType = "default";
