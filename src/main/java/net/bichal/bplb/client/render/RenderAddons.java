@@ -1,5 +1,7 @@
 package net.bichal.bplb.client.render;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.config.Config;
 import net.bichal.bplb.util.ColorUtils;
@@ -12,6 +14,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -42,27 +45,32 @@ public class RenderAddons {
 
     private static void renderPlayerHeadOverlay(DrawContext context, UUID playerUuid, float x, float y, int size, String textureOverride, float alpha) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null) return;
-
-        Identifier skin;
-
-        if (textureOverride != null && !textureOverride.isEmpty()) {
-            UUID overrideUuid = getUuidFromCache(textureOverride);
-            if (overrideUuid != null) {
-                AbstractClientPlayerEntity overridePlayer = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(overrideUuid);
-                skin = overridePlayer != null ? overridePlayer.getSkinTextures().texture() : Constants.STEVE_SKIN_TEXTURE;
+        if (alpha <= 0.01f) return;
+        if (client.world == null || playerUuid == null) return;
+        Identifier skin = Constants.STEVE_SKIN_TEXTURE;
+        try {
+            if (textureOverride != null && !textureOverride.isEmpty()) {
+                UUID overrideUuid = getUuidFromCache(textureOverride);
+                if (overrideUuid != null) {
+                    AbstractClientPlayerEntity overridePlayer = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(overrideUuid);
+                    if (overridePlayer != null && overridePlayer.getSkinTextures() != null) skin = overridePlayer.getSkinTextures().texture();
+                }
             } else {
-                skin = Constants.STEVE_SKIN_TEXTURE;
+                AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(playerUuid);
+                if (player != null && player.getSkinTextures() != null) skin = player.getSkinTextures().texture();
             }
-        } else {
-            AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(playerUuid);
-            skin = player != null ? player.getSkinTextures().texture() : Constants.STEVE_SKIN_TEXTURE;
+        } catch (Exception e) {
+            Constants.LOGGER.debug("Error loading skin texture", e);
         }
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        int padding = 2;
-        context.drawTexture(skin, (int) x + padding, (int) y + padding, size - padding * 2, size - padding * 2, 8, 8, 8, 8, 64, 64);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        try {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+            int padding = 2;
+            int texSize = Math.max(1, size - padding * 2);
+            context.drawTexture(skin, (int) x + padding, (int) y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
+        } finally {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
 
     public static void renderDeathMarker(DrawContext context, float x, float y, int size, float alpha, Config config) {
@@ -76,18 +84,26 @@ public class RenderAddons {
     }
 
     public static void renderArrow(DrawContext context, String arrowType, boolean isUp, float x, float y, int size, float alpha) {
+        if (alpha <= 0.01f) return;
+
         TextureAnimator animator = textureAnimators.computeIfAbsent(arrowType + "_" + isUp, k -> new TextureAnimator(10, 4));
         Identifier arrowTexture = TextureManager.getArrowTexture(arrowType);
+
         context.getMatrices().push();
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        int frame = animator.getCurrentFrame();
-        float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
-        float v = frame * Constants.ICON_BASE_SIZE;
-        context.drawTexture(arrowTexture, (int) x, (int) y, size, size, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
+        try {
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+
+            int frame = animator.getCurrentFrame();
+            float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
+            float v = frame * Constants.ICON_BASE_SIZE;
+
+            context.drawTexture(arrowTexture, (int) x, (int) y, size, size, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
+        } finally {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            RenderSystem.disableBlend();
+            context.getMatrices().pop();
+        }
     }
 
     public static void renderNameplate(DrawContext context, String text, String borderStyle, int color, float x, float y, float alpha, float scale) {
@@ -100,13 +116,18 @@ public class RenderAddons {
         int tintColor = ColorUtils.darkerColoring(color);
         context.getMatrices().push();
         context.getMatrices().translate(x, y, 0);
+        context.getMatrices().push();
+        context.getMatrices().translate(0, 0, 0);
         RenderUtils.setShaderColorRGBA(tintColor, alpha);
         RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 0);
+        context.getMatrices().pop();
+        context.getMatrices().push();
+        context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 1);
         context.getMatrices().scale(scale, scale, 1.0f);
         int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
         context.drawText(client.textRenderer, text, -textWidth / 2, -client.textRenderer.fontHeight / 2, textColor, true);
+        context.getMatrices().pop();
         context.getMatrices().pop();
     }
 
@@ -119,6 +140,8 @@ public class RenderAddons {
 
     @Nullable
     public static UUID getUuidFromCache(String nameOrUuid) {
+        if (nameOrUuid == null || nameOrUuid.isEmpty()) return null;
+
         try {
             return UUID.fromString(nameOrUuid);
         } catch (IllegalArgumentException ignored) {
@@ -130,18 +153,32 @@ public class RenderAddons {
         try {
             File cacheFile = FabricLoader.getInstance().getGameDir().resolve("usercache.json").toFile();
             if (!cacheFile.exists()) return null;
-
-            String json = new String(java.nio.file.Files.readAllBytes(cacheFile.toPath()));
-            com.google.gson.JsonArray array = com.google.gson.JsonParser.parseString(json).getAsJsonArray();
-
-            for (com.google.gson.JsonElement element : array) {
-                com.google.gson.JsonObject obj = element.getAsJsonObject();
-                if (obj.has("name") && obj.get("name").getAsString().equalsIgnoreCase(nameOrUuid)) {
-                    return UUID.fromString(obj.get("uuid").getAsString());
+            byte[] data = Files.readAllBytes(cacheFile.toPath());
+            if (data.length == 0) return null;
+            String json = new String(data);
+            if (json.trim().isEmpty()) return null;
+            JsonElement element = com.google.gson.JsonParser.parseString(json);
+            if (!element.isJsonArray()) return null;
+            JsonArray array = element.getAsJsonArray();
+            for (JsonElement entry : array) {
+                if (!entry.isJsonObject()) continue;
+                com.google.gson.JsonObject obj = entry.getAsJsonObject();
+                if (!obj.has("name") || !obj.has("uuid")) continue;
+                JsonElement nameEl = obj.get("name");
+                JsonElement uuidEl = obj.get("uuid");
+                if (nameEl == null || uuidEl == null || !nameEl.isJsonPrimitive() || !uuidEl.isJsonPrimitive())
+                    continue;
+                String objName = nameEl.getAsString();
+                if (objName != null && objName.equalsIgnoreCase(nameOrUuid)) {
+                    try {
+                        return UUID.fromString(uuidEl.getAsString());
+                    } catch (Exception e) {
+                        Constants.LOGGER.debug("Invalid UUID entry in usercache.json");
+                    }
                 }
             }
         } catch (Exception e) {
-            Constants.LOGGER.warn("Could not read usercache.json", e);
+            Constants.LOGGER.debug("Failed to read usercache.json", e);
         }
         return null;
     }
