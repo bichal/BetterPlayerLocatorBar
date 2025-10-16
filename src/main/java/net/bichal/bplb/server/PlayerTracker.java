@@ -54,6 +54,7 @@ public class PlayerTracker {
         return playerInfoCache.get(uuid);
     }
 
+    @SuppressWarnings("unused") // Future implementation
     public void cleanup() {
         long cutoff = System.currentTimeMillis() - (ServerConfig.getInstance().cleanupIntervalTicks() * 50L);
         currentPositions.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().timestamp < cutoff);
@@ -62,6 +63,7 @@ public class PlayerTracker {
     }
 
     public static class PlayerInfo {
+        @SuppressWarnings("unused")
         public final UUID uuid;
         public final String name;
         public final long firstSeen;

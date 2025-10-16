@@ -257,6 +257,7 @@ public class Config {
     public float getFovMultiplier() { return fovMultiplier; }
     public void setFovMultiplier(float value) { set(MathHelper.clamp(value, 0.5f, 2.0f), v -> this.fovMultiplier = v); }
 
+    @SuppressWarnings("unused")
     public static class PlayerAppearance {
         public String playerName;
         public UUID playerUuid;
@@ -265,6 +266,6 @@ public class Config {
         public String iconBorderType;
         public String arrowType;
         public Integer color;
-        /* Future implementation */ public String textureHeadOverride;
+        public String textureHeadOverride /* Future implementation */;
     }
 }
