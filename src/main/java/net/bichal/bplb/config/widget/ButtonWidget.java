@@ -38,11 +38,11 @@ import java.util.function.Supplier;
     }
 
     @Environment(EnvType.CLIENT) public interface NarrationSupplier {
-        MutableText createNarrationMessage(Supplier<MutableText> textSupplier);
+        MutableText createNarrationMessage(Supplier<MutableText> ignoredTextSupplier);
     }
 
     @Environment(EnvType.CLIENT) public interface PressAction {
-        void onPress(ButtonWidget button);
+        void onPress(ButtonWidget ignoredButton);
     }
 
     @Environment(EnvType.CLIENT) public static class Builder {
