@@ -323,7 +323,7 @@ public class ConfigScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 8, Constants.WHITE_COLOR);
+        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 12, Constants.WHITE_COLOR);
         renderGlobalPreview(context);
 
         if (Client.isLocalMode()) {

@@ -27,6 +27,7 @@ public class TextureAnimator {
         return currentFrame;
     }
 
+    @SuppressWarnings("unused") // Future implementation
     public void reset() {
         currentFrame = 0;
         lastFrameTime = System.currentTimeMillis();
