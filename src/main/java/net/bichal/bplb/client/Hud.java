@@ -84,6 +84,7 @@ public class Hud {
 
     public static void tick(MinecraftClient client) {
         if (client.world == null) return;
+        updateRenderCache(client);
         if (client.player != null) {
             deathMarkers.removeIf(marker -> {
                 if (client.player.getPos().distanceTo(marker) < 10) {
@@ -239,10 +240,8 @@ public class Hud {
 
         Float targetPos = calculateRelativePosition(client.player, pos);
         if (targetPos < 0) return;
-
         targetPos *= Constants.BAR_WIDTH;
         Float currentPos = currentIconPositions.getOrDefault(key, targetPos);
-
         float distance = Math.abs(currentPos - targetPos);
         if (distance > Constants.BAR_WIDTH * 0.75f) {
             currentPos = targetPos;
@@ -263,37 +262,35 @@ public class Hud {
         float topLeftX = iconCenterX - Constants.ICON_BASE_SIZE / 2f;
         float topLeftY = barY - Constants.ICON_BASE_SIZE / 2f;
         float finalAlpha = alpha;
+        float baseZ = index * 2f;
 
         RenderUtils.withMatrixPush(context, 0, 0, () -> {
-            context.getMatrices().translate(0, 0, Constants.HIGH_Z_DEPTH_START + index * Constants.Z_DEPTH_INCREMENT);
-
             boolean isDeathMarker = key instanceof Vec3d;
             boolean showHead = !isDeathMarker && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
 
+            Config.PlayerAppearance appearance = isDeathMarker ? null : CONFIG.getPlayerConfig(pos.name());
+            String borderStyle;
+            int color;
+
+            if (isDeathMarker) {
+                color = CONFIG.getDeathMarkerColor();
+                borderStyle = CONFIG.getDeathMarkerBorderStyle();
+            } else {
+                color = appearance != null && appearance.color != null ? appearance.color : generateColorFromUUID(pos.uuid());
+                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : CONFIG.getNameBorderStyle();
+            }
+
+            float nameplateAlpha = showDetails ? finalAlpha : 0f;
+            String text = isDeathMarker ? (int) pos.x + " " + (int) pos.y + " " + (int) pos.z : pos.name();
+            context.getMatrices().translate(0, 0, baseZ);
+            RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, nameplateAlpha, CONFIG.getNameplateScale());
+            context.getMatrices().translate(0, 0, 1);
             if (isDeathMarker) {
                 RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, finalAlpha, CONFIG);
             } else {
                 double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
                 RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, showHead, CONFIG, finalAlpha);
             }
-
-            String text = isDeathMarker ? (int) pos.x + " " + (int) pos.y + " " + (int) pos.z : pos.name();
-            int color;
-            String borderStyle;
-
-            if (isDeathMarker) {
-                color = CONFIG.getDeathMarkerColor();
-                borderStyle = CONFIG.getDeathMarkerBorderStyle();
-            } else {
-                Config.PlayerAppearance appearance = CONFIG.getPlayerConfig(pos.name());
-                color = appearance != null && appearance.color != null ? appearance.color : generateColorFromUUID(pos.uuid());
-                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : CONFIG.getNameBorderStyle();
-            }
-
-            Config.PlayerAppearance appearance = isDeathMarker ? null : CONFIG.getPlayerConfig(pos.name());
-            float nameplateAlpha = showDetails ? finalAlpha : 0f;
-            RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, nameplateAlpha, CONFIG.getNameplateScale());
-
             renderHeightIndicator(context, pos, iconCenterX, (int) (topLeftY + Constants.ICON_BASE_SIZE / 2f), finalAlpha, appearance);
         });
     }
