@@ -26,9 +26,11 @@ Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above t
 
 ## 📸 Gallery
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9" alt="HUD"/>
-    <img src="https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d" alt="HUD with NameTag"/>
-    <img src="./media/ConfigScreenPreview.gif" alt="ConfigScreenPreview"/>
+    <img src="https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9" alt="HUD" width="100%"/>
+    <img src="./media/OnePlayerBarPreview.gif" alt="OnePlayerBarPreview" width="100%"/>
+    <img src="./media/TwoPlayerBarPreview.gif" alt="TwoPlayerBarPreview" width="100%"/>
+    <img src="./media/ConfigScreenPreview.gif" alt="ConfigScreenPreview" width="100%"/>
+    <img src="./media/PlayerCustomPreview.gif" alt="PlayerCustomPreview" width="100%"/>
 </p>
 
 ## Requirements
