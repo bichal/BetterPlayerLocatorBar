@@ -9,7 +9,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.text.Text;
-
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -27,35 +26,40 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
         this.label = Text.translatable(Constants.CONFIG_KEY_PREFIX + key);
         this.currentColor = initialColor;
         this.valueConsumer = valueConsumer;
-        String hexValue = "#" + Integer.toHexString(initialColor & Constants.WHITE_COLOR).toUpperCase();
+        String hexValue = String.format("%06X", initialColor & 0xFFFFFF);
         this.textField = new TextInputWidget(client.textRenderer, 0, 0, 80, 20, Text.literal(hexValue));
         this.textField.setText(hexValue);
-        this.textField.setMaxLength(7);
+        this.textField.setMaxLength(6);
         this.textField.setChangedListener(this::onTextChanged);
     }
 
     private void onTextChanged(String text) {
-        if (text.startsWith("#") && text.length() == 7) {
-            try {
-                int color = Integer.parseInt(text.substring(1), 16);
-                this.currentColor = Constants.BLACK_COLOR | color;
-                this.valueConsumer.accept(this.currentColor);
-                this.parent.markDirty();
-            } catch (NumberFormatException ignored) {
-            }
+        if (text.isEmpty()) return;
+        String sanitized = text.toUpperCase();
+        try {
+            int color = Integer.parseInt(sanitized, 16);
+            this.currentColor = Constants.BLACK_COLOR | color;
+            this.valueConsumer.accept(this.currentColor);
+            this.parent.markDirty();
+        } catch (NumberFormatException ignored) {
         }
     }
 
     @Override
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
         context.drawTextWithShadow(this.client.textRenderer, this.label, x + Constants.CONFIG_PADDING, y + 6, Constants.WHITE_COLOR);
-        this.textField.setX(x + entryWidth - 80 - Constants.CONFIG_PADDING - 24);
+
+        int fieldWidth = Constants.CONFIG_TOGGLE_WIDTH - 24;
+        int fieldX = x + entryWidth - Constants.CONFIG_TOGGLE_WIDTH - Constants.CONFIG_PADDING;
+        int previewX = fieldX + fieldWidth + 4;
+
+        this.textField.setX(fieldX);
         this.textField.setY(y + 2);
+        this.textField.setWidth(fieldWidth);
         this.textField.render(context, mouseX, mouseY, tickDelta);
-        int previewX = x + entryWidth - 20 - Constants.CONFIG_PADDING;
-        int previewY = y + 2;
-        context.fill(previewX, previewY, previewX + 20, previewY + 20, this.currentColor);
-        context.drawBorder(previewX, previewY, 20, 20, Constants.WHITE_COLOR);
+
+        context.fill(previewX, y + 2, previewX + 20, y + 22, this.currentColor);
+        context.drawBorder(previewX, y + 2, 20, 20, Constants.WHITE_COLOR);
     }
 
     @Override
@@ -65,7 +69,10 @@ public class ColorTextFieldEntry extends ScrollableListWidget.Entry {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return this.textField.charTyped(chr, modifiers);
+        if ((chr >= '0' && chr <= '9') || (chr >= 'A' && chr <= 'F') || (chr >= 'a' && chr <= 'f')) {
+            return this.textField.charTyped(chr, modifiers);
+        }
+        return false;
     }
 
     @Override

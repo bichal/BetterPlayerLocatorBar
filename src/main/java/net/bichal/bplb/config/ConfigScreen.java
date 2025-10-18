@@ -11,6 +11,7 @@ import net.bichal.bplb.config.widget.ScrollableListWidget;
 import net.bichal.bplb.config.widget.TextInputWidget;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
@@ -36,7 +37,6 @@ public class ConfigScreen extends Screen {
     private final Map<String, SearchMatch> searchMatches = new HashMap<>();
     private ButtonWidget applyButton, doneButton;
     private String searchQuery = "";
-    private boolean isRebuilding = false;
 
     public ConfigScreen(Screen parent) {
         super(Text.translatable(Constants.CONFIG_KEY_PREFIX + "title"));
@@ -58,7 +58,6 @@ public class ConfigScreen extends Screen {
         TextInputWidget searchField = new TextInputWidget(this.textRenderer, this.width / 2 - 100, 30, 200, 20, Text.translatable("bplb.config.search"));
         searchField.setChangedListener(text -> {
             this.searchQuery = text.toLowerCase();
-            this.scrollableList.setScrollAmount(0);
             rebuildListWithoutScroll();
         });
         this.addDrawableChild(searchField);
@@ -93,14 +92,20 @@ public class ConfigScreen extends Screen {
     }
 
     private void rebuildListWithoutScroll() {
-        if (isRebuilding || this.client == null) return;
+        if (this.client == null) return;
 
-        isRebuilding = true;
-        try {
-            scrollableList.clearEntries();
-            populateOptions();
-        } finally {
-            isRebuilding = false;
+        double scroll = this.scrollableList.getScrollAmount();
+        scrollableList.clearEntries();
+        populateOptions();
+        this.scrollableList.setScrollAmount(scroll);
+    }
+
+    @Override
+    public void setFocused(Element focused) {
+        Element oldFocused = this.getFocused();
+        super.setFocused(focused);
+        if (oldFocused != focused && !(focused instanceof TextInputWidget)) {
+            rebuildListWithoutScroll();
         }
     }
 
@@ -118,6 +123,7 @@ public class ConfigScreen extends Screen {
 
     private void updateSearchMatches() {
         searchMatches.clear();
+        this.scrollableList.setScrollAmount(0);
         if (searchQuery.isEmpty()) return;
 
         List<String> allKeys = List.of("modEnabled", "apply_hotbar_offset", "always_show_player_heads", "always_show_player_names", "max_visible_icons", "position_update_rate_ticks", "lerp_speed", "icon_size", "dot_type", "icon_border_style", "icon_border_type", "inherit_border_color", "height_difference_mode", "arrow_type", "vertical_padding", "adjust_to_fov", "fov_multiplier", "death_marker_type", "death_marker_border_type", "death_marker_inherit_border_color", "nameplate_scale", "name_border_style", "fade_end_distance", "fade_start_distance", "fade_alpha_max", "fade_alpha_min");
@@ -162,7 +168,6 @@ public class ConfigScreen extends Screen {
     }
 
     private void populateOptions() {
-        if (isRebuilding) return;
         updateSearchMatches();
 
         boolean isBowtie = workingConfig.getDotType().equals("bowtie");
@@ -183,7 +188,6 @@ public class ConfigScreen extends Screen {
             addIfMatch("always_show_player_heads", () -> addToggle("always_show_player_heads", workingConfig.isAlwaysShowPlayerHeads(), workingConfig::setAlwaysShowPlayerHeads));
             addIfMatch("always_show_player_names", () -> addToggle("always_show_player_names", workingConfig.isAlwaysShowPlayerNames(), workingConfig::setAlwaysShowPlayerNames));
             addIfMatch("max_visible_icons", () -> addIntSlider("max_visible_icons", workingConfig.getMaxVisibleIcons(), 1, 200, workingConfig::setMaxVisibleIcons));
-            addIfMatch("position_update_rate_ticks", () -> addIntSlider("position_update_rate_ticks", workingConfig.getPositionUpdateRateTicks(), 1, 20, workingConfig::setPositionUpdateRateTicks));
             addIfMatch("lerp_speed", () -> addFloatSlider("lerp_speed", workingConfig.getLerpSpeed(), 0.1f, 1.0f, workingConfig::setLerpSpeed));
         }
 
@@ -236,18 +240,22 @@ public class ConfigScreen extends Screen {
             addSection("fading");
             addIfMatch("fade_start_distance", () -> addIntSlider("fade_start_distance", workingConfig.getFadeStartDistance(), 5, 9995, workingConfig::setFadeStartDistance));
             addIfMatch("fade_end_distance", () -> addIntSlider("fade_end_distance", workingConfig.getFadeEndDistance(), 10, 10000, workingConfig::setFadeEndDistance));
-            addIfMatch("fade_alpha_max", () -> addFloatSlider("fade_alpha_max", workingConfig.getFadeAlphaMax(), workingConfig.getFadeAlphaMin(), 1.0f, workingConfig::setFadeAlphaMax));
-            addIfMatch("fade_alpha_min", () -> addFloatSlider("fade_alpha_min", workingConfig.getFadeAlphaMin(), 0.0f, workingConfig.getFadeAlphaMax(), workingConfig::setFadeAlphaMin));
+            addIfMatch("fade_alpha_max", () -> scrollableList.addPublicEntry(new FloatSliderOptionEntry(this.client, "fade_alpha_max", workingConfig.getFadeAlphaMax(), workingConfig.getFadeAlphaMin(), 1.0f, val -> {
+                workingConfig.setFadeAlphaMax(val);
+                rebuildListWithoutScroll();
+            }, this::markDirty)));
+            addIfMatch("fade_alpha_min", () -> scrollableList.addPublicEntry(new FloatSliderOptionEntry(this.client, "fade_alpha_min", workingConfig.getFadeAlphaMin(), 0.0f, workingConfig.getFadeAlphaMax(), val -> {
+                workingConfig.setFadeAlphaMin(val);
+                rebuildListWithoutScroll();
+            }, this::markDirty)));
         }
 
         if (searchQuery.isEmpty() || workingConfig.getPlayerConfigs().keySet().stream().anyMatch(name -> matchesSearch("player." + name))) {
             addSection("player_appearance");
             scrollableList.addPublicEntry(new AddPlayerEntry(Objects.requireNonNull(this.client), this, workingConfig));
-
             workingConfig.getPlayerConfigs().keySet().stream().sorted().forEach(name -> {
                 boolean expanded = workingConfig.isPlayerExpanded(name);
                 scrollableList.addPublicEntry(new PlayerListEntry(this.client, this, workingConfig, name, expanded));
-
                 if (expanded) {
                     Config.PlayerAppearance pc = workingConfig.getPlayerConfigs().get(name);
                     if (pc != null) {
@@ -259,39 +267,31 @@ public class ConfigScreen extends Screen {
                                 markDirty();
                             }, this));
                         });
-
                         addPlayerOption(name, "dot_type", () -> {
                             List<String> dotsToShow = Client.availableDots.stream().filter(d -> !d.equals("bowtie")).toList();
-                            scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.dot_type", pc.dotType != null ? pc.dotType : "default", dotsToShow,
-                                    id -> getTranslatedAssetName(id, "dot"),
-                                    val -> {
-                                        pc.dotType = val;
-                                        markDirty();
-                                    }, this::markDirty, true));
+                            scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.dot_type", pc.dotType != null ? pc.dotType : "default", dotsToShow, id -> getTranslatedAssetName(id, "dot"), val -> {
+                                pc.dotType = val;
+                                markDirty();
+                            }, this::markDirty, true));
                         });
-
                         addPlayerOption(name, "icon_border_style", () -> scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.icon_border_style", pc.iconBorderStyle != null ? pc.iconBorderStyle : "rounded", borderStyles, borderStyleText, val -> {
                             pc.iconBorderStyle = val;
                             markDirty();
                         }, this::markDirty, true)));
-
                         addPlayerOption(name, "icon_border_type", () -> scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.icon_border_type", pc.iconBorderType != null ? pc.iconBorderType : "default", borderTypes, borderTypeText, val -> {
                             pc.iconBorderType = val;
                             markDirty();
                         }, this::markDirty, true)));
-
-                        addPlayerOption(name, "arrow_type", () -> scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.arrow_type", pc.arrowType != null ? pc.arrowType : "default", Client.availableArrows,
-                                id -> getTranslatedAssetName(id, "arrow"),
-                                val -> {
-                                    pc.arrowType = val;
-                                    markDirty();
-                                }, this::markDirty, true)));
+                        addPlayerOption(name, "arrow_type", () -> scrollableList.addPublicEntry(new CycleOptionEntry<>(this.client, "player_appearance.arrow_type", pc.arrowType != null ? pc.arrowType : "default", Client.availableArrows, id -> getTranslatedAssetName(id, "arrow"), val -> {
+                            pc.arrowType = val;
+                            markDirty();
+                        }, this::markDirty, true)));
                     }
                 }
             });
         }
 
-        scrollableList.addPublicEntry(new ResetSettingsEntry(this.client, this, this::markDirty, workingConfig));
+        if (searchQuery.isEmpty()) scrollableList.addPublicEntry(new ResetSettingsEntry(this.client, this, this::markDirty, workingConfig));
     }
 
     private boolean hasAnyMatch(String... keys) {
@@ -333,36 +333,41 @@ public class ConfigScreen extends Screen {
     }
 
     public void drawLabelWithHighlight(DrawContext context, Text label, int x, int y, String key) {
+        String text = label.getString();
+
         if (searchQuery.isEmpty() || !searchMatches.containsKey(key)) {
             context.drawTextWithShadow(this.textRenderer, label, x, y, Constants.WHITE_COLOR);
             return;
         }
 
-        String text = label.getString();
         String textLower = text.toLowerCase();
         String query = searchQuery.toLowerCase();
-        int queryPos = textLower.indexOf(query);
 
-        if (queryPos == -1) {
-            context.drawTextWithShadow(this.textRenderer, label, x, y, Constants.WHITE_COLOR);
-            return;
+        boolean[] highlighted = new boolean[text.length()];
+        int pos = 0;
+        while ((pos = textLower.indexOf(query, pos)) != -1) {
+            for (int i = pos; i < pos + query.length() && i < text.length(); i++) {
+                highlighted[i] = true;
+            }
+            pos++;
         }
-
-        String before = text.substring(0, queryPos);
-        String match = text.substring(queryPos, queryPos + query.length());
-        String after = text.substring(queryPos + query.length());
 
         int currentX = x;
-        if (!before.isEmpty()) {
-            context.drawTextWithShadow(this.textRenderer, Text.literal(before), currentX, y, Constants.WHITE_COLOR);
-            currentX += this.textRenderer.getWidth(before);
-        }
+        int start = 0;
 
-        context.drawTextWithShadow(this.textRenderer, Text.literal(match), currentX, y, 0xFFFFFF00);
-        currentX += this.textRenderer.getWidth(match);
+        while (start < text.length()) {
+            int end = start;
+            boolean isHighlighted = highlighted[start];
 
-        if (!after.isEmpty()) {
-            context.drawTextWithShadow(this.textRenderer, Text.literal(after), currentX, y, Constants.WHITE_COLOR);
+            while (end < text.length() && highlighted[end] == isHighlighted) {
+                end++;
+            }
+
+            String segment = text.substring(start, end);
+            int color = isHighlighted ? 0xFFFFFF00 : Constants.WHITE_COLOR;
+            context.drawTextWithShadow(this.textRenderer, Text.literal(segment), currentX, y, color);
+            currentX += this.textRenderer.getWidth(segment);
+            start = end;
         }
     }
 

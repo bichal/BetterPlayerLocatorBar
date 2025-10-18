@@ -84,9 +84,6 @@ public class Hud {
 
     public static void tick(MinecraftClient client) {
         if (client.world == null) return;
-        long time = client.world.getTime();
-        int updateRate = CONFIG.getPositionUpdateRateTicks();
-        if (updateRate > 0 && time % updateRate == 0) updateRenderCache(client);
         if (client.player != null) {
             deathMarkers.removeIf(marker -> {
                 if (client.player.getPos().distanceTo(marker) < 10) {
