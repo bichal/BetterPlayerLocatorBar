@@ -1,65 +1,50 @@
-# Better Player Locator Bar
+<h1 align="center">Better Player Locator Bar</h1>
 
-[![Version](https://badgen.net/badge/version/1.1.0/blue)](https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.0)  
-[![License](https://badgen.net/badge/license/CC-BY-NC-4.0/grey)](LICENSE)  
-[![Modrinth](https://badgen.net/badge/Platform/Modrinth/green)](https://modrinth.com/mod/bplb)  
-[![CurseForge](https://badgen.net/badge/Platform/CurseForge/orange)](https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar)  
-[![Issues](https://badgen.net/badge/Issues/GitHub/red)](https://github.com/bichal/BetterPlayerLocatorBar/issues)
+<p align="center">
+    <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/Version%201%2E1%2E0-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/CC%E2%80%93BY%E2%80%93NC%E2%80%93SA%E2%80%934%2E0-1A1A1A?logo=creativecommons&logoColor=fff&style=for-the-badge" alt="License"/></a>
+    <a href="https://modrinth.com/mod/bplb"><img src="https://img.shields.io/badge/Modrinth-00AF5C?logo=modrinth&logoColor=fff&style=for-the-badge" alt="Modrinth"/></a>
+    <a href="https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar"><img src="https://img.shields.io/badge/CurseForge-F16436?logo=curseforge&logoColor=fff&style=for-the-badge" alt="CurseForge"/></a>
+    <a href="https://github.com/bichal/BetterPlayerLocatorBar/issues"><img src="https://img.shields.io/badge/Have%20An%20Issue%3F-BE3939?logo=theconversation&logoColor=fff&style=for-the-badge" alt="Issues"/></a>
+</p>
 
-Better Player Locator Bar is a Fabric mod for Minecraft 1.21–1.21.1. It shows nearby players in a HUD bar above the XP bar. You can customize icons, borders, fades, and more.
-
----
+Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above the XP bar. You can customize icons, borders, fades, and more.
 
 ## 🎯 Features
 
 - HUD bar with icons representing nearby players and death markers
-- Customizable icon style: `default`, `minimal`, `mojang`, `bowtie`
+- Customizable icon style: `default`, `minimal`, `mojang`, `bowtie (shift + click)`
 - Icon border styles: `rounded` or `squared`
-- Option to show player heads
-- Vertical arrows when height difference is significant
+- Option to show player names and heads
+- Vertical arrows when height difference is significant by player camera or position
 - Distance-based fading (configurable start, end, alpha min/max)
-- Smooth interpolation using easing (`easeInOutQuad`)
+- Smooth interpolation using easing
 - Asset detection: scans included textures in `sprites/hud/`
 - Client/server sync via handshake and position payloads; fallback to local mode
-- Config UI (via `F8`), preview, per-player overrides (color, icon, border, head)
+- Config UI (`F8` in game or use `ModMenu`), preview, per-player overrides (color, icon, border...)
 - Death markers persistence and cleanup
 
----
-
-## 📸 Screenshots
-
-![HUD](https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9)  
-![HUD with names](https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d)
-
----
+## 📸 Gallery
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9" alt="HUD"/>
+    <img src="https://github.com/user-attachments/assets/f590d482-1618-4b24-aa97-cc2086653c3d" alt="HUD with NameTag"/>
+    <img src="./media/ConfigScreenPreview.gif" alt="ConfigScreenPreview"/>
+</p>
 
 ## Requirements
 
-- Minecraft 1.21 – 1.21.1
+- Minecraft 1.21 - 1.21.1
 - Fabric Loader ≥ 0.14.2
 - Java 21
 - Fabric API
 
----
-
 ## Installation
 
 1. Install Fabric Loader and Fabric API
-2. Place `bplb-1.1.0.jar` into your `mods/` folder
+2. Place `better-player-locator-bar-1.1.0-fabric+1.21(.1)mc.jar` into your `mods/` folder
 3. Run Minecraft
 
----
-
-## Usage
-
-- Hold `Tab` to show names (optional)
-- Press `F8` to open the mod configuration screen
-- HUD adjusts automatically if icons are present
-- Mod auto-switches between synchronized (server) and local mode
-
----
-
-## Configuration options (important)
+## Configuration options
 
 - `modEnabled` — enable/disable mod
 - `maxVisibleIcons` — how many icons to render
@@ -71,49 +56,10 @@ Better Player Locator Bar is a Fabric mod for Minecraft 1.21–1.21.1. It shows 
 - `inherit_border_color` — border inherits darker tint
 - `death_marker_type`, `death_marker_border_type`, `death_marker_inherit_border_color`
 
-These are exposed via the `Config` class and in the UI (`ConfigScreen`).
-
----
-
-## Architecture summary
-
-- `Main` / `BetterPlayerLocatorBar`
-- `client/` (HUD, keybinds, asset scanning, rendering)
-- `network/` (payload definitions)
-- `server/` (server broadcasting)
-- `config/` (config class + UI)
-- `resources/` (fabric.mod.json, mixins, assets, languages)
-
-The `sprites/hud/` folder includes all icon, border, arrow, tag, and death marker assets (see earlier file listing).
-
----
-
-## Network API overview
-
-- `HandshakePayload` — indicates server mod presence and OP rights
-- `PositionUpdatePayload` — sends lists of player positions, new and disconnected players
-- Client receives and updates caches; if server drops updates, client switches to local mode
-
----
-
 ## Known Issues & Limitations
 
-- If `usercache.json` is missing, some name resolution may fail
-- Fallback to default skin (“steve”) if texture override fails
-- Some combinations of armor/helmet may break head rendering logic
-- Dependence on Fabric API versions; use latest
-
----
+- Only works in Fabric, no Forge/NeoForge/... support (yet? 🥀)
 
 ## License
 
-CC-BY-NC-4.0
-
----
-
-## Links
-
-- Repository: https://github.com/bichal/BetterPlayerLocatorBar
-- Issues: https://github.com/bichal/BetterPlayerLocatorBar/issues
-- Modrinth: https://modrinth.com/mod/bplb
-- CurseForge: https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar  
+The contents of this repository and mod, are licensed under a <a href="LICENSE">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. ([Canonical URL](https://creativecommons.org/licenses/by-nc-sa/4.0/))

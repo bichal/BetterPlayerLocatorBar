@@ -1,6 +1,7 @@
 package net.bichal.bplb.client;
 
 import net.bichal.bplb.client.render.AssetScanner;
+import net.bichal.bplb.command.ConfigCommand;
 import net.bichal.bplb.config.Config;
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.util.Constants;
@@ -78,6 +79,7 @@ public class Client implements ClientModInitializer {
         Hud.registerEvents();
         Config.getInstance();
         Keybinds.register();
+        ConfigCommand.register();
 
         ClientPlayNetworking.registerGlobalReceiver(HandshakePayload.ID, (payload, context) -> {
             isLocalMode = false;
