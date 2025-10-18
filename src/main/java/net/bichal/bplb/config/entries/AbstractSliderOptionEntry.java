@@ -21,6 +21,7 @@ public abstract class AbstractSliderOptionEntry extends ScrollableListWidget.Ent
         this.client = client;
         this.label = Text.translatable(Constants.CONFIG_KEY_PREFIX + key);
         this.slider = slider;
+        this.slider.updateMessage();
     }
 
     @Override
