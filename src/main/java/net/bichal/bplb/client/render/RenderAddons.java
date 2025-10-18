@@ -116,18 +116,13 @@ public class RenderAddons {
         int tintColor = ColorUtils.darkerColoring(color);
         context.getMatrices().push();
         context.getMatrices().translate(x, y, 0);
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 0);
         RenderUtils.setShaderColorRGBA(tintColor, alpha);
         RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        context.getMatrices().pop();
-        context.getMatrices().push();
         context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 1);
         context.getMatrices().scale(scale, scale, 1.0f);
         int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
         context.drawText(client.textRenderer, text, -textWidth / 2, -client.textRenderer.fontHeight / 2, textColor, true);
-        context.getMatrices().pop();
         context.getMatrices().pop();
     }
 
