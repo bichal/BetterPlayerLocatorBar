@@ -2,6 +2,7 @@ package net.bichal.bplb.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.loader.api.FabricLoader;
@@ -13,9 +14,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Config {
@@ -25,34 +24,63 @@ public class Config {
     private final Map<String, PlayerAppearance> playerConfigs = new HashMap<>();
     private static Config instance;
     private final Map<String, Boolean> playerExpandedStates = new HashMap<>();
-    private float lerpSpeed = 0.65f;
-    private boolean applyHotbarOffset = true;
-    private boolean alwaysShowPlayerHeads = false;
-    private boolean alwaysShowPlayerNames = false;
-    private int fadeStartDistance = 512;
-    private int fadeEndDistance = 4096;
-    private float fadeAlphaMax = 1.0f;
-    private float fadeAlphaMin = 0.25f;
-    private String nameBorderStyle = "rounded";
-    private String iconBorderStyle = "rounded";
-    private String iconBorderType = "default";
-    private boolean inheritBorderColor = true;
-    private int iconSize = 4;
-    private String dotType = "default";
-    private String arrowType = "default";
-    private String deathMarkerType = "default";
-    private int deathMarkerColor = 0xFF4c4c;
-    private String heightDifferenceMode = "PLAYER";
-    private boolean modEnabled = true;
-    private int maxVisibleIcons = 100;
-    private int positionUpdateRateTicks = 0;
-    private float nameplateScale = 1.0f;
-    private String deathMarkerBorderStyle = "rounded";
-    private String deathMarkerBorderType = "default";
-    private boolean deathMarkerInheritBorderColor = true;
-    private int verticalPadding = 2;
-    private boolean adjustToFov = false;
-    private float fovMultiplier = 1.0f;
+    private float lerpSpeed;
+    private boolean applyHotbarOffset;
+    private boolean alwaysShowPlayerHeads;
+    private boolean alwaysShowPlayerNames;
+    private int fadeStartDistance;
+    private int fadeEndDistance;
+    private float fadeAlphaMax;
+    private float fadeAlphaMin;
+    private String nameBorderStyle;
+    private String iconBorderStyle;
+    private String iconBorderType;
+    private boolean inheritBorderColor;
+    private int iconSize;
+    private String dotType;
+    private String arrowType;
+    private String deathMarkerType;
+    private int deathMarkerColor;
+    private String heightDifferenceMode;
+    private boolean modEnabled;
+    private int maxVisibleIcons;
+    private float nameplateScale;
+    private String deathMarkerBorderStyle;
+    private String deathMarkerBorderType;
+    private boolean deathMarkerInheritBorderColor;
+    private int verticalPadding;
+    private boolean adjustToFov;
+    private float fovMultiplier;
+
+    public Config() {
+        this.lerpSpeed = 0.65f;
+        this.applyHotbarOffset = true;
+        this.alwaysShowPlayerHeads = false;
+        this.alwaysShowPlayerNames = false;
+        this.fadeStartDistance = 512;
+        this.fadeEndDistance = 4096;
+        this.fadeAlphaMax = 1.0f;
+        this.fadeAlphaMin = 0.25f;
+        this.nameBorderStyle = "rounded";
+        this.iconBorderStyle = "rounded";
+        this.iconBorderType = "default";
+        this.inheritBorderColor = true;
+        this.iconSize = 4;
+        this.dotType = "default";
+        this.arrowType = "default";
+        this.deathMarkerType = "default";
+        this.deathMarkerColor = 0xFF4c4c;
+        this.heightDifferenceMode = "PLAYER";
+        this.modEnabled = true;
+        this.maxVisibleIcons = 100;
+        this.nameplateScale = 1.0f;
+        this.deathMarkerBorderStyle = "rounded";
+        this.deathMarkerBorderType = "default";
+        this.deathMarkerInheritBorderColor = true;
+        this.verticalPadding = 0;
+        this.adjustToFov = false;
+        this.fovMultiplier = 1.0f;
+    }
 
     public static void copy(Config source, Config target) {
         target.fadeEndDistance = source.fadeEndDistance;
@@ -76,7 +104,6 @@ public class Config {
         target.heightDifferenceMode = source.heightDifferenceMode;
         target.modEnabled = source.modEnabled;
         target.verticalPadding = source.verticalPadding;
-        target.positionUpdateRateTicks = source.positionUpdateRateTicks;
         target.nameplateScale = source.nameplateScale;
         target.deathMarkerBorderStyle = source.deathMarkerBorderStyle;
         target.deathMarkerBorderType = source.deathMarkerBorderType;
@@ -94,18 +121,112 @@ public class Config {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 Config loaded = GSON.fromJson(reader, Config.class);
                 if (loaded != null) {
+                    loaded.validate();
                     loadPlayers(loaded);
+                    loaded.save();
                     Constants.LOGGER.info("[{}] Config loaded successfully", Constants.MOD_NAME_SHORT);
                     return loaded;
                 }
             } catch (IOException e) {
                 Constants.LOGGER.error("Error loading config file", e);
+            } catch (JsonParseException e) {
+                Constants.LOGGER.error("Config file is corrupted, creating backup and resetting to defaults", e);
+                backupAndDelete();
+            } catch (Exception e) {
+                Constants.LOGGER.error("Unexpected error loading config, resetting to defaults", e);
+                backupAndDelete();
             }
         }
         Config newConfig = new Config();
         newConfig.save();
         Constants.LOGGER.info("[{}] Created new config with defaults", Constants.MOD_NAME_SHORT);
         return newConfig;
+    }
+
+    private static void backupAndDelete() {
+        try {
+            File backup = new File(CONFIG_FILE.getParent(), "options.json.backup." + System.currentTimeMillis());
+            java.nio.file.Files.copy(CONFIG_FILE.toPath(), backup.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            if (!CONFIG_FILE.delete()) Constants.LOGGER.warn("Failed to delete corrupted config file");
+            Constants.LOGGER.info("Backup saved to: {}", backup.getAbsolutePath());
+        } catch (IOException ex) {
+            Constants.LOGGER.error("Failed to backup corrupted config", ex);
+        }
+    }
+
+    private void validate() {
+        List<String> correctedFields = new ArrayList<>();
+
+        correctedFields.addAll(validateFloat("lerpSpeed", v -> lerpSpeed = v, lerpSpeed, 0.1f, 1.0f, 0.65f));
+        correctedFields.addAll(validateInt("fadeStartDistance", v -> fadeStartDistance = v, fadeStartDistance, 5, 9995, 512));
+        correctedFields.addAll(validateInt("fadeEndDistance", v -> fadeEndDistance = v, fadeEndDistance, 10, 10000, 4096));
+        correctedFields.addAll(validateFloat("fadeAlphaMax", v -> fadeAlphaMax = v, fadeAlphaMax, 0.01f, 1.0f, 1.0f));
+        correctedFields.addAll(validateFloat("fadeAlphaMin", v -> fadeAlphaMin = v, fadeAlphaMin, 0.0f, 1.0f, 0.25f));
+        correctedFields.addAll(validateInt("iconSize", v -> iconSize = v, iconSize, 1, 4, 4));
+        correctedFields.addAll(validateInt("maxVisibleIcons", v -> maxVisibleIcons = v, maxVisibleIcons, 1, 200, 100));
+        correctedFields.addAll(validateFloat("nameplateScale", v -> nameplateScale = v, nameplateScale, 0.5f, 1.5f, 1.0f));
+        correctedFields.addAll(validateInt("verticalPadding", v -> verticalPadding = v, verticalPadding, 0, 10, 2));
+        correctedFields.addAll(validateFloat("fovMultiplier", v -> fovMultiplier = v, fovMultiplier, 0.5f, 2.0f, 1.0f));
+
+        if (fadeStartDistance >= fadeEndDistance) {
+            fadeStartDistance = 512;
+            fadeEndDistance = 4096;
+            correctedFields.add("fadeStartDistance/fadeEndDistance (range)");
+        }
+
+        if (fadeAlphaMin >= fadeAlphaMax) {
+            fadeAlphaMin = 0.25f;
+            fadeAlphaMax = 1.0f;
+            correctedFields.add("fadeAlphaMin/fadeAlphaMax (range)");
+        }
+
+        correctedFields.addAll(validateString("nameBorderStyle", v -> nameBorderStyle = v, nameBorderStyle, List.of("rounded", "squared"), "rounded"));
+        correctedFields.addAll(validateString("iconBorderStyle", v -> iconBorderStyle = v, iconBorderStyle, List.of("rounded", "squared"), "rounded"));
+        correctedFields.addAll(validateString("iconBorderType", v -> iconBorderType = v, iconBorderType, List.of("default", "minimal"), "default"));
+        correctedFields.addAll(validateString("deathMarkerBorderStyle", v -> deathMarkerBorderStyle = v, deathMarkerBorderStyle, List.of("rounded", "squared"), "rounded"));
+        correctedFields.addAll(validateString("deathMarkerBorderType", v -> deathMarkerBorderType = v, deathMarkerBorderType, List.of("default", "minimal"), "default"));
+        correctedFields.addAll(validateString("heightDifferenceMode", v -> heightDifferenceMode = v, heightDifferenceMode != null ? heightDifferenceMode.toLowerCase() : null, List.of("player", "camera"), "player"));
+
+        correctedFields.addAll(validateNotEmpty("dotType", v -> dotType = v, dotType));
+        correctedFields.addAll(validateNotEmpty("arrowType", v -> arrowType = v, arrowType));
+        correctedFields.addAll(validateNotEmpty("deathMarkerType", v -> deathMarkerType = v, deathMarkerType));
+
+        boolean removed = playerConfigs.entrySet().removeIf(entry -> entry.getKey() == null || entry.getKey().isEmpty() || entry.getValue() == null);
+        if (removed) correctedFields.add("playerConfigs (removed invalid entries)");
+
+        if (!correctedFields.isEmpty()) Constants.LOGGER.warn("Corrected invalid config fields: {}", String.join(", ", correctedFields));
+    }
+
+    private List<String> validateFloat(String name, Consumer<Float> setter, float value, float min, float max, float defaultValue) {
+        if (value < min || value > max || Float.isNaN(value) || Float.isInfinite(value)) {
+            setter.accept(defaultValue);
+            return List.of(name);
+        }
+        return List.of();
+    }
+
+    private List<String> validateInt(String name, Consumer<Integer> setter, int value, int min, int max, int defaultValue) {
+        if (value < min || value > max) {
+            setter.accept(defaultValue);
+            return List.of(name);
+        }
+        return List.of();
+    }
+
+    private List<String> validateString(String name, Consumer<String> setter, String value, List<String> validValues, String defaultValue) {
+        if (value == null || !validValues.contains(value)) {
+            setter.accept(defaultValue);
+            return List.of(name);
+        }
+        return List.of();
+    }
+
+    private List<String> validateNotEmpty(String name, Consumer<String> setter, String value) {
+        if (value == null || value.isEmpty()) {
+            setter.accept("default");
+            return List.of(name);
+        }
+        return List.of();
     }
 
     private static void loadPlayers(Config config) {
@@ -214,9 +335,9 @@ public class Config {
     public boolean isAlwaysShowPlayerNames() { return alwaysShowPlayerNames; }
     public void setAlwaysShowPlayerNames(boolean value) { set(value, v -> this.alwaysShowPlayerNames = v); }
     public float getFadeAlphaMax() { return fadeAlphaMax; }
-    public void setFadeAlphaMax(float value) { set(value, v -> this.fadeAlphaMax = v); }
+    public void setFadeAlphaMax(float value) { float clampedValue = MathHelper.clamp(value, this.fadeAlphaMin + 0.01f, 1.0f); set(clampedValue, v -> this.fadeAlphaMax = v); }
     public float getFadeAlphaMin() { return fadeAlphaMin; }
-    public void setFadeAlphaMin(float value) { set(value, v -> this.fadeAlphaMin = v); }
+    public void setFadeAlphaMin(float value) { float clampedValue = MathHelper.clamp(value, 0.0f, this.fadeAlphaMax - 0.01f); set(clampedValue, v -> this.fadeAlphaMin = v); }
     public int getIconSize() { return iconSize; }
     public void setIconSize(int value) { set(value, v -> this.iconSize = v); }
     public String getNameBorderStyle() { return nameBorderStyle; }
@@ -243,8 +364,6 @@ public class Config {
     public void setModEnabled(boolean value) { set(value, v -> this.modEnabled = v); }
     public int getVerticalPadding() { return verticalPadding; }
     public void setVerticalPadding(int value) { set(value, v -> this.verticalPadding = v); }
-    public int getPositionUpdateRateTicks() { return positionUpdateRateTicks; }
-    public void setPositionUpdateRateTicks(int value) { set(value, v -> this.positionUpdateRateTicks = v); }
     public float getNameplateScale() { return nameplateScale; }
     public void setNameplateScale(float value) { set(value, v -> this.nameplateScale = v); }
     public String getDeathMarkerBorderStyle() { return deathMarkerBorderStyle; }
