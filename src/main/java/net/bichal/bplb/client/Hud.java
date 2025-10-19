@@ -113,6 +113,10 @@ public class Hud {
             playerPositions.clear();
             currentIconPositions.clear();
             deathMarkers.clear();
+            lastKnownPositions.clear();
+            lastPositionUpdateTime.clear();
+            Constants.LOGGER.info("[{}] Cleared all caches on join", Constants.MOD_NAME_SHORT);
+
             ClientPlayNetworking.registerReceiver(PositionUpdatePayload.ID, (payload, context) -> {
                 Client.updateLastServerUpdateTime();
                 client.execute(() -> {
@@ -134,6 +138,8 @@ public class Hud {
                             PlayerPosition existingData = playerPositions.get(newPlayer.uuid());
                             if (existingData != null) {
                                 playerPositions.put(newPlayer.uuid(), new PlayerPosition(newPlayer.uuid(), newPlayer.name(), existingData.x(), existingData.y(), existingData.z()));
+                            } else {
+                                playerPositions.put(newPlayer.uuid(), new PlayerPosition(newPlayer.uuid(), newPlayer.name(), 0, 0, 0));
                             }
                         }
                     }
@@ -143,7 +149,13 @@ public class Hud {
                         for (PositionUpdatePayload.PositionData posUpdate : positionsList) {
                             if (posUpdate == null || posUpdate.uuid() == null) continue;
                             PlayerPosition existingPosData = playerPositions.get(posUpdate.uuid());
-                            String name = existingPosData != null ? existingPosData.name() : "Player";
+                            String name;
+                            if (existingPosData != null) {
+                                name = existingPosData.name();
+                            } else {
+                                PlayerEntity localPlayer = client.world != null ? client.world.getPlayerByUuid(posUpdate.uuid()) : null;
+                                name = localPlayer != null ? localPlayer.getName().getString() : "Player";
+                            }
                             playerPositions.put(posUpdate.uuid(), new PlayerPosition(posUpdate.uuid(), name, posUpdate.x(), posUpdate.y(), posUpdate.z()));
                         }
                     }
@@ -183,7 +195,7 @@ public class Hud {
             allEntries.add(new RenderEntry(markerPos, marker, distance, 1.0f, true));
         }
 
-        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
+        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance));
 
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

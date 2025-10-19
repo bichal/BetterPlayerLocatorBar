@@ -23,14 +23,12 @@ public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionDa
         for (int i = 0; i < newPlayersSize; i++) {
             newPlayers.add(new PlayerInfo(buf.readUuid(), buf.readString(16)));
         }
-
         int positionsSize = buf.readVarInt();
         List<PositionData> positions = new ArrayList<>(positionsSize);
         for (int i = 0; i < positionsSize; i++) {
             byte precision = buf.readByte();
             UUID uuid = buf.readUuid();
             double x, y, z;
-
             switch (precision) {
                 case PRECISION_ULTRA -> {
                     x = buf.readInt() / 100.0;
@@ -48,15 +46,13 @@ public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionDa
                     z = buf.readInt();
                 }
             }
-            positions.add(new PositionData(uuid, x, y, z));
+            positions.add(new PositionData(uuid, x, y, z, 0.0));
         }
-
         int disconnectedSize = buf.readVarInt();
         List<UUID> disconnected = new ArrayList<>(disconnectedSize);
         for (int i = 0; i < disconnectedSize; i++) {
             disconnected.add(buf.readUuid());
         }
-
         return new PositionUpdatePayload(newPlayers, positions, disconnected);
     }
 
@@ -72,13 +68,11 @@ public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionDa
             buf.writeUuid(player.uuid());
             buf.writeString(player.name(), 16);
         }
-
         buf.writeVarInt(positions.size());
         for (PositionData pos : positions) {
             byte precision = determinePrecision(pos.distance());
             buf.writeByte(precision);
             buf.writeUuid(pos.uuid());
-
             switch (precision) {
                 case PRECISION_ULTRA -> {
                     buf.writeInt((int) (pos.x() * 100.0));
@@ -97,7 +91,6 @@ public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionDa
                 }
             }
         }
-
         buf.writeVarInt(disconnectedPlayers.size());
         for (UUID uuid : disconnectedPlayers) {
             buf.writeUuid(uuid);
@@ -113,8 +106,5 @@ public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionDa
     }
 
     public record PositionData(UUID uuid, double x, double y, double z, double distance) {
-        public PositionData(UUID uuid, double x, double y, double z) {
-            this(uuid, x, y, z, 0.0);
-        }
     }
 }
