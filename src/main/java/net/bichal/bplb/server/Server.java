@@ -183,15 +183,13 @@ public class Server implements DedicatedServerModInitializer {
                 CachedPlayerData cached = playerDataCache.get(uuid);
                 if (cached != null && cached.isValid(now)) {
                     if (cached.shouldHide) continue;
-
                     double distance = DistanceUtils.calculateDistance(vx, vy, vz, cached.x, cached.y, cached.z);
                     if (distance > ServerConfig.getInstance().maxRelevantDistance()) {
                         viewerDistCache.remove(uuid);
                         continue;
                     }
-
                     viewerDistCache.put(uuid, distance);
-                    positions.add(new PositionUpdatePayload.PositionData(uuid, cached.x, cached.y, cached.z, distance));
+                    positions.add(new PositionUpdatePayload.PositionData(uuid, pos.x, pos.y, pos.z, distance));
                     continue;
                 }
 
@@ -200,7 +198,8 @@ public class Server implements DedicatedServerModInitializer {
                 if (viewer.getWorld() != targetPlayer.getWorld()) continue;
 
                 boolean shouldHide = shouldHideTarget(targetPlayer);
-                playerDataCache.put(uuid, new CachedPlayerData(pos.x, pos.y, pos.z, shouldHide));
+                String playerName = targetPlayer.getName().getString();
+                playerDataCache.put(uuid, new CachedPlayerData(pos.x, pos.y, pos.z, shouldHide, playerName));
 
                 if (shouldHide) continue;
                 if (targetPlayer.isSpectator()) continue;
@@ -210,7 +209,6 @@ public class Server implements DedicatedServerModInitializer {
                     viewerDistCache.remove(uuid);
                     continue;
                 }
-
                 viewerDistCache.put(uuid, distance);
                 playerTracker.updatePlayer(targetPlayer);
                 positions.add(new PositionUpdatePayload.PositionData(uuid, pos.x, pos.y, pos.z, distance));
@@ -232,13 +230,15 @@ public class Server implements DedicatedServerModInitializer {
     private static class CachedPlayerData {
         final double x, y, z;
         final boolean shouldHide;
+        final String playerName;
         final long timestamp;
 
-        CachedPlayerData(double x, double y, double z, boolean shouldHide) {
+        CachedPlayerData(double x, double y, double z, boolean shouldHide, String playerName) {
             this.x = x;
             this.y = y;
             this.z = z;
             this.shouldHide = shouldHide;
+            this.playerName = playerName;
             this.timestamp = System.currentTimeMillis();
         }
 
