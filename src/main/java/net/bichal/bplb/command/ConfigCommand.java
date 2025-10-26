@@ -3,6 +3,7 @@ package net.bichal.bplb.command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.bichal.bplb.config.Config;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -46,35 +47,25 @@ public class ConfigCommand {
     public static void register() {
         Constants.LOGGER.info("[{}] Registering client configuration commands", Constants.MOD_NAME_SHORT);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(
-                    CommandManager.literal("betterplayerlocatorbar")
-                            .then(CommandManager.literal("config")
-                                    .then(CommandManager.argument("option", StringArgumentType.word())
-                                            .suggests((ctx, builder) -> suggestOptions(builder))
-                                            .executes(ctx -> getOption(ctx.getSource(), StringArgumentType.getString(ctx, "option")))
-                                            .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                                    .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
-                                                    .executes(ctx -> setOption(ctx.getSource(), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value")))
-                                            )
-                                    )
-                            )
-            );
-
-            dispatcher.register(
-                    CommandManager.literal("bplb")
-                            .then(CommandManager.literal("config")
-                                    .then(CommandManager.argument("option", StringArgumentType.word())
-                                            .suggests((ctx, builder) -> suggestOptions(builder))
-                                            .executes(ctx -> getOption(ctx.getSource(), StringArgumentType.getString(ctx, "option")))
-                                            .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                                    .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
-                                                    .executes(ctx -> setOption(ctx.getSource(), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value")))
-                                            )
-                                    )
-                            )
-            );
+            dispatcher.getRoot().addChild(createConfigCommand("betterplayerlocatorbar"));
+            dispatcher.getRoot().addChild(createConfigCommand("bplb"));
         });
         Constants.LOGGER.info("[{}]  Client configuration commands registered", Constants.MOD_NAME_SHORT);
+    }
+
+
+    private static LiteralCommandNode<ServerCommandSource> createConfigCommand(String rootLiteral) {
+        return CommandManager.literal(rootLiteral)
+                .then(CommandManager.literal("config")
+                        .then(CommandManager.argument("option", StringArgumentType.word())
+                                .suggests((ctx, builder) -> suggestOptions(builder))
+                                .executes(ctx -> getOption(ctx.getSource(), StringArgumentType.getString(ctx, "option")))
+                                .then(CommandManager.argument("value", StringArgumentType.greedyString())
+                                        .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
+                                        .executes(ctx -> setOption(ctx.getSource(), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value")))
+                                )
+                        )
+                ).build();
     }
 
     private static CompletableFuture<Suggestions> suggestOptions(SuggestionsBuilder builder) {

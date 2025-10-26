@@ -107,9 +107,9 @@ public class RenderAddons {
         Identifier nameplateTexture = TextureManager.getNameplateTexture(borderStyle);
         int tintColor = ColorUtils.darkerColoring(color);
         RenderUtils.withMatrixPush(context, x, y, () -> {
-            RenderUtils.setShaderColorRGBA(tintColor, alpha);
-            RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            int alphaInt = (int) (alpha * 255);
+            int finalColor = (alphaInt << 24) | (tintColor & 0xFFFFFF);
+            RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight, finalColor);
             context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 1);
             context.getMatrices().scale(scale, scale, 1.0f);
             int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
