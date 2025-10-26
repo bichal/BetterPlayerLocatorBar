@@ -42,7 +42,7 @@ public class Hud {
     private static final Map<Object, Vec3d> lastKnownPositions = new HashMap<>();
     private static final Map<Object, Long> lastPositionUpdateTime = new HashMap<>();
     private static boolean shouldApplyHudOffset = false;
-    private static final float MIN_Z_DEPTH = 100f;
+    private static final float MIN_Z_DEPTH = 500f;
 
     private static void updateRenderCache(MinecraftClient client) {
         if (client.player == null) {
@@ -175,7 +175,6 @@ public class Hud {
             shouldApplyHudOffset = false;
             return;
         }
-
         final int barX = (context.getScaledWindowWidth() - Constants.BAR_WIDTH) / 2;
         final int barY = context.getScaledWindowHeight() + Constants.BAR_Y_OFFSET;
         final boolean showDetails = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
@@ -195,7 +194,7 @@ public class Hud {
             allEntries.add(new RenderEntry(markerPos, marker, distance, 1.0f, true));
         }
 
-        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance));
+        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
 
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -204,9 +203,14 @@ public class Hud {
         for (int i = 0; i < allEntries.size(); i++) {
             RenderEntry entry = allEntries.get(i);
             float baseZ = calculateBaseZ(i, totalVisibleIcons);
-            renderBarIcon(context, entry.pos, entry.key, barX, barY, baseZ, showDetails, entry.alpha);
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            context.getMatrices().push();
+            try {
+                renderBarIcon(context, entry.pos, entry.key, barX, barY, baseZ, showDetails, entry.alpha);
+            } finally {
+                context.getMatrices().pop();
+            }
         }
-
         shouldApplyHudOffset = hasVisibleIconsInVisibleRange(client);
         RenderSystem.disableBlend();
     }
@@ -285,6 +289,7 @@ public class Hud {
             Config.PlayerAppearance appearance = isDeathMarker ? null : CONFIG.getPlayerConfig(pos.name());
             String borderStyle;
             int color;
+
             if (isDeathMarker) {
                 color = CONFIG.getDeathMarkerColor();
                 borderStyle = CONFIG.getDeathMarkerBorderStyle();
@@ -304,10 +309,12 @@ public class Hud {
                 RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, Constants.ICON_BASE_SIZE, showHead, CONFIG, finalAlpha);
             }
 
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             renderHeightIndicator(context, pos, iconCenterX, (int) (topLeftY + Constants.ICON_BASE_SIZE / 2f), finalAlpha, appearance);
 
             context.getMatrices().translate(0, 0, 1);
             RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, nameplateAlpha, CONFIG.getNameplateScale());
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         });
     }
 
@@ -416,12 +423,9 @@ public class Hud {
 
     private static float calculateBaseZ(int index, int totalVisibleIcons) {
         float minZ = MIN_Z_DEPTH;
+        if (totalVisibleIcons <= 1) return minZ;
 
-        if (totalVisibleIcons <= 1) {
-            return minZ;
-        }
-
-        float maxAvailableZ = 500f;
+        float maxAvailableZ = 1000f;
         float availableRange = maxAvailableZ - minZ;
         float spacingPerIcon = availableRange / (totalVisibleIcons - 1);
 
