@@ -30,9 +30,19 @@
     "BetterPlayerLocateBar.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.14.2",
-    "minecraft": ">=1.21 <=1.21.1",
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.2 <=1.21.3",
     "java": ">=21",
     "fabric-api": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "modmenu": {
+        "links": {
+          "modmenu.modrinth": "https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar",
+          "modmenu.curseforge": "https://modrinth.com/mod/bplb"
+        }
+      }
+    }
   }
 }

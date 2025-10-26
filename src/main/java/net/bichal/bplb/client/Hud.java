@@ -21,7 +21,6 @@ import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -196,9 +195,6 @@ public class Hud {
 
         allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
 
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
         int totalVisibleIcons = allEntries.size();
         for (int i = 0; i < allEntries.size(); i++) {
             RenderEntry entry = allEntries.get(i);
@@ -212,7 +208,6 @@ public class Hud {
             }
         }
         shouldApplyHudOffset = hasVisibleIconsInVisibleRange(client);
-        RenderSystem.disableBlend();
     }
 
     private record RenderEntry(PlayerPosition pos, Object key, double distance, float alpha, boolean isDeathMarker) {}
@@ -428,8 +423,7 @@ public class Hud {
         float maxAvailableZ = 1000f;
         float availableRange = maxAvailableZ - minZ;
         float spacingPerIcon = availableRange / (totalVisibleIcons - 1);
-
-        return minZ + (index * spacingPerIcon);
+        return maxAvailableZ - (index * spacingPerIcon);
     }
 
     private static double getRelativeAngle(PlayerEntity viewer, Vec3d smoothedPos) {
@@ -457,7 +451,7 @@ public class Hud {
     private static boolean shouldShowArrow(MinecraftClient client, PlayerPosition pos, boolean up) {
         if (client.player == null) return false;
 
-        if (CONFIG.getHeightDifferenceMode().equals("PLAYER")) {
+        if (CONFIG.getHeightDifferenceMode().equalsIgnoreCase("player")) {
             double diff = pos.y - (client.player.getY() + 1.0);
             return up ? diff > 5.5 : diff < -5.5;
         }
