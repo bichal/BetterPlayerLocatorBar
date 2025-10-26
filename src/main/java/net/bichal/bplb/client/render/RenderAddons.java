@@ -39,13 +39,9 @@ public class RenderAddons {
         String dotId = appearance != null && appearance.dotType != null ? appearance.dotType : config.getDotType();
         String borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : config.getIconBorderStyle();
         int color = appearance != null && appearance.color != null ? appearance.color : generateColorFromUUID(playerUuid);
-        try {
-            renderIcon(context, x, y, size, alpha, dotId, borderStyle, config.getIconBorderType(), color, showHead ? 0 : textureIndex, config);
-            String textureOverride = appearance != null ? appearance.textureHeadOverride : null;
-            renderPlayerHeadOverlay(context, playerUuid, x, y, size, textureOverride, showHead ? 1 * alpha : 0);
-        } finally {
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
+        renderIcon(context, x, y, size, alpha, dotId, borderStyle, config.getIconBorderType(), color, showHead ? 0 : textureIndex, config);
+        String textureOverride = appearance != null ? appearance.textureHeadOverride : null;
+        renderPlayerHeadOverlay(context, playerUuid, x, y, size, textureOverride, showHead ? 1 * alpha : 0);
     }
 
     private static void renderPlayerHeadOverlay(DrawContext context, UUID playerUuid, float x, float y, int size, String textureOverride, float alpha) {
@@ -68,18 +64,10 @@ public class RenderAddons {
         } catch (Exception e) {
             Constants.LOGGER.debug("Error loading skin texture", e);
         }
-        context.getMatrices().push();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
 
         int padding = 2;
         int texSize = Math.max(1, size - padding * 2);
-
-        context.drawTexture(RenderLayer::getGuiTextured, skin, (int) x + padding, (int) y + padding, 8, 8, texSize, texSize, 8, 8, 64, 64);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-        context.getMatrices().pop();
+        context.drawTexture(RenderLayer::getGuiTextured, skin, (int) x + padding, (int) y + padding, 8, 8, texSize, texSize, 8, 8, 64, 64, 0xFFFFFF | ((int) (alpha * 255) << 24));
     }
 
     public static void renderDeathMarker(DrawContext context, float x, float y, int size, float alpha, Config config) {
