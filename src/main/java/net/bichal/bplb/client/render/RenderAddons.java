@@ -10,7 +10,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,8 +53,7 @@ public class RenderAddons {
                 UUID overrideUuid = getUuidFromCache(textureOverride);
                 if (overrideUuid != null) {
                     AbstractClientPlayerEntity overridePlayer = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(overrideUuid);
-                    if (overridePlayer != null && overridePlayer.getSkinTextures() != null)
-                        skin = overridePlayer.getSkinTextures().texture();
+                    if (overridePlayer != null && overridePlayer.getSkinTextures() != null) skin = overridePlayer.getSkinTextures().texture();
                 }
             } else {
                 AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) client.world.getPlayerByUuid(playerUuid);
@@ -64,10 +62,14 @@ public class RenderAddons {
         } catch (Exception e) {
             Constants.LOGGER.debug("Error loading skin texture", e);
         }
-
-        int padding = 2;
-        int texSize = Math.max(1, size - padding * 2);
-        context.drawTexture(RenderLayer::getGuiTextured, skin, (int) x + padding, (int) y + padding, 8, 8, texSize, texSize, 8, 8, 64, 64, 0xFFFFFF | ((int) (alpha * 255) << 24));
+        try {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+            int padding = 2;
+            int texSize = Math.max(1, size - padding * 2);
+            context.drawTexture(skin, (int) x + padding, (int) y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
+        } finally {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
     }
 
     public static void renderDeathMarker(DrawContext context, float x, float y, int size, float alpha, Config config) {
@@ -76,12 +78,8 @@ public class RenderAddons {
         Identifier markerTexture = TextureManager.getDeathMarkerTexture(markerType);
         Identifier outlineTexture = TextureManager.getDeathMarkerOutlineTexture(markerType, config.getDeathMarkerBorderStyle(), config.getDeathMarkerBorderType());
         int borderColor = config.isDeathMarkerInheritBorderColor() ? ColorUtils.darkerColoring(color) : 0xFF000000;
-        try {
-            RenderUtils.renderTintedTexture(context, outlineTexture, x, y, size, size, borderColor, alpha);
-            RenderUtils.renderTintedTexture(context, markerTexture, x, y, size, size, color, alpha);
-        } finally {
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
+        RenderUtils.renderTintedTexture(context, outlineTexture, x, y, size, size, borderColor, alpha);
+        RenderUtils.renderTintedTexture(context, markerTexture, x, y, size, size, color, alpha);
     }
 
     public static void renderArrow(DrawContext context, String arrowType, boolean isUp, float x, float y, int size, float alpha) {
@@ -89,13 +87,21 @@ public class RenderAddons {
 
         TextureAnimator animator = textureAnimators.computeIfAbsent(arrowType + "_" + isUp, k -> new TextureAnimator(10, 4));
         Identifier arrowTexture = TextureManager.getArrowTexture(arrowType);
-        int frame = animator.getCurrentFrame();
-        float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
-        float v = frame * Constants.ICON_BASE_SIZE;
-        int alphaInt = (int) (alpha * 255);
-        int whiteWithAlpha = (alphaInt << 24) | 0xFFFFFF;
+        context.getMatrices().push();
+        try {
+            RenderSystem.enableBlend();
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
 
-        context.drawTexture(RenderLayer::getGuiTextured, arrowTexture, (int) x, (int) y, u, v, size, size, size, size, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2, whiteWithAlpha);
+            int frame = animator.getCurrentFrame();
+            float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
+            float v = frame * Constants.ICON_BASE_SIZE;
+
+            context.drawTexture(arrowTexture, (int) x, (int) y, size, size, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
+        } finally {
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            RenderSystem.disableBlend();
+            context.getMatrices().pop();
+        }
     }
 
     public static void renderNameplate(DrawContext context, String text, String borderStyle, int color, float x, float y, float alpha, float scale) {

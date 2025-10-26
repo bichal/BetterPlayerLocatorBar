@@ -1,6 +1,5 @@
 package net.bichal.bplb.config.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -23,10 +22,10 @@ public abstract class PressableWidget extends AnimatedWidget {
         updateHoverAnimation(mouseX, mouseY, 0.2f);
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         renderButtonBase(context);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
         int color = this.active ? Constants.WHITE_COLOR : Constants.GRAY_COLOR;
         this.drawMessage(context, minecraftClient.textRenderer, color | MathHelper.ceil(this.alpha * 255.0F) << 24);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderButtonBase(DrawContext context) {
