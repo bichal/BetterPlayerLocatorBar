@@ -1,5 +1,6 @@
 package net.bichal.bplb.config;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.client.Client;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.render.RenderUtils;
@@ -9,10 +10,12 @@ import net.bichal.bplb.config.entries.*;
 import net.bichal.bplb.config.widget.ButtonWidget;
 import net.bichal.bplb.config.widget.ScrollableListWidget;
 import net.bichal.bplb.config.widget.TextInputWidget;
+import net.bichal.bplb.util.ColorUtils;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -385,39 +388,40 @@ public class ConfigScreen extends Screen {
     }
 
     private void renderIconPreview(DrawContext context, int centerX, int centerY) {
-        context.getMatrices().push();
-        context.getMatrices().translate(centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, 0);
-        int textureIndex = workingConfig.getIconSize() == 4 ? 0 : 4 - workingConfig.getIconSize();
+        RenderUtils.withMatrixPush(context, centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, () -> {
+            int textureIndex = workingConfig.getIconSize() == 4 ? 0 : 4 - workingConfig.getIconSize();
 
-        String dotId = workingConfig.getDotType();
-        String borderStyle = workingConfig.getIconBorderStyle();
-        String borderType = workingConfig.getIconBorderType();
-        int color = 0xFFFFFFFF;
+            String dotId = workingConfig.getDotType();
+            String borderStyle = workingConfig.getIconBorderStyle();
+            String borderType = workingConfig.getIconBorderType();
+            int color = Constants.WHITE_COLOR;
 
-        Identifier dotTexture = net.bichal.bplb.client.render.TextureManager.getPlayerDotTexture(dotId, textureIndex);
-        Identifier outlineTexture = net.bichal.bplb.client.render.TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
+            Identifier dotTexture = TextureManager.getPlayerDotTexture(dotId, textureIndex);
+            Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
 
-        int borderColor = workingConfig.isInheritBorderColor() ? net.bichal.bplb.util.ColorUtils.darkerColoring(color) : Constants.BLACK_COLOR;
-        RenderUtils.renderTintedTexture(context, outlineTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, borderColor, 1.0f);
-        RenderUtils.renderTintedTexture(context, dotTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, color, 1.0f);
+            int borderColor = workingConfig.isInheritBorderColor() ? ColorUtils.darkerColoring(color) : Constants.BLACK_COLOR;
+            RenderUtils.renderTintedTexture(context, outlineTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, borderColor, 1.0f);
+            RenderUtils.renderTintedTexture(context, dotTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, color, 1.0f);
 
-        context.getMatrices().pop();
+        });
     }
 
     private void renderArrowPreview(DrawContext context, int centerX, int centerY, boolean isUp) {
-        context.getMatrices().push();
-        context.getMatrices().translate(centerX, centerY, 0);
-        if (previewArrowAnimator == null) previewArrowAnimator = new TextureAnimator(10, 4);
-        Identifier arrowTexture = TextureManager.getArrowTexture(workingConfig.getArrowType());
-        int frame = previewArrowAnimator.getCurrentFrame();
-        float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
-        float v = frame * Constants.ICON_BASE_SIZE;
-        context.drawTexture(arrowTexture, -PREVIEW_BASE_SIZE / 2, -PREVIEW_BASE_SIZE / 2, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
-        context.getMatrices().pop();
+        RenderUtils.withMatrixPush(context, centerX, centerY, () -> {
+            if (previewArrowAnimator == null) previewArrowAnimator = new TextureAnimator(10, 4);
+            Identifier arrowTexture = TextureManager.getArrowTexture(workingConfig.getArrowType());
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            int frame = previewArrowAnimator.getCurrentFrame();
+            float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
+            float v = frame * Constants.ICON_BASE_SIZE;
+            context.drawTexture(RenderLayer::getGuiTextured, arrowTexture, -PREVIEW_BASE_SIZE / 2, -PREVIEW_BASE_SIZE / 2, u, v, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
+        });
     }
 
     private void renderDeathMarkerPreview(DrawContext context, int centerX, int centerY) {
-        RenderUtils.withMatrixPush(context, centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, () -> RenderAddons.renderDeathMarker(context, 0, 0, PREVIEW_BASE_SIZE, 1.0f, workingConfig));
+        RenderUtils.withMatrixPush(context, centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, () ->
+                RenderAddons.renderDeathMarker(context, 0, 0, PREVIEW_BASE_SIZE, 1.0f, workingConfig)
+        );
     }
 
     private void applyChanges() {
