@@ -193,7 +193,7 @@ public class Hud {
             allEntries.add(new RenderEntry(markerPos, marker, distance, 1.0f, true));
         }
 
-        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance));
+        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
 
         int totalVisibleIcons = allEntries.size();
         for (int i = 0; i < allEntries.size(); i++) {
@@ -418,9 +418,7 @@ public class Hud {
 
     private static float calculateBaseZ(int index, int totalVisibleIcons) {
         float minZ = MIN_Z_DEPTH;
-        if (totalVisibleIcons <= 1) {
-            return minZ;
-        }
+        if (totalVisibleIcons <= 1) return minZ;
 
         float maxAvailableZ = 1000f;
         float availableRange = maxAvailableZ - minZ;
