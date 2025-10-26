@@ -66,5 +66,7 @@
   "bplb.config.asset.arrow.mojang": "Mojang",
   "bplb.config.asset.marker.default": "Por defecto",
   "bplb.config.asset.marker.minimal": "Minimalista",
-  "modmenu.source": "Ver en GitHub"
+  "modmenu.source": "Ver en GitHub",
+  "modmenu.curseforge": "Ver en CurseForge",
+  "modmenu.modrinth": "Ver en Modrinth"
 }
