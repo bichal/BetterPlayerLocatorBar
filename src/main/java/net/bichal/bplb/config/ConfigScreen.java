@@ -15,7 +15,6 @@ import net.bichal.bplb.util.Constants;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -414,7 +413,7 @@ public class ConfigScreen extends Screen {
             int frame = previewArrowAnimator.getCurrentFrame();
             float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
             float v = frame * Constants.ICON_BASE_SIZE;
-            context.drawTexture(RenderLayer::getGuiTextured, arrowTexture, -PREVIEW_BASE_SIZE / 2, -PREVIEW_BASE_SIZE / 2, u, v, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
+            context.drawTexture(arrowTexture, -PREVIEW_BASE_SIZE / 2, -PREVIEW_BASE_SIZE / 2, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
         });
     }
 
