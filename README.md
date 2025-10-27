@@ -1,4 +1,6 @@
-<h1 align="center">Better Player Locator Bar</h1>
+<h1 align="center">
+    <img src="./media/minecraft_title_2k.png" alt="Better Player Locator Bar">
+</h1>
 
 <p align="center">
     <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/Version%201%2E1%2E0-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
