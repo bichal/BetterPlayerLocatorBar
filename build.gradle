@@ -1,9 +1,13 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
-    id 'maven-publish'
+    id "fabric-loom" version "1.12.1"
+    id "maven-publish"
+    id "com.modrinth.minotaur" version "2.+"
+    id "com.matthewprenger.cursegradle" version "1.+"
+    id "com.github.breadmoirai.github-release" version "2.+"
 }
 
-version = project.version
+group = project.maven_group
+version = project.mod_version
 
 base {
     archivesName = project.archives_base_name
@@ -27,34 +31,137 @@ dependencies {
     modApi "com.terraformersmc:modmenu:${project.mod_menu_version}"
 }
 
-def modVersion = version
-def archiveName = base.archivesName.get()
-
 processResources {
-    inputs.property("version", modVersion)
-
+    inputs.properties([
+            mod_version            : mod_version_ext,
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            loader_min_version     : loader_min_version,
+            loader_version         : loader_version,
+            homepage               : homepage,
+            modrinth_page          : modrinth_page,
+            curseforge_page        : curseforge_page,
+            license                : license
+    ])
     filesMatching("fabric.mod.json") {
-        expand(version: modVersion)
+        expand([
+                mod_version            : mod_version_ext,
+                minecraft_version      : minecraft_version,
+                minecraft_version_range: minecraft_version_range,
+                loader_min_version     : loader_min_version,
+                loader_version         : loader_version,
+                homepage               : homepage,
+                modrinth_page          : modrinth_page,
+                curseforge_page        : curseforge_page,
+                license                : license
+        ])
     }
 }
 
+def targetJavaVersion = 21
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
 }
 
 java {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
 }
 
-
-
 jar {
-    inputs.property("archivesName", archiveName)
-
     from("LICENSE") {
-        rename { "${it}_${archiveName}" }
+        rename { "${it}_${base.archivesName.get()}" }
     }
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = base.archivesName.get()
+            from(components.java)
+        }
+    }
+}
+
+githubRelease {
+    println "githubKey: ${findProperty("githubKey") ? 'OK' : 'NO'}"
+    token = findProperty("githubKey") ?: "none"
+    owner = "bichal"
+    repo = "BetterPlayerLocatorBar"
+    tagName = "v${mod_version}"
+    releaseName = "${mod_version} - Better Player Locator Bar"
+    body = file("docs/CHANGELOG.md").text
+    draft = false
+    prerelease = version_type == "beta"
+    releaseAssets = [file("libs/${base.archivesName.get()}-${mod_version}.jar")]
+}
+
+tasks.githubRelease.dependsOn(remapJar)
+
+curseforge {
+    project {
+        println("Pushing CurseGradle specifications for project ID: ${curse_id}")
+        println "curseKey: ${findProperty("curseKey") ? 'OK' : 'NO'}"
+        apiKey = findProperty("curseKey") ?: "none"
+        id = "${curse_id}"
+        releaseType = "${version_type}"
+        changelogType = "markdown"
+        changelog = file("docs/CHANGELOG.md")
+        mainArtifact(remapJar) {
+            displayName = "v${project.mod_version} - Bichal Config Lib"
+        }
+        addArtifact sourcesJar
+
+        addGameVersion project.minecraft_version
+        addGameVersion "Fabric"
+        addGameVersion "Java 21"
+
+        relations {
+            requiredDependency "fabric-api"
+            optionalDependency "modmenu"
+        }
+
+        afterEvaluate {
+            uploadTask.dependsOn(remapJar)
+        }
+    }
+
+    options {
+        forgeGradleIntegration = false
+    }
+}
+
+modrinth {
+    println "modrinthKey: ${findProperty("modrinthKey") ? 'OK' : 'NO'}"
+    token = findProperty("modrinthKey") ?: "none"
+    projectId = "bplb"
+    versionNumber = "v" + project.mod_version
+    versionName = "Better Player Locator Bar v" + project.mod_version
+    versionType = "${version_type}"
+    changelog = rootProject.file("docs/CHANGELOG.md").text
+    uploadFile = remapJar
+    gameVersions = [project.minecraft_version]
+    loaders = ["fabric"]
+
+    dependencies {
+        required.project "fabric-api"
+        optional.project "modmenu"
+    }
+
+    syncBodyFrom = rootProject.file("docs/README.md").text
+}
+
+tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
+
+afterEvaluate {
+    upload.dependsOn(remapJar)
+}
+
+tasks.register("upload") {
+    dependsOn("githubRelease")
+    dependsOn("modrinth")
+    dependsOn("curseforge")
 }

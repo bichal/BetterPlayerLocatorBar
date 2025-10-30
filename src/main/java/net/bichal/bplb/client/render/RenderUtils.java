@@ -2,7 +2,6 @@ package net.bichal.bplb.client.render;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 
 import java.awt.*;
@@ -19,9 +18,7 @@ public class RenderUtils {
 
     public static void renderTintedTexture(DrawContext context, Identifier texture, float x, float y, float width, float height, int color, float alpha) {
         Dimension dim = AssetScanner.getTextureDimensions(texture);
-        int aI = (int) (alpha * 255);
-        int finalColor = (aI << 24) | (color & 0xFFFFFF);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, (int) x, (int) y, 0f, 0f, (int) width, (int) height, dim.width, dim.height, dim.width, dim.height, finalColor);
+        context.drawTexture(texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height);
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -40,15 +37,15 @@ public class RenderUtils {
         int destMiddleWidth = width - corner * 2;
         int destMiddleHeight = height - corner * 2;
 
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y, u0, v0, corner, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + width - corner, y, u2, v0, corner, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y + height - corner, u0, v2, corner, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + width - corner, y + height - corner, u2, v2, corner, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + corner, y, (float) corner, v0, destMiddleWidth, corner, middleWidth, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + corner, y + height - corner, (float) corner, v2, destMiddleWidth, corner, middleWidth, corner, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x, y + corner, u0, (float) corner, corner, destMiddleHeight, corner, middleHeight, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + width - corner, y + corner, u2, (float) corner, corner, destMiddleHeight, corner, middleHeight, textureWidth, textureHeight, color);
-        context.drawTexture(RenderLayer::getGuiTextured, texture, x + corner, y + corner, (float) corner, (float) corner, destMiddleWidth, destMiddleHeight, middleWidth, middleHeight, textureWidth, textureHeight, color);
+        context.drawTexture(texture, x, y, u0, v0, corner, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x + width - corner, y, u2, v0, corner, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x, y + height - corner, u0, v2, corner, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x + width - corner, y + height - corner, u2, v2, corner, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x + corner, y, destMiddleWidth, corner, (float) corner, v0, middleWidth, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x + corner, y + height - corner, destMiddleWidth, corner, (float) corner, v2, middleWidth, corner, textureWidth, textureHeight);
+        context.drawTexture(texture, x, y + corner, corner, destMiddleHeight, u0, (float) corner, corner, middleHeight, textureWidth, textureHeight);
+        context.drawTexture(texture, x + width - corner, y + corner, corner, destMiddleHeight, u2, (float) corner, corner, middleHeight, textureWidth, textureHeight);
+        context.drawTexture(texture, x + corner, y + corner, destMiddleWidth, destMiddleHeight, (float) corner, (float) corner, middleWidth, middleHeight, textureWidth, textureHeight);
     }
 
     public static void withMatrixPush(DrawContext context, float x, float y, Runnable action) {

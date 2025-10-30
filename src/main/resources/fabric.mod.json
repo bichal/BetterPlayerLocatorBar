@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "id": "bplb",
-  "version": "${version}",
+  "version": "${mod_version}",
   "name": "Better Player Locator Bar",
   "description": "BetterPlayerLocatorBar is a Minecraft Fabric mod that adds a HUD bar above the experience bar, displaying colored icons representing nearby players.",
   "authors": [
     "Bichal"
   ],
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "${license}",
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar",
-    "sources": "https://github.com/bichal/BetterPlayerLocatorBar",
-    "issues": "https://github.com/bichal/BetterPlayerLocatorBar/issues"
+    "homepage": "${curseforge_page}",
+    "sources": "${homepage}",
+    "issues": "${homepage}/issues"
   },
   "icon": "assets/bplb/icon.png",
   "environment": "*",
@@ -30,17 +30,17 @@
     "BetterPlayerLocateBar.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": ">=1.21.2 <=1.21.3",
+    "fabricloader": "${loader_version}",
+    "minecraft": "${minecraft_version_range}",
     "java": ">=21",
-    "fabric-api": "*"
+    "fabric-api": "${loader_min_version}"
   },
   "custom": {
     "modmenu": {
       "modmenu": {
         "links": {
-          "modmenu.modrinth": "https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar",
-          "modmenu.curseforge": "https://modrinth.com/mod/bplb"
+          "modmenu.modrinth": "${modrinth_page}",
+          "modmenu.curseforge": "${curseforge_page}"
         }
       }
     }

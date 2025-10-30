@@ -10,7 +10,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,7 +66,7 @@ public class RenderAddons {
 
         int padding = 2;
         int texSize = Math.max(1, size - padding * 2);
-        context.drawTexture(RenderLayer::getGuiTextured, skin, (int) x + padding, (int) y + padding, 8, 8, texSize, texSize, 8, 8, 64, 64, 0xFFFFFF | ((int) (alpha * 255) << 24));
+        context.drawTexture(skin, (int) x + padding, (int) y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
     }
 
     public static void renderDeathMarker(DrawContext context, float x, float y, int size, float alpha, Config config) {
@@ -92,10 +91,8 @@ public class RenderAddons {
         int frame = animator.getCurrentFrame();
         float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
         float v = frame * Constants.ICON_BASE_SIZE;
-        int alphaInt = (int) (alpha * 255);
-        int whiteWithAlpha = (alphaInt << 24) | 0xFFFFFF;
 
-        context.drawTexture(RenderLayer::getGuiTextured, arrowTexture, (int) x, (int) y, u, v, size, size, size, size, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2, whiteWithAlpha);
+        context.drawTexture(arrowTexture, (int) x, (int) y, size, size, u, v, size, size, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
     }
 
     public static void renderNameplate(DrawContext context, String text, String borderStyle, int color, float x, float y, float alpha, float scale) {
