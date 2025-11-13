@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/v1.1.3/media/header/minecraft_title_2k.png" alt="Better Player Locator Bar">
+    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/InDev/media/header/minecraft_title_2k.png" alt="Better Player Locator Bar">
 </h1>
 
 <p align="center">
@@ -32,13 +32,13 @@ Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above t
     <blockquote>A preview of how you would see other players with the mod</blockquote>
     <img src="https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9" alt="HUD" width="100%"/>
     <blockquote>A preview of a player on the HUD</blockquote>
-    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/v1.1.3/media/OnePlayerBarPreview.gif" alt="OnePlayerBarPreview" width="100%"/>
+    <img src="https://github.com/bichal/BetterPlayerLocatorBar/blob/InDev/media/OnePlayerBarPreview.gif?raw=true" alt="OnePlayerBarPreview" width="100%"/>
     <blockquote>A preview of two players on the HUD</blockquote>
-    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/v1.1.3/media/TwoPlayerBarPreview.gif" alt="TwoPlayerBarPreview" width="100%"/>
+    <img src="https://github.com/bichal/BetterPlayerLocatorBar/blob/InDev/media/TwoPlayerBarPreview.gif?raw=true" alt="TwoPlayerBarPreview" width="100%"/>
     <blockquote>This would be a preview of the settings screen so you can customize it as much as you want</blockquote>
-    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/v1.1.3/media/ConfigScreenPreview.gif" alt="ConfigScreenPreview" width="100%"/>
+    <img src="https://github.com/bichal/BetterPlayerLocatorBar/blob/InDev/media/ConfigScreenPreview.gif?raw=true" alt="ConfigScreenPreview" width="100%"/>
     <blockquote>Now you can customize your friends icons</blockquote>
-    <img src="https://raw.githubusercontent.com/bichal/BetterPlayerLocatorBar/refs/heads/v1.1.3/media/PlayerCustomPreview.gif" alt="PlayerCustomPreview" width="100%"/>
+    <img src="https://github.com/bichal/BetterPlayerLocatorBar/blob/InDev/media/PlayerCustomPreview.gif?raw=true" alt="PlayerCustomPreview" width="100%"/>
 </p>
 
 ## Dependencies
