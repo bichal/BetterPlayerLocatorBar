@@ -10,7 +10,7 @@ public class TextureManager {
     private static final Map<String, Identifier> TEXTURE_CACHE = new HashMap<>();
     private static Identifier getTexture(String... parts) {
         String path = String.format("textures/sprites/hud/%s/%s.png", "player_dots", String.join("/", parts));
-        return TEXTURE_CACHE.computeIfAbsent(String.join("_", parts), k -> Identifier.of(Constants.MOD_ID, path));
+        return TEXTURE_CACHE.computeIfAbsent(String.join("_", parts), k -> Constants.ofMod(path));
     }
 
     public static Identifier getPlayerDotTexture(String dotId, int textureIndex) {
@@ -22,26 +22,34 @@ public class TextureManager {
         String key = "outline_" + dotId + "_" + borderStyle + "_" + borderType + "_" + textureIndex;
         return TEXTURE_CACHE.computeIfAbsent(key, k -> {
             String path = "bowtie".equals(dotId) ? "textures/sprites/hud/player_dots_outlines/bowtie_" + textureIndex + ".png" : "textures/sprites/hud/player_dots_outlines/" + borderStyle + "/" + borderType + "_" + textureIndex + ".png";
-            return Identifier.of(Constants.MOD_ID, path);
+            return Constants.ofMod(path);
         });
     }
 
     public static Identifier getArrowTexture(String arrowType) {
-        return TEXTURE_CACHE.computeIfAbsent("arrow_" + arrowType, k -> Identifier.of(Constants.MOD_ID, String.format("textures/sprites/hud/arrows/%s.png", arrowType)));
+        return TEXTURE_CACHE.computeIfAbsent("arrow_" + arrowType, k -> Constants.ofMod(String.format("textures/sprites/hud/arrows/%s.png", arrowType)));
     }
 
     public static Identifier getDeathMarkerTexture(String markerType) {
-        return TEXTURE_CACHE.computeIfAbsent("marker_" + markerType, k -> Identifier.of(Constants.MOD_ID, String.format("textures/sprites/hud/death_markers_dots/%s.png", markerType)));
+        return TEXTURE_CACHE.computeIfAbsent("marker_" + markerType, k -> Constants.ofMod(String.format("textures/sprites/hud/death_markers_dots/%s.png", markerType)));
     }
 
     public static Identifier getDeathMarkerOutlineTexture(String markerType, String borderStyle, String borderType) {
         return TEXTURE_CACHE.computeIfAbsent("marker_outline_" + markerType + "_" + borderStyle + "_" + borderType, k ->
-                Identifier.of(Constants.MOD_ID, String.format("textures/sprites/hud/death_markers_dots_outlines/%s.png", borderType))
+                Constants.ofMod(String.format("textures/sprites/hud/death_markers_dots_outlines/%s.png", borderType))
         );
     }
 
     public static Identifier getNameplateTexture(String borderStyle) {
-        return TEXTURE_CACHE.computeIfAbsent("nameplate_" + borderStyle, k -> Identifier.of(Constants.MOD_ID, String.format("textures/sprites/hud/tags/%s/default.png", borderStyle)));
+        return TEXTURE_CACHE.computeIfAbsent("nameplate_" + borderStyle, k -> Constants.ofMod(String.format("textures/sprites/hud/tags/%s/default.png", borderStyle)));
+    }
+
+    public static Identifier getLodestoneMarkerTexture(String markerType) {
+        return TEXTURE_CACHE.computeIfAbsent("lodestone_marker_" + markerType, k -> Constants.ofMod(String.format("textures/sprites/hud/lodestone_markers_dots/%s.png", markerType)));
+    }
+
+    public static Identifier getLodestoneMarkerOutlineTexture(String markerType, String borderStyle, String borderType) {
+        return TEXTURE_CACHE.computeIfAbsent("lodestone_marker_outline_" + markerType + "_" + borderStyle + "_" + borderType, k -> Constants.ofMod(String.format("textures/sprites/hud/lodestone_markers_dots_outlines/%s.png", borderType)));
     }
 
     public static int getTextureIndexFromDistance(double distance) {

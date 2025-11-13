@@ -1,6 +1,7 @@
 package net.bichal.bplb.client;
 
-import net.bichal.bplb.config.ConfigScreen;
+import net.bichal.bichalutils.util.Logger;
+import net.bichal.bplb.gui.ConfigScreen;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -13,7 +14,7 @@ public class Keybinds {
     private static final KeyBinding OPEN_CONFIG = new KeyBinding("key.bplb.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, Constants.MOD_NAME_LARGE);
 
     public static void register() {
-        Constants.LOGGER.info("[{}] Registering Keybinds", Constants.MOD_NAME_SHORT);
+        Logger.info("Registering Keybinds");
         KeyBindingHelper.registerKeyBinding(SHOW_PLAYER_NAME);
         KeyBindingHelper.registerKeyBinding(OPEN_CONFIG);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -21,7 +22,7 @@ public class Keybinds {
                 client.setScreen(new ConfigScreen(client.currentScreen));
             }
         });
-        Constants.LOGGER.info("[{}] Keybinds registered", Constants.MOD_NAME_SHORT);
+        Logger.info("Keybinds registered");
     }
 
     public static boolean shouldShowPlayerNames() {

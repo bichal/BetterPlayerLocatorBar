@@ -1,8 +1,9 @@
 package net.bichal.bplb.client;
 
+import net.bichal.bichalutils.util.Logger;
+import net.bichal.bplb.client.command.ConfigCommand;
 import net.bichal.bplb.client.render.AssetScanner;
-import net.bichal.bplb.command.ConfigCommand;
-import net.bichal.bplb.config.Config;
+import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
@@ -31,6 +32,7 @@ public class Client implements ClientModInitializer {
     private static long lastServerUpdateTime = 0;
     private static boolean isLocalMode = true;
     private static boolean playerHasOp = false;
+    public static List<String> availableLodestoneMarkers = new ArrayList<>();
     public static boolean isLocalMode() {
         return isLocalMode;
     }
@@ -40,12 +42,12 @@ public class Client implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Constants.LOGGER.info("[{}] Initializing mod client side!", Constants.MOD_NAME_SHORT);
+        Logger.info("Initializing mod client side!");
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
             public Identifier getFabricId() {
-                return Identifier.of(Constants.MOD_ID, "asset_scanner");
+                return Constants.ofMod("asset_scanner");
             }
 
             @Override
@@ -55,8 +57,9 @@ public class Client implements ClientModInitializer {
                 availableIconBorders = AssetScanner.getIconBorderStyles(manager);
                 availableNameBorders = AssetScanner.getNameplateBorderStyles(manager);
                 availableDeathMarkers = AssetScanner.getDeathMarkerTypes(manager);
+                availableLodestoneMarkers = AssetScanner.getLodestoneMarkerTypes(manager);
 
-                Constants.LOGGER.info("[{}] Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers", Constants.MOD_NAME_SHORT, availableDots.size(), availableArrows.size(), availableIconBorders.size(), availableNameBorders.size(), availableDeathMarkers.size());
+                Logger.info("Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers", availableDots.size(), availableArrows.size(), availableIconBorders.size(), availableNameBorders.size(), availableDeathMarkers.size());
 
                 if (!availableDots.isEmpty() && !availableDots.contains(Config.getInstance().getDotType())) {
                     Config.getInstance().setDotType(availableDots.getFirst());
@@ -70,7 +73,7 @@ public class Client implements ClientModInitializer {
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             if (!isLocalMode && System.currentTimeMillis() - lastServerUpdateTime > 5000) {
                 isLocalMode = true;
-                Constants.LOGGER.info("[{}] Server timeout, switching to local mode", Constants.MOD_NAME_SHORT);
+                Logger.info("Server timeout, switching to local mode");
             }
             Hud.render(context);
         });
@@ -85,7 +88,7 @@ public class Client implements ClientModInitializer {
             isLocalMode = false;
             playerHasOp = payload.playerHasOp();
             lastServerUpdateTime = System.currentTimeMillis();
-            Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, playerHasOp);
+            Logger.info("Server has mod installed (OP: {}), switching to remote mode", playerHasOp);
         });
 
 
@@ -95,6 +98,6 @@ public class Client implements ClientModInitializer {
             lastServerUpdateTime = 0;
         });
 
-        Constants.LOGGER.info("[{}] Client side initialized!", Constants.MOD_NAME_SHORT);
+        Logger.info("Client side initialized!");
     }
 }

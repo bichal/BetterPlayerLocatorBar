@@ -2,7 +2,7 @@ package net.bichal.bplb.integration;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.bichal.bplb.config.ConfigScreen;
+import net.bichal.bplb.gui.ConfigScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 

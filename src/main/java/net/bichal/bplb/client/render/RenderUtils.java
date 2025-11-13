@@ -1,5 +1,6 @@
 package net.bichal.bplb.client.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
@@ -17,12 +18,14 @@ public class RenderUtils {
     }
 
     public static void renderTintedTexture(DrawContext context, Identifier texture, float x, float y, float width, float height, int color, float alpha) {
+        setShaderColorRGBA(color, alpha);
         Dimension dim = AssetScanner.getTextureDimensions(texture);
         context.drawTexture(texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @SuppressWarnings("SameParameterValue")
-    static void drawNineSlicedTexture(DrawContext context, Identifier texture, int x, int y, int width, int height, int color) {
+    static void drawNineSlicedTexture(DrawContext context, Identifier texture, int x, int y, int width, int height) {
         int corner = 2;
         int textureWidth = 12;
         int textureHeight = 12;
@@ -56,5 +59,12 @@ public class RenderUtils {
         } finally {
             context.getMatrices().pop();
         }
+    }
+
+    public static void setShaderColorRGBA(int color, float alpha) {
+        float r = ((color >> 16) & 0xFF) / 255.0f;
+        float g = ((color >> 8) & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
+        RenderSystem.setShaderColor(r, g, b, alpha);
     }
 }

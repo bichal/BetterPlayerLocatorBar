@@ -1,8 +1,8 @@
 package net.bichal.bplb.mixin;
 
+import net.bichal.bichalutils.util.MathUtil;
 import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
-import net.bichal.bplb.util.MathUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,48 +52,51 @@ public class HotbarMixin {
     @Unique
     private float updateYOffset(boolean isExperience, float currentOffset) {
         float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
-        float defaultYOffset = -1;
+        float defaultYOffset = CONFIG.getGlobalHudYOffset() - 1;
 
         if (!CONFIG.isModEnabled()) {
-            float targetOffset = 0;
+            float targetOffset = CONFIG.getGlobalHudYOffset();
             float delta = targetOffset - currentOffset;
-            return currentOffset + delta * MathUtils.easeInOutQuad(t);
+            return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
         boolean shouldOffset = Hud.shouldApplyHudOffset();
         long currentTime = System.currentTimeMillis();
-
         if (shouldOffset) {
             lastPlayerVisibleTime = currentTime;
         }
-
         boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 3000;
 
         if (!shouldOffset) {
             float targetOffset;
             if (recentlyVisible) {
-                targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
+                targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset;
             } else {
-                targetOffset = 0;
+                targetOffset = CONFIG.getGlobalHudYOffset();
             }
             float delta = targetOffset - currentOffset;
-            return currentOffset + delta * MathUtils.easeInOutQuad(t);
+            return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
         if (!CONFIG.isApplyHotbarOffset()) {
-            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset;
+            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset;
             float delta = targetOffset - currentOffset;
-            return currentOffset + delta * MathUtils.easeInOutQuad(t);
+            return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        int targetOffset = (int) (isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset);
+        int targetOffset = (int) (isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset);
         boolean shouldShowNames = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
         if (shouldShowNames) {
             targetOffset += TAB_OFFSET;
         }
-
         float delta = targetOffset - currentOffset;
-        return currentOffset + delta * MathUtils.easeInOutQuad(t);
+        float result = currentOffset + delta * MathUtil.easeInOutQuad(t);
+
+        if (isExperience) {
+            Hud.setCurrentHudOffset((int)result);
+        }
+
+        return result;
     }
 
     @Unique

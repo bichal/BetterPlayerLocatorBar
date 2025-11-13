@@ -1,8 +1,10 @@
 package net.bichal.bplb.server;
 
+import net.bichal.bichalutils.util.Logger;
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
-import net.bichal.bplb.util.Constants;
+import net.bichal.bplb.server.datapack.DatapackExtractor;
+import net.bichal.bplb.server.datapack.DatapackHandler;
 import net.bichal.bplb.util.DistanceUtils;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -38,10 +40,11 @@ public class Server implements DedicatedServerModInitializer {
     );
     private List<ServerPlayerEntity> playerListCache = new ArrayList<>();
     private long playerListCacheTime = 0;
+    private boolean datapackExtracted = false;
 
     @Override
     public void onInitializeServer() {
-        Constants.LOGGER.info("[{}] Initializing server!", Constants.MOD_NAME_SHORT);
+        Logger.info("Initializing server!");
         ServerConfig.getInstance();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             if (handler == null || handler.player == null) return;
@@ -67,11 +70,24 @@ public class Server implements DedicatedServerModInitializer {
             invalidatePlayerListCache();
         });
         ServerTickEvents.END_SERVER_TICK.register(this::tick);
-        Constants.LOGGER.info("[{}] Server initialized!", Constants.MOD_NAME_SHORT);
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            if (!datapackExtracted) {
+                DatapackExtractor.extractDatapack(server);
+                datapackExtracted = true;
+            }
+        });
+        Logger.info("Server initialized!");
     }
 
     private void tick(@Nullable MinecraftServer server) {
         if (server == null) return;
+
+        ServerConfig config = ServerConfig.getInstance();
+        if (config.useDatapackFallback()) {
+            List<ServerPlayerEntity> players = getCachedPlayerList(server);
+            DatapackHandler.sendDatapackPositions(players);
+            return;
+        }
 
         long currentTime = server.getTicks();
         List<ServerPlayerEntity> players = getCachedPlayerList(server);
@@ -101,8 +117,6 @@ public class Server implements DedicatedServerModInitializer {
                 }
             }
         }
-
-        ServerConfig config = ServerConfig.getInstance();
 
         if (currentTime - lastUpdateTime >= config.positionUpdateRateTicks()) {
             sendUpdate(server);

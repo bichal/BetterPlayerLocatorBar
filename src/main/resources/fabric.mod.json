@@ -3,7 +3,7 @@
   "id": "bplb",
   "version": "${mod_version}",
   "name": "Better Player Locator Bar",
-  "description": "BetterPlayerLocatorBar is a Minecraft Fabric mod that adds a HUD bar above the experience bar, displaying colored icons representing nearby players.",
+  "description": "A Minecraft Fabric mod that adds a HUD bar above the experience bar",
   "authors": [
     "Bichal"
   ],
@@ -37,11 +37,9 @@
   },
   "custom": {
     "modmenu": {
-      "modmenu": {
-        "links": {
-          "modmenu.modrinth": "${modrinth_page}",
-          "modmenu.curseforge": "${curseforge_page}"
-        }
+      "links": {
+        "modmenu.modrinth": "${modrinth_page}",
+        "modmenu.curseforge": "${curseforge_page}"
       }
     }
   }
