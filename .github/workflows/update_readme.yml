@@ -1,0 +1,33 @@
+name: Update README
+on:
+  push:
+    branches: [ inDev ]
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get previous release
+        run: |
+          releases=$(curl -s "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases" | jq -r '.[].tag_name')
+          previous=$(echo "$releases" | sed -n '2p')
+          echo "PREV=$previous" >> $GITHUB_ENV
+
+      - name: Build README
+        run: |
+          sed \
+          -e "s/__PREV_VERSION__/${PREV}/g" \
+          -e "s/__PREV_BADGE__/${PREV}/g" \
+          README.md.template > README.md
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "Update README"
+          git push
