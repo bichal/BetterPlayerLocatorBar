@@ -52,44 +52,41 @@ public class HotbarMixin {
     @Unique
     private float updateYOffset(boolean isExperience, float currentOffset) {
         float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
-        float defaultYOffset = CONFIG.getGlobalHudYOffset() - 1;
+        int globalOffset = CONFIG.getGlobalHudYOffset();
 
         if (!CONFIG.isModEnabled()) {
-            float targetOffset = CONFIG.getGlobalHudYOffset();
-            float delta = targetOffset - currentOffset;
+            float delta = globalOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
         boolean shouldOffset = Hud.shouldApplyHudOffset();
         long currentTime = System.currentTimeMillis();
+
         if (shouldOffset) {
             lastPlayerVisibleTime = currentTime;
         }
+
         boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 3000;
 
-        if (!shouldOffset) {
-            float targetOffset;
-            if (recentlyVisible) {
-                targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset;
-            } else {
-                targetOffset = CONFIG.getGlobalHudYOffset();
-            }
-            float delta = targetOffset - currentOffset;
+        if (!shouldOffset && !recentlyVisible) {
+            float delta = globalOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
         if (!CONFIG.isApplyHotbarOffset()) {
-            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset;
+            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + globalOffset : globalOffset - 1;
             float delta = targetOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        int targetOffset = (int) (isExperience ? BASE_EXPERIENCE_OFFSET + CONFIG.getGlobalHudYOffset() : defaultYOffset);
+        int baseOffset = isExperience ? (int)(BASE_EXPERIENCE_OFFSET + globalOffset) : globalOffset - 1;
         boolean shouldShowNames = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
-        if (shouldShowNames) {
-            targetOffset += TAB_OFFSET;
+
+        if (shouldShowNames && baseOffset <= 0) {
+            baseOffset += TAB_OFFSET;
         }
-        float delta = targetOffset - currentOffset;
+
+        float delta = baseOffset - currentOffset;
         float result = currentOffset + delta * MathUtil.easeInOutQuad(t);
 
         if (isExperience) {

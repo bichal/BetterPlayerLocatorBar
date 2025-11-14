@@ -42,6 +42,10 @@ public class ConfigCommand {
         OPTIONS.put("fov_multiplier", new FloatOption(Config::getFovMultiplier, Config::setFovMultiplier, 0.5f, 2.0f));
         OPTIONS.put("inherit_border_color", new BooleanOption("inheritBorderColor", Config::isInheritBorderColor, Config::setInheritBorderColor));
         OPTIONS.put("death_marker_inherit_color", new BooleanOption("deathMarkerInheritBorderColor", Config::isDeathMarkerInheritBorderColor, Config::setDeathMarkerInheritBorderColor));
+        OPTIONS.put("global_hud_y_offset", new IntOption(Config::getGlobalHudYOffset, Config::setGlobalHudYOffset, -100, 100));
+        OPTIONS.put("enable_icon_clustering", new BooleanOption("enableIconClustering", Config::isEnableIconClustering, Config::setEnableIconClustering));
+        OPTIONS.put("enable_cluster_size_scaling", new BooleanOption("enableClusterSizeScaling", Config::isEnableClusterSizeScaling, Config::setEnableClusterSizeScaling));
+        OPTIONS.put("enable_bouncing_animation", new BooleanOption("enableBouncingAnimation", Config::isEnableBouncingAnimation, Config::setEnableBouncingAnimation));
     }
 
     public static void register() {
@@ -134,13 +138,10 @@ public class ConfigCommand {
 
     interface ConfigOption {
         String getValue(Config config);
-
         boolean setValue(Config config, String value);
     }
 
-    record BooleanOption(String name, Function<Config, Boolean> getter,
-                         BiConsumer<Config, Boolean> setter) implements ConfigOption {
-
+    record BooleanOption(String name, Function<Config, Boolean> getter, BiConsumer<Config, Boolean> setter) implements ConfigOption {
         @Override
         public String getValue(Config config) {
             return getter.apply(config) ? "true" : "false";
@@ -156,9 +157,7 @@ public class ConfigCommand {
         }
     }
 
-    record IntOption(Function<Config, Integer> getter, BiConsumer<Config, Integer> setter, int min,
-                     int max) implements ConfigOption {
-
+    record IntOption(Function<Config, Integer> getter, BiConsumer<Config, Integer> setter, int min, int max) implements ConfigOption {
         @Override
         public String getValue(Config config) {
             return String.valueOf(getter.apply(config));
@@ -179,9 +178,7 @@ public class ConfigCommand {
         }
     }
 
-    record FloatOption(Function<Config, Float> getter, BiConsumer<Config, Float> setter, float min,
-                       float max) implements ConfigOption {
-
+    record FloatOption(Function<Config, Float> getter, BiConsumer<Config, Float> setter, float min, float max) implements ConfigOption {
         @Override
         public String getValue(Config config) {
             return String.format("%.2f", getter.apply(config));
@@ -203,7 +200,6 @@ public class ConfigCommand {
     }
 
     record StringOption(Function<Config, String> getter, BiConsumer<Config, String> setter) implements ConfigOption {
-
         @Override
         public String getValue(Config config) {
             return getter.apply(config);

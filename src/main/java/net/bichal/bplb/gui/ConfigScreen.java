@@ -103,6 +103,10 @@ public class ConfigScreen extends Screen {
         tooltipTexts.put("fade_end_distance", Text.translatable("bplb.config.tooltip.fade_end_distance"));
         tooltipTexts.put("fade_alpha_max", Text.translatable("bplb.config.tooltip.fade_alpha_max"));
         tooltipTexts.put("fade_alpha_min", Text.translatable("bplb.config.tooltip.fade_alpha_min"));
+        tooltipTexts.put("global_hud_y_offset", Text.translatable("bplb.config.tooltip.global_hud_y_offset"));
+        tooltipTexts.put("enable_icon_clustering", Text.translatable("bplb.config.tooltip.enable_icon_clustering"));
+        tooltipTexts.put("enable_cluster_size_scaling", Text.translatable("bplb.config.tooltip.enable_cluster_size_scaling"));
+        tooltipTexts.put("enable_bouncing_animation", Text.translatable("bplb.config.tooltip.enable_bouncing_animation"));
     }
 
     public void rebuildList() {
@@ -148,7 +152,7 @@ public class ConfigScreen extends Screen {
         this.scrollableList.setScrollAmount(0);
         if (searchQuery.isEmpty()) return;
 
-        List<String> allKeys = List.of("modEnabled", "apply_hotbar_offset", "always_show_player_heads", "always_show_player_names", "max_visible_icons", "position_update_rate_ticks", "lerp_speed", "icon_size", "dot_type", "icon_border_style", "icon_border_type", "inherit_border_color", "height_difference_mode", "arrow_type", "vertical_padding", "adjust_to_fov", "fov_multiplier", "death_marker_type", "death_marker_border_type", "death_marker_inherit_border_color", "nameplate_scale", "name_border_style", "fade_end_distance", "fade_start_distance", "fade_alpha_max", "fade_alpha_min");
+        List<String> allKeys = List.of("modEnabled", "apply_hotbar_offset", "global_hud_y_offset", "always_show_player_heads", "always_show_player_names", "max_visible_icons", "position_update_rate_ticks", "lerp_speed", "icon_size", "dot_type", "icon_border_style", "icon_border_type", "inherit_border_color", "height_difference_mode", "arrow_type", "vertical_padding", "adjust_to_fov", "fov_multiplier", "death_marker_type", "death_marker_border_type", "death_marker_inherit_border_color", "lodestone_marker_type", "lodestone_marker_border_type", "lodestone_marker_inherit_border_color", "enable_icon_clustering", "enable_cluster_size_scaling", "enable_bouncing_animation", "nameplate_scale", "name_border_style", "fade_end_distance", "fade_start_distance", "fade_alpha_max", "fade_alpha_min");
 
         for (String key : allKeys) {
             String translated = Text.translatable(Constants.CONFIG_KEY_PREFIX + key).getString().toLowerCase();
@@ -245,12 +249,6 @@ public class ConfigScreen extends Screen {
             addIfMatch("fov_multiplier", () -> addFloatSlider("fov_multiplier", workingConfig.getFovMultiplier(), 0.5f, 2.0f, workingConfig::setFovMultiplier));
         }
 
-        if (hasAnyMatch("enable_icon_clustering", "enable_cluster_size_scaling")) {
-            addSection("experimental");
-            addIfMatch("enable_icon_clustering", () -> addToggle("enable_icon_clustering", workingConfig.isEnableIconClustering(), workingConfig::setEnableIconClustering));
-            addIfMatch("enable_cluster_size_scaling", () -> addToggle("enable_cluster_size_scaling", workingConfig.isEnableClusterSizeScaling(), workingConfig::setEnableClusterSizeScaling));
-        }
-
         if (hasAnyMatch("death_marker_type", "death_marker_border_type", "death_marker_inherit_border_color")) {
             addSection("markers");
             addIfMatch("death_marker_type", () -> addCycle("death_marker_type", workingConfig.getDeathMarkerType(), markerTypes, id -> getTranslatedAssetName(id, "marker"), workingConfig::setDeathMarkerType, true));
@@ -283,6 +281,13 @@ public class ConfigScreen extends Screen {
                 workingConfig.setFadeAlphaMin(val);
                 rebuildListWithoutScroll();
             }, this::markDirty)));
+        }
+
+        if (hasAnyMatch("enable_icon_clustering", "enable_cluster_size_scaling", "enable_bouncing_animation")) {
+            addSection("experimental");
+            addIfMatch("enable_icon_clustering", () -> addToggle("enable_icon_clustering", workingConfig.isEnableIconClustering(), workingConfig::setEnableIconClustering));
+            addIfMatch("enable_cluster_size_scaling", () -> addToggle("enable_cluster_size_scaling", workingConfig.isEnableClusterSizeScaling(), workingConfig::setEnableClusterSizeScaling));
+            addIfMatch("enable_bouncing_animation", () -> addToggle("enable_bouncing_animation", workingConfig.isEnableBouncingAnimation(), workingConfig::setEnableBouncingAnimation));
         }
 
         if (searchQuery.isEmpty() || workingConfig.getPlayerConfigs().keySet().stream().anyMatch(name -> matchesSearch("player." + name))) {

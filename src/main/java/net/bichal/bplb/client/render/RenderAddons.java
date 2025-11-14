@@ -145,7 +145,7 @@ public class RenderAddons {
         String markerType = config.getLodestoneMarkerType();
         int color = config.getLodestoneMarkerColor();
         Identifier markerTexture = TextureManager.getLodestoneMarkerTexture(markerType);
-        Identifier outlineTexture = TextureManager.getLodestoneMarkerOutlineTexture(markerType, config.getLodestoneMarkerBorderStyle(), config.getLodestoneMarkerBorderType());
+        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(markerType, config.getLodestoneMarkerBorderStyle(), config.getLodestoneMarkerBorderType(), 0);
         int borderColor = config.isLodestoneMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : 0xFF000000;
 
         try {

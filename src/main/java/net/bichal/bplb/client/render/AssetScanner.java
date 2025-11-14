@@ -44,11 +44,6 @@ public class AssetScanner {
         return checkExistence(resourceManager, new String[]{"default", "minimal"}, marker -> String.format("textures/sprites/hud/death_markers_dots/%s.png", marker));
     }
 
-    public static List<String> getLodestoneMarkerTypes(ResourceManager resourceManager) {
-        return checkExistence(resourceManager, new String[]{"default", "minimal"},
-                marker -> String.format("textures/sprites/hud/lodestone_markers_dots/%s.png", marker));
-    }
-
     private static List<String> checkExistence(ResourceManager resourceManager, String[] types, java.util.function.Function<String, String> pathBuilder) {
         List<String> result = new ArrayList<>();
         for (String type : types) {

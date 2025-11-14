@@ -59,6 +59,7 @@ public class Config {
     private boolean lodestoneMarkerInheritBorderColor;
     private boolean enableIconClustering;
     private boolean enableClusterSizeScaling;
+    private boolean enableBouncingAnimation;
 
     public Config() {
         this.lerpSpeed = 0.65f;
@@ -96,6 +97,7 @@ public class Config {
         this.lodestoneMarkerInheritBorderColor = true;
         this.enableIconClustering = false;
         this.enableClusterSizeScaling = false;
+        this.enableBouncingAnimation = true;
     }
 
     public static void copy(Config source, Config target) {
@@ -130,6 +132,15 @@ public class Config {
         target.playerConfigs.putAll(source.playerConfigs);
         target.playerExpandedStates.clear();
         target.playerExpandedStates.putAll(source.playerExpandedStates);
+        target.globalHudYOffset = source.globalHudYOffset;
+        target.lodestoneMarkerType = source.lodestoneMarkerType;
+        target.lodestoneMarkerColor = source.lodestoneMarkerColor;
+        target.lodestoneMarkerBorderStyle = source.lodestoneMarkerBorderStyle;
+        target.lodestoneMarkerBorderType = source.lodestoneMarkerBorderType;
+        target.lodestoneMarkerInheritBorderColor = source.lodestoneMarkerInheritBorderColor;
+        target.enableIconClustering = source.enableIconClustering;
+        target.enableClusterSizeScaling = source.enableClusterSizeScaling;
+        target.enableBouncingAnimation = source.enableBouncingAnimation;
     }
 
     private static Config loadConfig() {
@@ -183,6 +194,7 @@ public class Config {
         correctedFields.addAll(validateFloat("nameplateScale", v -> nameplateScale = v, nameplateScale, 0.5f, 1.5f, 1.0f));
         correctedFields.addAll(validateInt("verticalPadding", v -> verticalPadding = v, verticalPadding, 0, 10, 2));
         correctedFields.addAll(validateFloat("fovMultiplier", v -> fovMultiplier = v, fovMultiplier, 0.5f, 2.0f, 1.0f));
+        correctedFields.addAll(validateInt("globalHudYOffset", v -> globalHudYOffset = v, globalHudYOffset, -100, 100, 0));
 
         if (fadeStartDistance >= fadeEndDistance) {
             fadeStartDistance = 512;
@@ -411,6 +423,8 @@ public class Config {
     public void setEnableIconClustering(boolean value) { set(value, v -> this.enableIconClustering = v); }
     public boolean isEnableClusterSizeScaling() { return enableClusterSizeScaling; }
     public void setEnableClusterSizeScaling(boolean value) { set(value, v -> this.enableClusterSizeScaling = v); }
+    public boolean isEnableBouncingAnimation() { return enableBouncingAnimation; }
+    public void setEnableBouncingAnimation(boolean value) { set(value, v -> this.enableBouncingAnimation = v); }
 
     @SuppressWarnings("unused")
     public static class PlayerAppearance {

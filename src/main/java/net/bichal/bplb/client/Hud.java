@@ -235,7 +235,7 @@ public class Hud {
         MinecraftClient client = MinecraftClient.getInstance();
 
         for (RenderEntry entry : allEntries) {
-            Float targetPos = calculateRelativePosition(client.player, entry.pos);
+            float targetPos = calculateRelativePosition(client.player, entry.pos);
             if (targetPos < 0) continue;
 
             float screenX = targetPos * Constants.BAR_WIDTH;
@@ -602,18 +602,24 @@ public class Hud {
             lastUpdate = now;
 
             float distance = target - current;
-            float springForce = distance * 10.0f;
-            float damping = velocity * 5.0f;
-            float acceleration = springForce - damping;
 
-            velocity += acceleration * deltaTime;
-            velocity *= 0.88f;
+            if (CONFIG.isEnableBouncingAnimation()) {
+                float springForce = distance * 10.0f;
+                float damping = velocity * 5.0f;
+                float acceleration = springForce - damping;
 
-            current += velocity * deltaTime * 60f;
+                velocity += acceleration * deltaTime;
+                velocity *= 0.88f;
 
-            if (Math.abs(distance) < 0.3f && Math.abs(velocity) < 0.5f) {
-                current = MathHelper.lerp(0.2f, current, target);
-                velocity *= 0.7f;
+                current += velocity * deltaTime * 60f;
+
+                if (Math.abs(distance) < 0.3f && Math.abs(velocity) < 0.5f) {
+                    current = MathHelper.lerp(0.2f, current, target);
+                    velocity *= 0.7f;
+                }
+            } else {
+                current = MathHelper.lerp(CONFIG.getLerpSpeed() * 0.3f, current, target);
+                velocity = 0;
             }
 
             float targetAlphaHead = showHead ? 1f : 0f;

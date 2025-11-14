@@ -48,10 +48,6 @@ public class TextureManager {
         return TEXTURE_CACHE.computeIfAbsent("lodestone_marker_" + markerType, k -> Constants.ofMod(String.format("textures/sprites/hud/lodestone_markers_dots/%s.png", markerType)));
     }
 
-    public static Identifier getLodestoneMarkerOutlineTexture(String markerType, String borderStyle, String borderType) {
-        return TEXTURE_CACHE.computeIfAbsent("lodestone_marker_outline_" + markerType + "_" + borderStyle + "_" + borderType, k -> Constants.ofMod(String.format("textures/sprites/hud/lodestone_markers_dots_outlines/%s.png", borderType)));
-    }
-
     public static int getTextureIndexFromDistance(double distance) {
         if (distance <= 64) return 0;
         if (distance <= 128) return 1;
