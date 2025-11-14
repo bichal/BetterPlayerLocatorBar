@@ -21,13 +21,12 @@ jobs:
         run: |
           sed \
           -e "s/__PREV_VERSION__/${PREV}/g" \
-          -e "s/__PREV_BADGE__/${PREV}/g" \
-          README.md.template > README.md
+          docs/README.md.template > docs/README.md
 
       - name: Commit
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add README.md
+          git add docs/README.md
           git commit -m "Update README"
           git push
