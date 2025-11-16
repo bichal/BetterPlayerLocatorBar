@@ -1,7 +1,6 @@
 package net.bichal.bplb.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.bichal.bichalutils.client.render.AtlasAnimator;
 import net.bichal.bichalutils.util.ColorUtil;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.MathUtil;
@@ -37,6 +36,7 @@ import static net.bichal.bplb.util.Constants.CONFIG;
 public class Hud {
     public record PlayerPosition(UUID uuid, String name, double x, double y, double z) {
     }
+
     private static final Map<UUID, PlayerPosition> playerPositions = new HashMap<>();
     private static final Map<Object, Float> currentIconPositions = new HashMap<>();
     public static final List<Vec3d> deathMarkers = new ArrayList<>();
@@ -45,16 +45,14 @@ public class Hud {
     private static final Map<Object, Vec3d> lastKnownPositions = new HashMap<>();
     private static final Map<Object, Long> lastPositionUpdateTime = new HashMap<>();
     private static boolean shouldApplyHudOffset = false;
-    private static final Map<String, AtlasAnimator> arrowAnimators = new HashMap<>();
     private static final float MIN_Z_DEPTH = -500f;
     private static int currentHudOffset = 0;
     private static Vec3d lastCameraPos = Vec3d.ZERO;
     private static float lastCameraYaw = 0;
     private static float lastCameraPitch = 0;
     private static final Map<Object, SmoothPosition> smoothPositions = new HashMap<>();
-    private static final float POSITION_SMOOTHING = 0.15f;
     private static final Map<Integer, IconCluster> iconClusters = new HashMap<>();
-    private static final float CLUSTER_THRESHOLD = 8.0f;
+    private static final float CLUSTER_THRESHOLD = 5.0f;
 
     private static void updateRenderCache(MinecraftClient client) {
         if (client.player == null) {
@@ -229,18 +227,20 @@ public class Hud {
         shouldApplyHudOffset = hasVisibleIconsInVisibleRange(client);
     }
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private static void renderWithClustering(DrawContext context, List<RenderEntry> allEntries, int barX, int barY, boolean showDetails) {
         iconClusters.clear();
         Map<Object, Integer> keyToCluster = new HashMap<>();
         MinecraftClient client = MinecraftClient.getInstance();
 
+        allEntries.sort(Comparator.comparingDouble(RenderEntry::distance));
+
         for (RenderEntry entry : allEntries) {
             float targetPos = calculateRelativePosition(client.player, entry.pos);
             if (targetPos < 0) continue;
-
             float screenX = targetPos * Constants.BAR_WIDTH;
-            boolean foundCluster = false;
 
+            boolean foundCluster = false;
             for (Map.Entry<Integer, IconCluster> clusterEntry : iconClusters.entrySet()) {
                 IconCluster cluster = clusterEntry.getValue();
                 if (Math.abs(cluster.centerX - screenX) < CLUSTER_THRESHOLD) {
@@ -272,14 +272,15 @@ public class Hud {
 
             RenderEntry firstEntry = allEntries.stream()
                     .filter(e -> cluster.keys.contains(e.key))
-                    .findFirst()
+                    .min(Comparator.comparingDouble(RenderEntry::distance))
                     .orElse(null);
 
             if (firstEntry == null) continue;
 
             float sizeMultiplier = 1.0f;
             if (CONFIG.isEnableClusterSizeScaling() && count > 1) {
-                sizeMultiplier = 1.0f + (count - 1) * 0.1f;
+                float scaleFactor = Math.min(count, 5);
+                sizeMultiplier = 1.0f + (scaleFactor - 1) * 0.08f;
             }
 
             renderClusteredIcon(context, firstEntry, cluster, barX, barY, baseZ, showDetails, sizeMultiplier, count);
@@ -295,9 +296,8 @@ public class Hud {
         SmoothPosition smoothPos = smoothPositions.computeIfAbsent(entry.key, k -> new SmoothPosition(cluster.centerX));
 
         boolean showHead = !entry.isDeathMarker && !entry.isLodestone && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
-        boolean showName = showDetails;
 
-        smoothPos.update(cluster.centerX, showHead, showName);
+        smoothPos.update(cluster.centerX, showHead, showDetails);
 
         float currentPos = smoothPos.get();
         int iconCenterX = barX + Math.round(currentPos);
@@ -311,7 +311,6 @@ public class Hud {
         }
 
         int scaledSize = Math.round(Constants.ICON_BASE_SIZE * sizeMultiplier);
-        float topLeftX = iconCenterX - scaledSize / 2f;
         float topLeftY = barY - scaledSize / 2f;
 
         RenderUtils.withMatrixPush(context, 0, 0, () -> {
@@ -338,7 +337,7 @@ public class Hud {
             if (entry.isDeathMarker) {
                 RenderAddons.renderDeathMarker(context, 0, 0, finalAlpha, CONFIG);
             } else if (entry.isLodestone) {
-                RenderAddons.renderLodestoneMarker(context, 0, 0, finalAlpha, CONFIG);
+                RenderAddons.renderLodestoneMarker(context, 0, 0, finalAlpha, CONFIG, entry.distance);
             } else {
                 RenderAddons.renderPlayerIcon(context, entry.pos.name(), entry.pos.uuid(), entry.distance, 0, 0, false, CONFIG, finalAlpha);
                 if (showHead && smoothPos.alphaHead > 0.01f) {
@@ -348,7 +347,7 @@ public class Hud {
 
             context.getMatrices().pop();
 
-            if (count > 1 && showName) {
+            if (count > 1 && showDetails) {
                 String countText = count > 99 ? "99+" : String.valueOf(count);
                 int textWidth = client.textRenderer.getWidth(countText);
                 int textX = iconCenterX - textWidth / 2;
@@ -359,7 +358,7 @@ public class Hud {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             renderHeightIndicator(context, entry.pos, iconCenterX, (int) (topLeftY + scaledSize / 2f), finalAlpha, appearance);
 
-            if (showName && smoothPos.alphaName > 0.01f) {
+            if (showDetails && smoothPos.alphaName > 0.01f) {
                 String text = entry.isDeathMarker ? (int) entry.pos.x + " " + (int) entry.pos.y + " " + (int) entry.pos.z : entry.pos.name();
                 context.getMatrices().translate(0, 0, 1);
                 RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, finalAlpha * smoothPos.alphaName, CONFIG.getNameplateScale());
@@ -389,6 +388,7 @@ public class Hud {
         RenderSystem.disableBlend();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static void renderPlayerHeadOverlay(DrawContext context, UUID playerUuid, float x, float y, String textureOverride, float alpha) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (alpha <= 0.01f || client.world == null || playerUuid == null) return;
@@ -406,11 +406,15 @@ public class Hud {
             Logger.debug("Error loading skin texture", e);
         }
 
+        trySetShaderColor(context, (int) x, (int) y, alpha, skin);
+    }
+
+    public static void trySetShaderColor(DrawContext context, int x, int y, float alpha, Identifier skin) {
         try {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
             int padding = 2;
             int texSize = Math.max(1, Constants.ICON_BASE_SIZE - padding * 2);
-            context.drawTexture(skin, (int) x + padding, (int) y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
+            context.drawTexture(skin, x + padding, y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
         } finally {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
@@ -511,7 +515,8 @@ public class Hud {
             if (isDeathMarker) {
                 RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, finalAlpha, CONFIG);
             } else if (isLodestone) {
-                RenderAddons.renderLodestoneMarker(context, topLeftX, topLeftY, finalAlpha, CONFIG);
+                double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
+                RenderAddons.renderLodestoneMarker(context, topLeftX, topLeftY, finalAlpha, CONFIG, iconDistance);
             } else {
                 double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
                 RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, showHead, CONFIG, finalAlpha);
@@ -558,12 +563,16 @@ public class Hud {
     private static class IconCluster {
         final List<Object> keys = new ArrayList<>();
         float centerX;
+        float targetCenterX;
         float alpha;
+        float targetAlpha;
         long lastUpdate;
 
         IconCluster(float x) {
             this.centerX = x;
+            this.targetCenterX = x;
             this.alpha = 0f;
+            this.targetAlpha = 1f;
             this.lastUpdate = System.currentTimeMillis();
         }
 
@@ -571,6 +580,22 @@ public class Hud {
             if (!keys.contains(key)) {
                 keys.add(key);
             }
+        }
+
+        void update(float newCenter) {
+            long now = System.currentTimeMillis();
+            float deltaTime = Math.min((now - lastUpdate) / 1000f, 0.1f);
+            lastUpdate = now;
+
+            targetCenterX = newCenter;
+            targetAlpha = keys.isEmpty() ? 0f : 1f;
+
+            float distance = targetCenterX - centerX;
+            float springForce = distance * 8.0f;
+            float velocity = springForce * deltaTime;
+            centerX += velocity;
+
+            alpha = MathHelper.lerp(0.15f, alpha, targetAlpha);
         }
 
         int getCount() {

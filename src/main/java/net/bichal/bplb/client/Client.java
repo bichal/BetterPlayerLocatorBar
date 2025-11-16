@@ -1,12 +1,12 @@
 package net.bichal.bplb.client;
 
-import net.bichal.bichalutils.util.Constants;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.client.command.ConfigCommand;
 import net.bichal.bplb.client.render.AssetScanner;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.HandshakePayload;
+import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

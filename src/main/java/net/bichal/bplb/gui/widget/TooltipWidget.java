@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 public class TooltipWidget {
-    private static final long HOVER_DELAY_MS = 3000;
+    private static final long HOVER_DELAY_MS = 500;
     private final TextRenderer textRenderer;
     private Text currentTooltip;
     private long hoverStartTime;
@@ -22,14 +22,24 @@ public class TooltipWidget {
     }
 
     public void setHoveredTooltip(Text tooltip, int x, int y, int width) {
-        if (tooltip != currentTooltip) {
+        if (tooltip == null) {
+            clearTooltip();
+            return;
+        }
+
+        if (!tooltip.equals(currentTooltip)) {
             currentTooltip = tooltip;
             hoverStartTime = System.currentTimeMillis();
             isVisible = false;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+        } else {
+            long elapsed = System.currentTimeMillis() - hoverStartTime;
+            if (elapsed >= HOVER_DELAY_MS) {
+                isVisible = true;
+            }
         }
-        this.x = x;
-        this.y = y;
-        this.width = width;
     }
 
     public void clearTooltip() {

@@ -60,6 +60,9 @@ public class Config {
     private boolean enableIconClustering;
     private boolean enableClusterSizeScaling;
     private boolean enableBouncingAnimation;
+    private int lodestoneIconSize;
+    private boolean showExperienceBar;
+    private String experienceBarBackground;
 
     public Config() {
         this.lerpSpeed = 0.65f;
@@ -98,6 +101,9 @@ public class Config {
         this.enableIconClustering = false;
         this.enableClusterSizeScaling = false;
         this.enableBouncingAnimation = true;
+        this.lodestoneIconSize = 4;
+        this.showExperienceBar = true;
+        this.experienceBarBackground = "mojang";
     }
 
     public static void copy(Config source, Config target) {
@@ -141,6 +147,9 @@ public class Config {
         target.enableIconClustering = source.enableIconClustering;
         target.enableClusterSizeScaling = source.enableClusterSizeScaling;
         target.enableBouncingAnimation = source.enableBouncingAnimation;
+        target.lodestoneIconSize = source.lodestoneIconSize;
+        target.showExperienceBar = source.showExperienceBar;
+        target.experienceBarBackground = source.experienceBarBackground;
     }
 
     private static Config loadConfig() {
@@ -425,6 +434,12 @@ public class Config {
     public void setEnableClusterSizeScaling(boolean value) { set(value, v -> this.enableClusterSizeScaling = v); }
     public boolean isEnableBouncingAnimation() { return enableBouncingAnimation; }
     public void setEnableBouncingAnimation(boolean value) { set(value, v -> this.enableBouncingAnimation = v); }
+    public int getLodestoneIconSize() { return lodestoneIconSize; }
+    public void setLodestoneIconSize(int value) { set(value, v -> this.lodestoneIconSize = v); }
+    public boolean isShowExperienceBar() { return showExperienceBar; }
+    public void setShowExperienceBar(boolean value) { set(value, v -> this.showExperienceBar = v); }
+    public String getExperienceBarBackground() { return experienceBarBackground; }
+    public void setExperienceBarBackground(String value) { set(value, v -> this.experienceBarBackground = v); }
 
     @SuppressWarnings("unused")
     public static class PlayerAppearance {

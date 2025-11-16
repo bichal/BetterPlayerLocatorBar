@@ -69,13 +69,15 @@ public class ServerConfig {
 
     private static ServerConfig createFromPreset(String presetName) {
         return switch (presetName.toLowerCase()) {
-            case "minimal" -> new ServerConfig(5, 0.5, 1200, 256.0, 1, "minimal", true, true);
-            case "recommended" ->
-                    new ServerConfig(2, 0.1, 600, 512.0, Math.max(1, Runtime.getRuntime().availableProcessors() / 2), "recommended", true, true);
-            case "insane" ->
-                    new ServerConfig(1, 0.05, 300, 1024.0, Runtime.getRuntime().availableProcessors(), "insane", true, true);
+            case "minimal" -> createPresetConfig(5, 0.5, 1200, 256.0, 1, "minimal");
+            case "recommended" -> createPresetConfig(2, 0.1, 600, 512.0, Math.max(1, Runtime.getRuntime().availableProcessors() / 2), "recommended");
+            case "insane" -> createPresetConfig(1, 0.05, 300, 1024.0, Runtime.getRuntime().availableProcessors(), "insane");
             default -> null;
         };
+    }
+
+    private static ServerConfig createPresetConfig(int updateRate, double threshold, int cleanup, double distance, int threads, String preset) {
+        return new ServerConfig(updateRate, threshold, cleanup, distance, threads, preset, true, true);
     }
 
     private void updatePresetIfNeeded() {
@@ -109,8 +111,12 @@ public class ServerConfig {
     public void save() {
         try {
             File parent = CONFIG_FILE.getParentFile();
-            if (parent != null && !parent.exists()) parent.mkdirs();
-
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs()) {
+                    Logger.error("Failed to create server config directory");
+                    return;
+                }
+            }
             Files.writeString(CONFIG_FILE.toPath(), GSON.toJson(this));
             Logger.info("Server config saved (preset: {})", preset);
         } catch (IOException e) {

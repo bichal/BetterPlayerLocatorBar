@@ -14,43 +14,47 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static net.bichal.bplb.util.Constants.CONFIG;
 
 @Mixin(InGameHud.class)
-public class HotbarMixin {
-    @Unique
-    private static final float BASE_EXPERIENCE_OFFSET = -5;
-    @Unique
-    private static final int TAB_OFFSET = (int) -(18 * CONFIG.getNameplateScale());
-    @Unique
-    private float experienceYOffset = 0;
-    @Unique
-    private float statusYOffset = 0;
-    @Unique
-    private static long lastPlayerVisibleTime = 0;
-
+public class InGameHudMixin {
+    @Unique private static float experienceYOffset = 0;
+    @Unique private static float statusYOffset = 0;
+    @Unique private static long lastPlayerVisibleTime = 0;
+    @Unique private static final int MAX_OFFSET_THRESHOLD = 40;
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
     private void adjustExperienceLevel(DrawContext context, float x, CallbackInfo ci) {
+        if (shouldFreeze()) return;
         experienceYOffset = updateYOffset(true, experienceYOffset);
-        applyTranslation(context, experienceYOffset + 1);
+        context.getMatrices().push();
+        context.getMatrices().translate(0, experienceYOffset + 1, 0);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
     private void resetExperienceLevel(DrawContext context, float x, CallbackInfo ci) {
+        if (shouldFreeze()) return;
         context.getMatrices().pop();
     }
 
     @Inject(method = "renderStatusBars", at = @At("HEAD"))
     private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
+        if (shouldFreeze()) return;
         statusYOffset = updateYOffset(false, statusYOffset);
-        applyTranslation(context, statusYOffset);
+        context.getMatrices().push();
+        context.getMatrices().translate(0, statusYOffset, 0);
     }
 
     @Inject(method = "renderStatusBars", at = @At("RETURN"))
     private void resetStatusBars(DrawContext context, CallbackInfo ci) {
+        if (shouldFreeze()) return;
         context.getMatrices().pop();
     }
 
     @Unique
-    private float updateYOffset(boolean isExperience, float currentOffset) {
+    private static boolean shouldFreeze() {
+        return CONFIG.getGlobalHudYOffset() < -MAX_OFFSET_THRESHOLD;
+    }
+
+    @Unique
+    private static float updateYOffset(boolean isExperience, float currentOffset) {
         float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
         int globalOffset = CONFIG.getGlobalHudYOffset();
 
@@ -61,44 +65,36 @@ public class HotbarMixin {
 
         boolean shouldOffset = Hud.shouldApplyHudOffset();
         long currentTime = System.currentTimeMillis();
-
-        if (shouldOffset) {
-            lastPlayerVisibleTime = currentTime;
-        }
-
+        
+        if (shouldOffset) lastPlayerVisibleTime = currentTime;
+        
         boolean recentlyVisible = (currentTime - lastPlayerVisibleTime) < 3000;
+        boolean showingTab = Keybinds.shouldShowPlayerNames();
 
-        if (!shouldOffset && !recentlyVisible) {
+        if (!shouldOffset && !recentlyVisible && !showingTab) {
             float delta = globalOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        if (!CONFIG.isApplyHotbarOffset()) {
-            float targetOffset = isExperience ? BASE_EXPERIENCE_OFFSET + globalOffset : globalOffset - 1;
+        if (!CONFIG.isApplyHotbarOffset() && !showingTab) {
+            float targetOffset = isExperience ? -5 + globalOffset : globalOffset - 1;
             float delta = targetOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        int baseOffset = isExperience ? (int)(BASE_EXPERIENCE_OFFSET + globalOffset) : globalOffset - 1;
-        boolean shouldShowNames = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
-
-        if (shouldShowNames && baseOffset <= 0) {
-            baseOffset += TAB_OFFSET;
+        int baseOffset = isExperience ? -5 + globalOffset : globalOffset - 1;
+        
+        if (showingTab && baseOffset <= 0) {
+            baseOffset += -(18 + (int)(12 * CONFIG.getNameplateScale()));
         }
 
         float delta = baseOffset - currentOffset;
         float result = currentOffset + delta * MathUtil.easeInOutQuad(t);
-
+        
         if (isExperience) {
             Hud.setCurrentHudOffset((int)result);
         }
-
+        
         return result;
-    }
-
-    @Unique
-    private void applyTranslation(DrawContext context, float offset) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, offset, 0);
     }
 }

@@ -1,6 +1,6 @@
 package net.bichal.bplb.network;
 
-import net.bichal.bplb.util.Constants;
+import net.bichal.bichalutils.util.ModIdentifier;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record PositionUpdatePayload(List<PlayerInfo> newPlayers, List<PositionData> positions, List<UUID> disconnectedPlayers) implements CustomPayload {
-    public static final CustomPayload.Id<PositionUpdatePayload> ID = new CustomPayload.Id<>(Constants.ofMod("position_update"));
+    public static final CustomPayload.Id<PositionUpdatePayload> ID = new CustomPayload.Id<>(ModIdentifier.ofMod("position_update"));
     public static final PacketCodec<PacketByteBuf, PositionUpdatePayload> CODEC = PacketCodec.of(PositionUpdatePayload::write, PositionUpdatePayload::read);
     private static final byte PRECISION_ULTRA = 0;
     private static final byte PRECISION_HIGH = 1;

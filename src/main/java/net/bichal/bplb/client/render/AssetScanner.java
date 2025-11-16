@@ -1,6 +1,7 @@
 package net.bichal.bplb.client.render;
 
 import net.bichal.bichalutils.util.Logger;
+import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
@@ -20,7 +21,7 @@ public class AssetScanner {
         List<String> dots = new ArrayList<>();
         String[] dotTypes = {"default", "minimal", "mojang", "bowtie"};
         for (String dotType : dotTypes) {
-            Identifier testId = Constants.ofMod(String.format("textures/sprites/hud/player_dots/%s_0.png", dotType));
+            Identifier testId = ModIdentifier.ofMod(String.format("textures/sprites/hud/player_dots/%s_0.png", dotType));
             if (resourceManager.getResource(testId).isPresent()) {
                 dots.add(dotType);
             }
@@ -47,7 +48,7 @@ public class AssetScanner {
     private static List<String> checkExistence(ResourceManager resourceManager, String[] types, java.util.function.Function<String, String> pathBuilder) {
         List<String> result = new ArrayList<>();
         for (String type : types) {
-            Identifier testId = Constants.ofMod(pathBuilder.apply(type));
+            Identifier testId = ModIdentifier.ofMod(pathBuilder.apply(type));
             if (resourceManager.getResource(testId).isPresent()) {
                 result.add(type);
             }

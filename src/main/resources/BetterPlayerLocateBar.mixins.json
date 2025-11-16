@@ -7,5 +7,5 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "client": ["ChatMixin", "ClientPlayerEntityMixin", "HotbarMixin", "ModMenuIconMixin", "TooltipMixin"]
+  "client": ["ChatHudMixin", "ClientPlayerEntityMixin", "InGameHudMixin", "ModMenuIconMixin", "TooltipMixin"]
 }

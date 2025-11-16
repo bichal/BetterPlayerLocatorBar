@@ -1,0 +1,20 @@
+name: Release Ping
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "content": "<@1436072614618464327>",
+            "embeds": [{
+              "title": "New release: '${{ github.event.release.tag_name }}'",
+              "description": "Repo: ${{ github.repository }}\nAutor: ${{ github.event.release.author.login }}",
+              "url": "${{ github.event.release.html_url }}"
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK }}

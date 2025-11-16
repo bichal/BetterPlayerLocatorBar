@@ -3,6 +3,7 @@ package net.bichal.bplb.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bichalutils.util.ColorUtil;
 import net.bichal.bichalutils.util.Logger;
+import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
@@ -42,7 +43,7 @@ public class RenderAddons {
     private static void renderIcon(DrawContext context, float x, float y, float alpha, String dotId, String borderStyle, String borderType, int color, int textureIndex, Config config) {
         Identifier dotTexture = TextureManager.getPlayerDotTexture(dotId, textureIndex);
         Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
-        int borderColor = config.isInheritBorderColor() ? ColorUtil.darkerColoring(color) : 0xFF000000;
+        int borderColor = config.isInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
         RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
         RenderUtils.renderTintedTexture(context, dotTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha);
@@ -68,14 +69,7 @@ public class RenderAddons {
             Logger.debug("Error loading skin texture", e);
         }
 
-        try {
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-            int padding = 2;
-            int texSize = Math.max(1, Constants.ICON_BASE_SIZE - padding * 2);
-            context.drawTexture(skin, (int) x + padding, (int) y + padding, texSize, texSize, 8, 8, 8, 8, 64, 64);
-        } finally {
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
+        Hud.trySetShaderColor(context, (int) x, (int) y, alpha, skin);
     }
 
     public static void renderDeathMarker(DrawContext context, float x, float y, float alpha, Config config) {
@@ -83,7 +77,7 @@ public class RenderAddons {
         int color = config.getDeathMarkerColor();
         Identifier markerTexture = TextureManager.getDeathMarkerTexture(markerType);
         Identifier outlineTexture = TextureManager.getDeathMarkerOutlineTexture(markerType, config.getDeathMarkerBorderStyle(), config.getDeathMarkerBorderType());
-        int borderColor = config.isDeathMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : 0xFF000000;
+        int borderColor = config.isDeathMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
         try {
             RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
@@ -141,12 +135,13 @@ public class RenderAddons {
         });
     }
 
-    public static void renderLodestoneMarker(DrawContext context, float x, float y, float alpha, Config config) {
+    public static void renderLodestoneMarker(DrawContext context, float x, float y, float alpha, Config config, double distance) {
         String markerType = config.getLodestoneMarkerType();
-        int color = config.getLodestoneMarkerColor();
-        Identifier markerTexture = TextureManager.getLodestoneMarkerTexture(markerType);
-        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(markerType, config.getLodestoneMarkerBorderStyle(), config.getLodestoneMarkerBorderType(), 0);
-        int borderColor = config.isLodestoneMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : 0xFF000000;
+        int textureIndex = getAdjustedTextureIndex(distance, config);
+        Identifier markerTexture = TextureManager.getPlayerDotTexture(markerType, textureIndex);
+        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(markerType, config.getLodestoneMarkerBorderStyle(), config.getLodestoneMarkerBorderType(), textureIndex);
+        int color = ColorUtil.generateColorFromUUID(UUID.randomUUID());
+        int borderColor = config.isLodestoneMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
         try {
             RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
