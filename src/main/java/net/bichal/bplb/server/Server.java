@@ -1,11 +1,11 @@
 package net.bichal.bplb.server;
 
+import net.bichal.bichalutils.util.DistanceUtils;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.server.datapack.DatapackExtractor;
 import net.bichal.bplb.server.datapack.DatapackHandler;
-import net.bichal.bplb.util.DistanceUtils;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;

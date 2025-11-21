@@ -10,56 +10,44 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 public class TooltipWidget {
-    private static final long HOVER_DELAY_MS = 500;
     private final TextRenderer textRenderer;
     private Text currentTooltip;
-    private long hoverStartTime;
-    private boolean isVisible;
     private int x, y, width;
+    private int maxHeight;
 
     public TooltipWidget(MinecraftClient client) {
         this.textRenderer = client.textRenderer;
     }
 
     public void setHoveredTooltip(Text tooltip, int x, int y, int width) {
-        if (tooltip == null) {
-            clearTooltip();
-            return;
+        this.currentTooltip = tooltip;
+        this.x = x;
+        this.width = width;
+
+        List<OrderedText> lines = textRenderer.wrapLines(tooltip, width - Constants.CONFIG_PADDING * 2);
+        int calculatedHeight = lines.size() * (textRenderer.fontHeight + 2) + Constants.CONFIG_PADDING;
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        int screenHeight = client.getWindow().getScaledHeight();
+
+        if (y + calculatedHeight > screenHeight - 30) {
+            this.y = Math.max(85, y - calculatedHeight);
+        } else {
+            this.y = y;
         }
 
-        if (!tooltip.equals(currentTooltip)) {
-            currentTooltip = tooltip;
-            hoverStartTime = System.currentTimeMillis();
-            isVisible = false;
-            this.x = x;
-            this.y = y;
-            this.width = width;
-        } else {
-            long elapsed = System.currentTimeMillis() - hoverStartTime;
-            if (elapsed >= HOVER_DELAY_MS) {
-                isVisible = true;
-            }
-        }
+        this.maxHeight = calculatedHeight;
     }
 
     public void clearTooltip() {
         currentTooltip = null;
-        isVisible = false;
-    }
-
-    public void tick() {
-        if (currentTooltip != null && !isVisible) {
-            if (System.currentTimeMillis() - hoverStartTime >= HOVER_DELAY_MS) {
-                isVisible = true;
-            }
-        }
     }
 
     public void render(DrawContext context) {
-        if (!isVisible || currentTooltip == null) return;
+        if (currentTooltip == null) return;
 
         List<OrderedText> lines = textRenderer.wrapLines(currentTooltip, width - Constants.CONFIG_PADDING * 2);
-        int tooltipHeight = lines.size() * (textRenderer.fontHeight + 2) + Constants.CONFIG_PADDING;
+        int tooltipHeight = Math.min(maxHeight, lines.size() * (textRenderer.fontHeight + 2) + Constants.CONFIG_PADDING);
 
         int bgColor = 0xE0000000;
         int borderColor = 0xFF505050;
@@ -72,6 +60,7 @@ public class TooltipWidget {
 
         int textY = y + Constants.CONFIG_PADDING / 2;
         for (OrderedText line : lines) {
+            if (textY + textRenderer.fontHeight > y + tooltipHeight) break;
             context.drawText(textRenderer, line, x + Constants.CONFIG_PADDING, textY, Constants.WHITE_COLOR, true);
             textY += textRenderer.fontHeight + 2;
         }

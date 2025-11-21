@@ -4,6 +4,7 @@ import net.bichal.bichalutils.client.render.AtlasAnimator;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.Config;
+import net.bichal.bplb.gui.animation.Transition;
 import net.minecraft.util.Identifier;
 
 public final class Constants {
@@ -12,7 +13,6 @@ public final class Constants {
     public static final String MOD_ID = "bplb";
     public static final String MOD_NAME_SHORT = "BPLB";
     public static final String MOD_NAME_LARGE = "Better Player Locator Bar";
-
     public static final Config CONFIG = Config.getInstance();
 
     public static final Identifier STEVE_SKIN_TEXTURE = Identifier.of("minecraft", "textures/entity/player/wide/steve.png");
@@ -21,21 +21,31 @@ public final class Constants {
     public static final int BAR_WIDTH = 182;
     private static final int MAX_OFFSET_THRESHOLD = 40;
     public static final int EDGE_ALPHA_FADE_MARGIN = 10;
+
     public static final int ICON_BASE_SIZE = 9;
     public static final int ARROW_BASE_SIZE_WIDTH = 7;
     public static final int ARROW_BASE_SIZE_HEIGHT = 5;
 
     public static final int CONFIG_PADDING = 10;
-    public static final int CONFIG_SLIDER_WIDTH = 80;
-    public static final int CONFIG_TOGGLE_WIDTH = 100;
-    public static final int CONFIG_BUTTON_WIDTH = 100;
-    public static final int CONFIG_BUTTON_SPACING = 5;
+    public static final int HEADER_HEIGHT = 65;
+    public static final int FOOTER_HEIGHT = 30;
+    public static final int TAB_BAR_HEIGHT = 24;
+    public static final int ASIDE_COLLAPSED_WIDTH = 6;
+    public static final int ASIDE_EXPANDED_WIDTH = 150;
+    public static final int SEARCH_FIELD_WIDTH = 250;
+    public static final int SEARCH_BUTTON_SIZE = 25;
 
-    private static final int[] ARROW_FRAME_DURATIONS = {1000, 200};
-    private static final int[] ICON_FRAME_DURATIONS = {1000, 1000, 1000, 1000, 1000, 1000};
+    public static final int HIGHLIGHT_DURATION_MS = 1000;
+    public static final int TOOLTIP_FADE_DELAY_MS = 200;
+    public static final int SECTION_FLASH_DURATION_MS = 1000;
+    public static final int COLOR_HIGHLIGHT_BG = 0x40FFFF00;
+    public static final int COLOR_SEARCH_MATCH = 0xFFFFFF00;
+    public static final int COLOR_HOVER_OVERLAY = 0x20FFFFFF;
+    public static final int COLOR_FLASH_OVERLAY = 0x60FFAA00;
 
-    private static volatile AtlasAnimator arrowAnimator;
-    private static volatile AtlasAnimator iconAnimator;
+    public static Transition createTransition() {
+        return new Transition(0, 120f, 29f);
+    }
 
     private static final int[] MOD_MENU_ICON_DURATIONS = {200, 200, 200, 200, 200, 200};
     private static volatile AtlasAnimator modMenuIconAnimator;
@@ -68,6 +78,22 @@ public final class Constants {
     public static final int BLACK_BORDER_COLOR = 0xFF0E1110;
     public static final int GRAY_COLOR = 0xFF6B6B6B;
     public static final int WHITE_COLOR = 0xFAFAFA;
+
+    public static Transition createHoverTransition() {
+        return new Transition(0, 100f, 32.5f);
+    }
+
+    public static Transition createFlashTransition() {
+        return new Transition(0, 200f, 40f);
+    }
+
+    public static Transition createToggleTransition() {
+        return new Transition(0, 260f, 32f);
+    }
+
+    public static Transition createScrollTransition() {
+        return new Transition(0, 280f, 35f);
+    }
 
     public static int calculateTotalIconHeight() {
         int iconSize = CONFIG.getIconSize() * ICON_BASE_SIZE / 4;

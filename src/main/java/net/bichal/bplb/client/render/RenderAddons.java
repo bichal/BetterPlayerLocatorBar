@@ -1,6 +1,7 @@
 package net.bichal.bplb.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.bichal.bichalutils.client.render.RenderUtil;
 import net.bichal.bichalutils.util.ColorUtil;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bplb.client.Hud;
@@ -45,8 +46,8 @@ public class RenderAddons {
         Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
         int borderColor = config.isInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
-        RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
-        RenderUtils.renderTintedTexture(context, dotTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha);
+        RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
+        RenderUtil.renderTintedTexture(context, dotTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
     }
 
     private static void renderPlayerHeadOverlay(DrawContext context, UUID playerUuid, float x, float y, String textureOverride, float alpha) {
@@ -80,8 +81,8 @@ public class RenderAddons {
         int borderColor = config.isDeathMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
         try {
-            RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
-            RenderUtils.renderTintedTexture(context, markerTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha);
+            RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
+            RenderUtil.renderTintedTexture(context, markerTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
         } finally {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
@@ -124,9 +125,9 @@ public class RenderAddons {
         Identifier nameplateTexture = TextureManager.getNameplateTexture(borderStyle);
         int tintColor = ColorUtil.darkerColoring(color);
 
-        RenderUtils.withMatrixPush(context, x, y, () -> {
-            RenderUtils.setShaderColorRGBA(tintColor, alpha);
-            RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight);
+        RenderUtil.withMatrixPush(context, x, y, () -> {
+            RenderUtil.setShaderColorRGBA(tintColor, alpha);
+            RenderUtil.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight, 0, boxWidth, boxHeight);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 1);
             context.getMatrices().scale(scale, scale, 1.0f);
@@ -144,8 +145,8 @@ public class RenderAddons {
         int borderColor = config.isLodestoneMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
 
         try {
-            RenderUtils.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha);
-            RenderUtils.renderTintedTexture(context, markerTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha);
+            RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
+            RenderUtil.renderTintedTexture(context, markerTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
         } finally {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }

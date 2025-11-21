@@ -33,7 +33,7 @@ public abstract class BaseTabScreen extends Screen {
         this.addDrawableChild(tabNavigation);
     }
 
-    protected void selectTab(int index) {
+    public void selectTab(int index) {
         if (index >= 0 && index < tabs.size()) {
             currentTab = index;
             tabs.get(index).onSelect.run();

@@ -1,16 +1,16 @@
 package net.bichal.bplb.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.bichal.bichalutils.client.render.RenderUtil;
 import net.bichal.bichalutils.util.ColorUtil;
+import net.bichal.bichalutils.util.DistanceUtils;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.MathUtil;
 import net.bichal.bplb.client.render.RenderAddons;
-import net.bichal.bplb.client.render.RenderUtils;
 import net.bichal.bplb.client.tracker.LodestoneTracker;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.util.Constants;
-import net.bichal.bplb.util.DistanceUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -313,7 +313,7 @@ public class Hud {
         int scaledSize = Math.round(Constants.ICON_BASE_SIZE * sizeMultiplier);
         float topLeftY = barY - scaledSize / 2f;
 
-        RenderUtils.withMatrixPush(context, 0, 0, () -> {
+        RenderUtil.withMatrixPush(context, 0, 0, () -> {
             Config.PlayerAppearance appearance = entry.isDeathMarker || entry.isLodestone ? null : CONFIG.getPlayerConfig(entry.pos.name());
             String borderStyle;
             int color;
@@ -487,7 +487,7 @@ public class Hud {
         float topLeftY = barY - Constants.ICON_BASE_SIZE / 2f;
 
         float finalAlpha = alpha;
-        RenderUtils.withMatrixPush(context, 0, 0, () -> {
+        RenderUtil.withMatrixPush(context, 0, 0, () -> {
             boolean isDeathMarker = key instanceof Vec3d;
             boolean isLodestone = key instanceof UUID && LodestoneTracker.isLodestoneId((UUID) key);
             boolean showHead = !isDeathMarker && !isLodestone && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
@@ -759,7 +759,7 @@ public class Hud {
         double relativeAngle = MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(smoothedPos.z - viewer.getZ(), smoothedPos.x - viewer.getX())) - 90 - MathHelper.wrapDegrees(smoothYaw));
 
         if (CONFIG.isAdjustToFov()) {
-            MinecraftClient client = RenderUtils.getClient();
+            MinecraftClient client = RenderUtil.getClient();
             float fov = (float) client.options.getFov().getValue();
             float fovFactor = (90.0f / fov) * CONFIG.getFovMultiplier();
             relativeAngle *= fovFactor;
