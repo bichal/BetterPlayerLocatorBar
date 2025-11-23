@@ -1,10 +1,14 @@
 package net.bichal.bplb.gui.widget;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.animation.Transition;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +17,7 @@ import java.util.Map;
 import java.util.function.IntConsumer;
 
 public final class SideNavigation extends AnimatedWidget {
+    private static final Identifier VERTICAL_SEPARATOR = ModIdentifier.ofMod("textures/sprites/hud/vertical_separator.png");
     private static final int COLLAPSED_WIDTH = 6;
     private static final int EXPANDED_WIDTH = 150;
     private final List<NavSection> sections = new ArrayList<>();
@@ -40,7 +45,7 @@ public final class SideNavigation extends AnimatedWidget {
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         int x = getX();
-        int y = getY();
+        int y = getY() - 2;
 
         expanded = mouseX >= x && mouseX < x + EXPANDED_WIDTH && mouseY >= y && mouseY < y + height;
 
@@ -50,8 +55,10 @@ public final class SideNavigation extends AnimatedWidget {
         int currentWidth = (int) (COLLAPSED_WIDTH + (EXPANDED_WIDTH - COLLAPSED_WIDTH) * expandProgress);
         setWidth(currentWidth);
 
-        context.fill(x, y, x + currentWidth, y + height, 0xE8000000);
-        context.drawBorder(x, y, currentWidth, height, 0xFF505050);
+        context.fill(x, y, x + currentWidth, y + height - 1, 0x80000000);
+        RenderSystem.enableBlend();
+        context.drawTexture(VERTICAL_SEPARATOR, x + currentWidth, y + 1, 2, height - 3 , 0, 0, 2, 1, 3, 2);
+        RenderSystem.disableBlend();
 
         if (expandProgress > 0.01f) renderSections(context, mouseY, expandProgress);
     }
@@ -107,7 +114,7 @@ public final class SideNavigation extends AnimatedWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {}
+    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
 
     public record NavSection(Text title, int targetY) {}
 }

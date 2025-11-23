@@ -22,7 +22,7 @@ public final class AddWaypointEntry extends BaseConfigEntry {
         this.inputField.setMaxLength(16);
         this.inputField.setPlaceholder(placeholder);
 
-        this.addButton = new CompactButton(0, 0, 30, 20, Text.literal("+"), b -> {
+        this.addButton = CompactButton.text(0, 0, 30, 20, Text.literal("+"), b -> {
             String text = inputField.getText().trim();
             if (!text.isEmpty()) {
                 onAdd.accept(text);
@@ -32,8 +32,7 @@ public final class AddWaypointEntry extends BaseConfigEntry {
     }
 
     @Override
-    protected void renderContent(DrawContext context, int x, int y, int width, int height,
-                                 int mouseX, int mouseY, float delta) {
+    protected void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta) {
         inputField.setX(x + 10);
         inputField.setY(y + (height - 20) / 2);
         inputField.render(context, mouseX, mouseY, delta);
@@ -68,5 +67,10 @@ public final class AddWaypointEntry extends BaseConfigEntry {
     @Override
     public List<? extends Element> children() {
         return List.of(inputField, addButton);
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
     }
 }

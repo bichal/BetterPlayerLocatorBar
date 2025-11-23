@@ -41,33 +41,33 @@ public final class WaypointEntry extends BaseConfigEntry {
     }
 
     private void initButtons() {
-        mainButtons.add(new CompactButton(0, 0, 20, 20, Text.literal(visible ? "👁" : "🚫"), b -> {
+        mainButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal(visible ? "👁" : "🚫"), b -> {
             visible = !visible;
             b.setMessage(Text.literal(visible ? "👁" : "🚫"));
             actionHandler.accept(Action.TOGGLE_VISIBILITY);
         }));
 
         if (type != WaypointType.DEATH_MARKER) {
-            mainButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("✎"), b -> {
+            mainButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("✎"), b -> {
                 expanded = !expanded;
                 actionHandler.accept(Action.TOGGLE_EXPAND);
             }));
         } else {
-            mainButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("🗑"), b -> {
+            mainButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("🗑"), b -> {
                 actionHandler.accept(Action.DELETE);
             }));
         }
 
         if (type != WaypointType.DEATH_MARKER) {
-            detailButtons.add(new CompactButton(0, 0, 20, 20, Text.literal(customEnabled ? "✓" : "✗"), b -> {
+            detailButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal(customEnabled ? "✓" : "✗"), b -> {
                 customEnabled = !customEnabled;
                 b.setMessage(Text.literal(customEnabled ? "✓" : "✗"));
                 actionHandler.accept(Action.TOGGLE_CUSTOM);
             }));
-            detailButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("🗑"), b -> actionHandler.accept(Action.DELETE)));
-            detailButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("📋"), b -> actionHandler.accept(Action.DUPLICATE)));
-            detailButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("▲"), b -> actionHandler.accept(Action.MOVE_UP)));
-            detailButtons.add(new CompactButton(0, 0, 20, 20, Text.literal("▼"), b -> actionHandler.accept(Action.MOVE_DOWN)));
+            detailButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("🗑"), b -> actionHandler.accept(Action.DELETE)));
+            detailButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("📋"), b -> actionHandler.accept(Action.DUPLICATE)));
+            detailButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("▲"), b -> actionHandler.accept(Action.MOVE_UP)));
+            detailButtons.add(CompactButton.text(0, 0, 20, 20, Text.literal("▼"), b -> actionHandler.accept(Action.MOVE_DOWN)));
         }
     }
 

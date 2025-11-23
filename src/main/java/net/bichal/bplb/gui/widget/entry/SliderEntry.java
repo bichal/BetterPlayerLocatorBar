@@ -1,7 +1,5 @@
 package net.bichal.bplb.gui.widget.entry;
 
-import net.bichal.bichalutils.client.render.RenderUtil;
-import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.widget.CompactButton;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -32,7 +30,7 @@ public final class SliderEntry extends BaseConfigEntry {
         this.max = max;
         this.onChange = onChange;
         this.isInteger = isInteger;
-        this.resetButton = new CompactButton(ModIdentifier.ofMod("textures/sprites/hud/reset.png"), 0, 0, 0, 0, 20, 20, 20, 20, false, b -> {
+        this.resetButton = CompactButton.texture(0, 0, 20, 40, 0, false, b -> {
             value = defaultValue;
             onChange.accept(value);
         });
@@ -44,10 +42,8 @@ public final class SliderEntry extends BaseConfigEntry {
 
         resetButton.setX(x + width - 140);
         resetButton.setY(y + (height - 20) / 2);
-        RenderUtil.withMatrixPush(context, x, y, () -> {
-                    resetButton.active = Math.abs(value - defaultValue) > 0.01f;
-                }
-        );
+        resetButton.active = Math.abs(value - defaultValue) > 0.01f;
+        if (resetButton.active) resetButton.render(context, mouseX, mouseY, delta);
 
         String valueText = formatValue(value);
         int valueWidth = client.textRenderer.getWidth(valueText);
@@ -65,8 +61,7 @@ public final class SliderEntry extends BaseConfigEntry {
         context.fill(thumbX, sliderY, thumbX + 6, sliderY + SLIDER_HEIGHT, 0xFFFFFFFF);
         context.drawBorder(thumbX, sliderY, 6, SLIDER_HEIGHT, 0xFF000000);
 
-        int textColor = 0xAAFFAA;
-        context.drawText(client.textRenderer, valueText, valueX, y + (height - 8) / 2, textColor, false);
+        context.drawText(client.textRenderer, valueText, valueX, y + (height - 8) / 2, 0xAAFFAA, false);
     }
 
     private String formatValue(float val) {
@@ -88,10 +83,9 @@ public final class SliderEntry extends BaseConfigEntry {
         if (resetButton.mouseClicked(mouseX, mouseY, button)) return true;
 
         if (button == 0 && client != null) {
-            int entryWidth = 460;
-            int sideNavWidth = 160;
-            int x = sideNavWidth + (client.getWindow().getScaledWidth() - sideNavWidth - entryWidth) / 2;
-            int sliderX = x + entryWidth - SLIDER_WIDTH - PADDING;
+            int parentWidth = 460;
+            int parentX = (client.getWindow().getScaledWidth() - parentWidth) / 2;
+            int sliderX = parentX + parentWidth - SLIDER_WIDTH - PADDING;
 
             if (mouseX >= sliderX && mouseX <= sliderX + SLIDER_WIDTH) {
                 dragging = true;
@@ -105,10 +99,9 @@ public final class SliderEntry extends BaseConfigEntry {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (dragging && client != null) {
-            int entryWidth = 460;
-            int sideNavWidth = 160;
-            int x = sideNavWidth + (client.getWindow().getScaledWidth() - sideNavWidth - entryWidth) / 2;
-            int sliderX = x + entryWidth - SLIDER_WIDTH - PADDING;
+            int parentWidth = 460;
+            int parentX = (client.getWindow().getScaledWidth() - parentWidth) / 2;
+            int sliderX = parentX + parentWidth - SLIDER_WIDTH - PADDING;
             updateValue(mouseX, sliderX);
             return true;
         }

@@ -1,6 +1,5 @@
 package net.bichal.bplb.gui.widget.entry;
 
-import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.animation.Transition;
 import net.bichal.bplb.gui.widget.CompactButton;
 import net.bichal.bplb.util.Constants;
@@ -29,7 +28,7 @@ public final class ToggleEntry extends BaseConfigEntry {
         this.defaultValue = initial;
         this.onChange = onChange;
         this.toggleTransition = Constants.createToggleTransition();
-        this.resetButton = new CompactButton(ModIdentifier.ofMod("textures/sprites/hud/reset.png"), 0, 0, 0, 0, 20, 20, 20, 20, false, b -> {
+        this.resetButton = CompactButton.texture(0, 0, 20, 40, 0, false, b -> {
             value = defaultValue;
             onChange.accept(value);
         });
@@ -61,6 +60,8 @@ public final class ToggleEntry extends BaseConfigEntry {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (resetButton.mouseClicked(mouseX, mouseY, button)) return true;
+
         if (button == 0 && mouseX >= toggleX && mouseX <= toggleX + TOGGLE_WIDTH &&
                 mouseY >= toggleY && mouseY <= toggleY + TOGGLE_HEIGHT) {
             value = !value;

@@ -33,7 +33,9 @@ public final class TabBar extends AnimatedWidget {
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         context.fill(getX(), getY(), getX() + width, getY() + height, 0xE0000000);
-        context.drawBorder(getX(), getY(), width, height, 0xFF404040);
+        context.drawHorizontalLine(getX(), getX() + width, getY(), 0xFF404040);
+        context.drawVerticalLine(getX(), getY(), getY() + height, 0xFF404040);
+        context.drawVerticalLine(getX() + width - 1, getY(), getY() + height, 0xFF404040);
 
         int tabWidth = width / tabs.size();
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -45,14 +47,15 @@ public final class TabBar extends AnimatedWidget {
 
         for (int i = 0; i < tabs.size(); i++) {
             int tabX = getX() + i * tabWidth;
-            boolean hovered = mouseX >= tabX && mouseX < tabX + tabWidth && mouseY >= getY() && mouseY < getY() + height;
+            int nextTabX = getX() + (i + 1) * tabWidth;
 
+            boolean hovered = mouseX >= tabX && mouseX < nextTabX && mouseY >= getY() && mouseY < getY() + height;
             Transition hover = hoverTransitions.get(i);
             hover.setTarget(hovered || i == selectedTab ? 1f : 0f);
             float hoverAlpha = hover.update();
 
             int bgAlpha = (int) (hoverAlpha * 40);
-            context.fill(tabX, getY(), tabX + tabWidth, getY() + height, 0xFFFFFF | (bgAlpha << 24));
+            context.fill(tabX, getY(), nextTabX, getY() + height, 0xFFFFFF | (bgAlpha << 24));
 
             Text title = tabs.get(i).title();
             int textX = tabX + (tabWidth - mc.textRenderer.getWidth(title)) / 2;

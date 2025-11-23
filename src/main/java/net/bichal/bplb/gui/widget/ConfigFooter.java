@@ -1,58 +1,68 @@
 package net.bichal.bplb.gui.widget;
 
-import net.bichal.bplb.gui.animation.Transition;
 import net.bichal.bplb.gui.config.ConfigState;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
 
 import java.util.function.Consumer;
 
 public final class ConfigFooter extends AnimatedWidget {
-    private final CompactButton undoBtn, redoBtn, doneBtn, applyBtn, cancelBtn, resetBtn;
+    private final CompactButton undoBtn, redoBtn, applyBtn, cancelBtn, doneBtn, resetBtn;
+    private boolean resetConfirmation = false;
+    private long resetClickTime = 0;
     private final ConfigState state;
-    private final Transition[] buttonHovers = new Transition[6];
 
     public ConfigFooter(int y, int width, ConfigState state, Consumer<Action> actionHandler) {
         super(0, y, width, 30, Text.empty());
         this.state = state;
 
+        int buttonSize = 20;
         int buttonWidth = 80;
         int spacing = 6;
-        int totalWidth = buttonWidth * 6 + spacing * 5;
+        int totalWidth = (buttonSize * 2) + (buttonWidth * 4) + (spacing * 5);
         int startX = (width - totalWidth) / 2;
 
-        undoBtn = new CompactButton(startX, y + 5, buttonWidth, 20, Text.translatable("bplb.config.undo"),
-                b -> actionHandler.accept(Action.UNDO));
-        redoBtn = new CompactButton(startX + (buttonWidth + spacing), y + 5, buttonWidth, 20,
-                Text.translatable("bplb.config.redo"), b -> actionHandler.accept(Action.REDO));
-        doneBtn = new CompactButton(startX + (buttonWidth + spacing) * 2, y + 5, buttonWidth, 20,
-                Text.translatable("gui.done"), b -> actionHandler.accept(Action.DONE));
-        applyBtn = new CompactButton(startX + (buttonWidth + spacing) * 3, y + 5, buttonWidth, 20,
-                Text.translatable("bplb.config.apply"), b -> actionHandler.accept(Action.APPLY));
-        cancelBtn = new CompactButton(startX + (buttonWidth + spacing) * 4, y + 5, buttonWidth, 20,
-                Text.translatable("gui.cancel"), b -> actionHandler.accept(Action.CANCEL));
-        resetBtn = new CompactButton(startX + (buttonWidth + spacing) * 5, y + 5, buttonWidth, 20,
-                Text.translatable("bplb.config.reset"), b -> actionHandler.accept(Action.RESET));
-
-        for (int i = 0; i < 6; i++) {
-            buttonHovers[i] = new Transition(0, 15f, 8f);
-        }
+        undoBtn = CompactButton.texture(startX, y + 5, buttonSize, 60, 0, b -> actionHandler.accept(Action.UNDO));
+        redoBtn = CompactButton.texture(startX + buttonSize + spacing, y + 5, buttonSize, 80, 0, b -> actionHandler.accept(Action.REDO));
+        cancelBtn = CompactButton.text(startX + (buttonSize + spacing) * 2, y + 5, buttonWidth, buttonSize, Text.translatable("gui.cancel"), b -> actionHandler.accept(Action.CANCEL));
+        applyBtn = CompactButton.text(startX + (buttonSize + spacing) * 2 + buttonWidth + spacing, y + 5, buttonWidth, buttonSize, Text.translatable("bplb.config.apply"), b -> actionHandler.accept(Action.APPLY));
+        doneBtn = CompactButton.text(startX + (buttonSize + spacing) * 2 + (buttonWidth + spacing) * 2, y + 5, buttonWidth, buttonSize, Text.translatable("gui.done"), b -> actionHandler.accept(Action.DONE));
+        resetBtn = CompactButton.text(startX + (buttonSize + spacing) * 2 + (buttonWidth + spacing) * 3, y + 5, buttonWidth, buttonSize, Text.translatable("bplb.config.reset"), b -> {
+            long now = System.currentTimeMillis();
+            if (Screen.hasShiftDown() && resetConfirmation && (now - resetClickTime) < 2000) {
+                actionHandler.accept(Action.RESET);
+                resetConfirmation = false;
+            } else if (Screen.hasShiftDown()) {
+                resetConfirmation = true;
+                resetClickTime = now;
+            }
+        });
     }
 
     public void updateButtons() {
         undoBtn.active = state.canUndo();
         redoBtn.active = state.canRedo();
-        doneBtn.active = !state.isDirty();
+        cancelBtn.active = state.isDirty();
         applyBtn.active = state.isDirty();
+        doneBtn.active = !state.isDirty();
+
+        long now = System.currentTimeMillis();
+        if (resetConfirmation && (now - resetClickTime) > 2000) {
+            resetConfirmation = false;
+        }
+
         resetBtn.active = Screen.hasShiftDown();
+        if (resetConfirmation && Screen.hasShiftDown()) {
+            resetBtn.setMessage(Text.translatable("bplb.config.reset.confirm").styled(s -> s.withColor(0xFF0000).withBold(true)));
+        } else {
+            resetBtn.setMessage(Text.translatable("bplb.config.reset"));
+        }
     }
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.fill(0, getY(), width, getY() + height, 0xD0000000);
-        context.drawHorizontalLine(0, width, getY(), 0xFF404040);
-
         updateButtons();
 
         undoBtn.render(context, mouseX, mouseY, delta);
@@ -74,7 +84,7 @@ public final class ConfigFooter extends AnimatedWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {}
+    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
 
     public enum Action {UNDO, REDO, DONE, APPLY, CANCEL, RESET}
 }

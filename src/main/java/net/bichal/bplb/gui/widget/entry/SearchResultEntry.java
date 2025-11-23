@@ -19,7 +19,7 @@ public final class SearchResultEntry extends BaseConfigEntry {
                              Text highlightedLabel, Consumer<SearchEngine.SearchResult> onJump) {
         super(client, result.key(), result.label());
         this.highlightedLabel = highlightedLabel;
-        this.jumpButton = new CompactButton(0, 0, 30, 18, Text.literal("→"),
+        this.jumpButton = CompactButton.text(0, 0, 30, 18, Text.literal("→"),
                 b -> onJump.accept(result));
     }
 

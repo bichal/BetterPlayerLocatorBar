@@ -16,6 +16,7 @@ public abstract class BaseConfigEntry extends ScrollableListWidget.Entry {
     protected Text highlightedText;
     private long highlightStartTime = -1;
     private boolean highlighted = false;
+    protected boolean persistentHighlight = false;
 
     protected BaseConfigEntry(MinecraftClient client, String key, Text label) {
         this.client = client;
@@ -40,6 +41,7 @@ public abstract class BaseConfigEntry extends ScrollableListWidget.Entry {
         this.highlighted = highlighted;
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
         boolean isHovered = mouseX >= x && mouseX <= x + entryWidth && mouseY >= y && mouseY <= y + entryHeight;
@@ -49,20 +51,25 @@ public abstract class BaseConfigEntry extends ScrollableListWidget.Entry {
         float highlightAlpha = 0f;
         if (highlighted) {
             long elapsed = System.currentTimeMillis() - highlightStartTime;
-            if (elapsed > Constants.HIGHLIGHT_DURATION_MS) {
+            if (elapsed > Constants.HIGHLIGHT_DURATION_MS && !persistentHighlight) {
                 highlighted = false;
                 highlightTransition.setTarget(0f);
             } else {
-                float progress = 1f - (elapsed / (float) Constants.HIGHLIGHT_DURATION_MS);
-                float pulse = (float) Math.sin(elapsed * 0.008) * 0.5f + 0.5f;
-                highlightAlpha = highlightTransition.update() * pulse * 0.4f;
+                if (persistentHighlight) {
+                    highlightAlpha = 0.3f;
+                } else {
+                    float progress = 1f - (elapsed / (float) Constants.HIGHLIGHT_DURATION_MS);
+                    float pulse = (float) Math.sin(elapsed * 0.008) * 0.5f + 0.5f;
+                    highlightAlpha = highlightTransition.update() * pulse * 0.4f;
+                }
             }
         }
 
         float combinedAlpha = Math.max(hoverAlpha * 0.2f, highlightAlpha);
         if (combinedAlpha > 0.01f) {
             int bgAlpha = (int) (combinedAlpha * 255);
-            int bgColor = 0x808080 | (bgAlpha << 24);
+            int bgColor = persistentHighlight ? 0xFFFF00 : 0x808080;
+            bgColor = bgColor | (bgAlpha << 24);
             context.fill(x + 4, y, x + entryWidth - 4, y + entryHeight, bgColor);
         }
 
@@ -73,6 +80,11 @@ public abstract class BaseConfigEntry extends ScrollableListWidget.Entry {
         }
     }
 
+    public void setPersistentHighlight(boolean persistent) {
+        this.persistentHighlight = persistent;
+    }
+
+    @SuppressWarnings("unused")
     protected void checkTooltip(int mouseX, int mouseY) {}
 
     protected abstract void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta);
