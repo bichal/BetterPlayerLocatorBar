@@ -43,10 +43,7 @@ final class ConfigSnapshot {
         config.setEnableIconClustering((Boolean) values.get("enableIconClustering"));
         config.setEnableClusterSizeScaling((Boolean) values.get("enableClusterSizeScaling"));
         config.setEnableBouncingAnimation((Boolean) values.get("enableBouncingAnimation"));
-
-        @SuppressWarnings("unchecked")
-        Map<String, Config.PlayerAppearance> playerConfigs =
-                (Map<String, Config.PlayerAppearance>) values.get("playerConfigs");
+        Map<String, Config.PlayerAppearance> playerConfigs = (Map<String, Config.PlayerAppearance>) values.get("playerConfigs");
         config.getPlayerConfigs().clear();
         config.getPlayerConfigs().putAll(playerConfigs);
     }

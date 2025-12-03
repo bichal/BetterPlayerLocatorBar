@@ -58,27 +58,29 @@ public final class CompactButton extends AnimatedWidget {
         void onPress(CompactButton button);
     }
 
-    private interface ButtonStyle {
-        void render(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean showBackground, boolean active, Text text);
+    private static void renderBackground(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean active, boolean showBackground) {
+        if (!showBackground) return;
+        int bgColor;
+        if (active) {
+            bgColor = 0xFF2A2A2A;
+            int brightness = (int) (hoverAlpha * 30);
+            bgColor = (bgColor & 0xFF000000) | Math.min(255, ((bgColor >> 16) & 0xFF) + brightness) << 16 | Math.min(255, ((bgColor >> 8) & 0xFF) + brightness) << 8 | Math.min(255, (bgColor & 0xFF) + brightness);
+        } else {
+            bgColor = 0xFF151515;
+        }
+
+        context.fill(x, y, x + width, y + height, bgColor);
+        context.drawBorder(x, y, width, height, active ? 0xFF505050 : 0xFF252525);
     }
 
-    private static boolean renderBackground(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean showBackground, boolean active) {
-        if (!showBackground) return true;
-        int bgColor = active ? 0xFF2A2A2A : 0xFF1A1A1A;
-        int brightness = (int) (hoverAlpha * 30);
-        bgColor = (bgColor & 0xFF000000) |
-                Math.min(255, ((bgColor >> 16) & 0xFF) + brightness) << 16 |
-                Math.min(255, ((bgColor >> 8) & 0xFF) + brightness) << 8 |
-                Math.min(255, (bgColor & 0xFF) + brightness);
-        context.fill(x, y, x + width, y + height, bgColor);
-        context.drawBorder(x, y, width, height, active ? 0xFF505050 : 0xFF303030);
-        return false;
+    private interface ButtonStyle {
+        void render(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean active, boolean showBackground, Text text);
     }
 
     private static class TextStyle implements ButtonStyle {
         @Override
         public void render(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean showBackground, boolean active, Text text) {
-            if (renderBackground(context, x, y, width, height, hoverAlpha, showBackground, active)) return;
+            renderBackground(context, x, y, width, height, hoverAlpha, showBackground, active);
             MinecraftClient mc = MinecraftClient.getInstance();
             int textColor = active ? 0xFFFFFF : 0x808080;
             int textX = x + (width - mc.textRenderer.getWidth(text)) / 2;
@@ -91,8 +93,8 @@ public final class CompactButton extends AnimatedWidget {
         private static final Identifier ATLAS = ModIdentifier.ofMod("textures/sprites/hud/atlas/buttons.png");
 
         @Override
-        public void render(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean showBackground, boolean active, Text text) {
-            if (renderBackground(context, x, y, width, height, hoverAlpha, showBackground, active)) return;
+        public void render(DrawContext context, int x, int y, int width, int height, float hoverAlpha, boolean active, boolean showBackground, Text text) {
+            renderBackground(context, x, y, width, height, hoverAlpha, active, showBackground);
             float alpha = active ? 1.0f : 0.4f;
             RenderUtil.setShaderColorRGBA(0xFFFFFF, alpha);
             context.drawTexture(ATLAS, x, y, u, v, width, height, 200, 200);

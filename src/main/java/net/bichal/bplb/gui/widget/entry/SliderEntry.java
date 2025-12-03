@@ -40,16 +40,17 @@ public final class SliderEntry extends BaseConfigEntry {
     protected void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta) {
         context.drawText(client.textRenderer, getDisplayLabel(), x + PADDING, y + (height - 8) / 2, 0xFFFFFF, true);
 
-        resetButton.setX(x + width - 140);
+        String valueText = formatValue(value);
+        int valueWidth = client.textRenderer.getWidth(valueText);
+        int sliderX = x + width - SLIDER_WIDTH - PADDING;
+        int valueX = sliderX - valueWidth - 8;
+
+        resetButton.setX(valueX - 28);
         resetButton.setY(y + (height - 20) / 2);
         resetButton.active = Math.abs(value - defaultValue) > 0.01f;
         if (resetButton.active) resetButton.render(context, mouseX, mouseY, delta);
 
-        String valueText = formatValue(value);
-        int valueWidth = client.textRenderer.getWidth(valueText);
-        int sliderX = x + width - SLIDER_WIDTH - PADDING;
         int sliderY = y + (height - SLIDER_HEIGHT) / 2;
-        int valueX = sliderX - valueWidth - 8;
 
         context.fill(sliderX, sliderY + SLIDER_HEIGHT / 2 - 1, sliderX + SLIDER_WIDTH, sliderY + SLIDER_HEIGHT / 2 + 1, 0xFF404040);
 
@@ -81,12 +82,8 @@ public final class SliderEntry extends BaseConfigEntry {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (resetButton.mouseClicked(mouseX, mouseY, button)) return true;
-
-        if (button == 0 && client != null) {
-            int parentWidth = 460;
-            int parentX = (client.getWindow().getScaledWidth() - parentWidth) / 2;
-            int sliderX = parentX + parentWidth - SLIDER_WIDTH - PADDING;
-
+        if (button == 0) {
+            int sliderX = getSliderX();
             if (mouseX >= sliderX && mouseX <= sliderX + SLIDER_WIDTH) {
                 dragging = true;
                 updateValue(mouseX, sliderX);
@@ -98,14 +95,18 @@ public final class SliderEntry extends BaseConfigEntry {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (dragging && client != null) {
-            int parentWidth = 460;
-            int parentX = (client.getWindow().getScaledWidth() - parentWidth) / 2;
-            int sliderX = parentX + parentWidth - SLIDER_WIDTH - PADDING;
-            updateValue(mouseX, sliderX);
+        if (dragging) {
+            updateValue(mouseX, getSliderX());
             return true;
         }
         return false;
+    }
+
+    private int getSliderX() {
+        if (client == null) return 0;
+        int rowWidth = Math.min(client.getWindow().getScaledWidth() - 20, 460);
+        int parentX = (client.getWindow().getScaledWidth() - rowWidth) / 2;
+        return parentX + rowWidth - SLIDER_WIDTH - PADDING;
     }
 
     @Override

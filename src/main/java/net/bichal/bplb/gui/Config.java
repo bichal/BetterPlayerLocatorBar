@@ -63,6 +63,7 @@ public class Config {
     private int lodestoneIconSize;
     private boolean showExperienceBar;
     private String experienceBarBackground;
+    private final Map<String, Boolean> sectionStates = new HashMap<>();
 
     public Config() {
         this.lerpSpeed = 0.65f;
@@ -293,11 +294,13 @@ public class Config {
         return RenderAddons.getUuidFromCache(name);
     }
 
+    @SuppressWarnings("unused")
     public void setPlayerExpanded(String playerName, boolean expanded) {
         playerExpandedStates.put(playerName, expanded);
         save();
     }
 
+    @SuppressWarnings("unused")
     public boolean isPlayerExpanded(String playerName) {
         return playerExpandedStates.getOrDefault(playerName, false);
     }
@@ -382,7 +385,10 @@ public class Config {
     public int getIconSize() { return iconSize; }
     public void setIconSize(int value) { set(value, v -> this.iconSize = v); }
     public String getNameBorderStyle() { return nameBorderStyle; }
-    public void setNameBorderStyle(String value) { set(value, v -> this.nameBorderStyle = v); }
+
+    @SuppressWarnings("unused") /* Future implementation */ public void setNameBorderStyle(String value) {
+        set(value, v -> this.nameBorderStyle = v);
+    }
     public String getIconBorderStyle() { return iconBorderStyle; }
     public void setIconBorderStyle(String value) { set(value, v -> this.iconBorderStyle = v); }
     public String getIconBorderType() { return iconBorderType; }
@@ -405,7 +411,10 @@ public class Config {
     public int getLodestoneMarkerColor() { return lodestoneMarkerColor; }
     @SuppressWarnings("unused") /* Future implementation */ public void setLodestoneMarkerBorderStyle(String value) { set(value, v -> this.lodestoneMarkerBorderStyle = v); }
     public String getHeightDifferenceMode() { return heightDifferenceMode; }
-    public void setHeightDifferenceMode(String value) { set(value, v -> this.heightDifferenceMode = v); }
+
+    @SuppressWarnings("unused") /* Future implementation */ public void setHeightDifferenceMode(String value) {
+        set(value, v -> this.heightDifferenceMode = v);
+    }
     public boolean isModEnabled() { return modEnabled; }
     public void setModEnabled(boolean value) { set(value, v -> this.modEnabled = v); }
     public int getVerticalPadding() { return verticalPadding; }
@@ -440,6 +449,15 @@ public class Config {
     public void setShowExperienceBar(boolean value) { set(value, v -> this.showExperienceBar = v); }
     public String getExperienceBarBackground() { return experienceBarBackground; }
     public void setExperienceBarBackground(String value) { set(value, v -> this.experienceBarBackground = v); }
+
+    public boolean isSectionExpanded(String sectionKey) {
+        return sectionStates.getOrDefault(sectionKey, true);
+    }
+
+    public void setSectionExpanded(String sectionKey, boolean expanded) {
+        sectionStates.put(sectionKey, expanded);
+        save();
+    }
 
     @SuppressWarnings("unused")
     public static class PlayerAppearance {

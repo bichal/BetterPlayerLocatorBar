@@ -39,11 +39,17 @@ public final class ConfigState {
         return true;
     }
 
+    public boolean hasChangesFromInitial(Config config) {
+        ConfigSnapshot currentSnapshot = new ConfigSnapshot(config);
+        return !snapshotsEqual(currentSnapshot, undoStack.isEmpty() ? current : undoStack.getFirst());
+    }
+
+    private boolean snapshotsEqual(ConfigSnapshot s1, ConfigSnapshot s2) {
+        return true;
+    }
+
     public boolean isDirty() {return dirty;}
-
     public void markClean() {dirty = false;}
-
     public boolean canUndo() {return !undoStack.isEmpty();}
-
     public boolean canRedo() {return !redoStack.isEmpty();}
 }

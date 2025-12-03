@@ -17,7 +17,7 @@ public final class TabBar extends AnimatedWidget {
     private final Map<Integer, Transition> hoverTransitions = new HashMap<>();
     private final Transition selectionTransition = Constants.createTransition();
     private final IntConsumer onTabChange;
-    private int selectedTab = 0;
+    public int selectedTab = 0;
 
     public TabBar(int x, int y, int width, IntConsumer onTabChange) {
         super(x, y, width, 24, Text.empty());
@@ -38,18 +38,18 @@ public final class TabBar extends AnimatedWidget {
         context.drawVerticalLine(getX() + width - 1, getY(), getY() + height, 0xFF404040);
 
         int tabWidth = width / tabs.size();
-        MinecraftClient mc = MinecraftClient.getInstance();
 
+        MinecraftClient mc = MinecraftClient.getInstance();
         selectionTransition.setTarget(selectedTab * tabWidth);
         float selectionX = selectionTransition.update();
-
         context.fill(getX() + (int) selectionX, getY() + height - 2, getX() + (int) selectionX + tabWidth, getY() + height, 0xFF00AA00);
 
         for (int i = 0; i < tabs.size(); i++) {
             int tabX = getX() + i * tabWidth;
-            int nextTabX = getX() + (i + 1) * tabWidth;
+            int nextTabX = tabX + tabWidth;
 
             boolean hovered = mouseX >= tabX && mouseX < nextTabX && mouseY >= getY() && mouseY < getY() + height;
+
             Transition hover = hoverTransitions.get(i);
             hover.setTarget(hovered || i == selectedTab ? 1f : 0f);
             float hoverAlpha = hover.update();
@@ -58,16 +58,26 @@ public final class TabBar extends AnimatedWidget {
             context.fill(tabX, getY(), nextTabX, getY() + height, 0xFFFFFF | (bgAlpha << 24));
 
             Text title = tabs.get(i).title();
-            int textX = tabX + (tabWidth - mc.textRenderer.getWidth(title)) / 2;
+            int titleWidth = mc.textRenderer.getWidth(title);
+            int textX = tabX + (tabWidth - titleWidth) / 2;
+
+            if (titleWidth > tabWidth - 4) {
+                context.enableScissor(tabX, getY(), nextTabX, getY() + height);
+            }
+
             int textColor = i == selectedTab ? 0xFFFFFF : 0xAAAAAA;
             context.drawText(mc.textRenderer, title, textX, getY() + 8, textColor, true);
+
+            if (titleWidth > tabWidth - 4) {
+                context.disableScissor();
+            }
         }
     }
 
     @Override
     public void onClick(double mouseX, double mouseY) {
         int tabWidth = width / tabs.size();
-        int clicked = (int) (mouseX - getX()) / tabWidth;
+        int clicked = (int) ((mouseX - getX()) / tabWidth);
         if (clicked >= 0 && clicked < tabs.size()) {
             selectedTab = clicked;
             onTabChange.accept(clicked);

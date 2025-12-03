@@ -35,6 +35,7 @@ public final class AddWaypointEntry extends BaseConfigEntry {
     protected void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta) {
         inputField.setX(x + 10);
         inputField.setY(y + (height - 20) / 2);
+        inputField.setWidth(200);
         inputField.render(context, mouseX, mouseY, delta);
 
         addButton.setX(x + 220);
@@ -43,20 +44,42 @@ public final class AddWaypointEntry extends BaseConfigEntry {
         addButton.render(context, mouseX, mouseY, delta);
     }
 
+    @Override public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if (focused) {
+            inputField.setFocused(true);
+        }
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return inputField.mouseClicked(mouseX, mouseY, button) ||
-                addButton.mouseClicked(mouseX, mouseY, button);
+        boolean inputClicked = inputField.mouseClicked(mouseX, mouseY, button);
+        boolean buttonClicked = addButton.mouseClicked(mouseX, mouseY, button);
+
+        if (inputClicked) {
+            setFocused(true);
+            inputField.setFocused(true);
+        } else {
+            inputField.setFocused(false);
+        }
+
+        return inputClicked || buttonClicked;
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return inputField.keyPressed(keyCode, scanCode, modifiers);
+        if (inputField.isFocused()) {
+            return inputField.keyPressed(keyCode, scanCode, modifiers);
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return inputField.charTyped(chr, modifiers);
+        if (inputField.isFocused()) {
+            return inputField.charTyped(chr, modifiers);
+        }
+        return super.charTyped(chr, modifiers);
     }
 
     @Override
@@ -67,10 +90,5 @@ public final class AddWaypointEntry extends BaseConfigEntry {
     @Override
     public List<? extends Element> children() {
         return List.of(inputField, addButton);
-    }
-
-    @Override
-    public void setFocused(boolean focused) {
-        super.setFocused(focused);
     }
 }

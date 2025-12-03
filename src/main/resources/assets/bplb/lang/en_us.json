@@ -1,7 +1,7 @@
 {
   "key.bplb.show_player_name": "Show names",
   "key.bplb.open_config": "Open settings",
-  "screen.bplb.config.apply": "Apply",
+  "bplb.config.apply": "Apply",
   "bplb.config.title": "Better Player Locator Bar - Settings",
   "bplb.config.search": "Search",
   "bplb.config.tab.general": "General",

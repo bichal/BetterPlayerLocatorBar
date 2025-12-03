@@ -40,7 +40,7 @@ public final class ToggleEntry extends BaseConfigEntry {
 
         resetButton.setX(x + width - 70);
         resetButton.setY(y + (height - 20) / 2);
-        resetButton.active = value != defaultValue;
+        resetButton.active = (value != defaultValue);
         if (resetButton.active) resetButton.render(context, mouseX, mouseY, delta);
 
         toggleX = x + width - TOGGLE_WIDTH - 10;
