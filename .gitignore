@@ -23,3 +23,4 @@ replay_*.log
 test
 *.png~
 qodana.yaml
+/run/
