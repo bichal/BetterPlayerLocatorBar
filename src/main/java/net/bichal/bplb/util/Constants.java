@@ -38,10 +38,6 @@ public final class Constants {
     public static final int HIGHLIGHT_DURATION_MS = 1000;
     public static final int TOOLTIP_FADE_DELAY_MS = 200;
     public static final int SECTION_FLASH_DURATION_MS = 1000;
-    public static final int COLOR_HIGHLIGHT_BG = 0x40FFFF00;
-    public static final int COLOR_SEARCH_MATCH = 0xFFFFFF00;
-    public static final int COLOR_HOVER_OVERLAY = 0x20FFFFFF;
-    public static final int COLOR_FLASH_OVERLAY = 0x60FFAA00;
 
     public static Transition createTransition() {
         return new Transition(0, 120f, 29f);

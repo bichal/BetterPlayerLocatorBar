@@ -2,6 +2,7 @@ package net.bichal.bplb.gui.widget.entry;
 
 import net.bichal.bplb.gui.animation.Transition;
 import net.bichal.bplb.gui.widget.CompactButton;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -55,7 +56,7 @@ public final class ToggleEntry extends BaseConfigEntry {
 
         int thumbSize = TOGGLE_HEIGHT - 4;
         int thumbX = toggleX + 2 + (int) ((TOGGLE_WIDTH - thumbSize - 4) * progress);
-        context.fill(thumbX, toggleY + 2, thumbX + thumbSize, toggleY + TOGGLE_HEIGHT - 2, 0xFFFFFFFF);
+        context.fill(thumbX, toggleY + 2, thumbX + thumbSize, toggleY + TOGGLE_HEIGHT - 2, ColorConstants.COLOR_WHITE);
     }
 
     @Override

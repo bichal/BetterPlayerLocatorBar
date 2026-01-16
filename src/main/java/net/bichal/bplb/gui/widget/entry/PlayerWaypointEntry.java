@@ -3,6 +3,7 @@ package net.bichal.bplb.gui.widget.entry;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.gui.widget.CompactButton;
 import net.bichal.bplb.gui.widget.DotPreviewWidget;
+import net.bichal.bplb.util.ColorConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -94,7 +95,7 @@ public final class PlayerWaypointEntry extends BaseConfigEntry {
         if (Screen.hasShiftDown()) {
             displayName = Text.literal(label.getString() + " (" + playerUuid.toString().substring(0, 8) + "...)");
         }
-        context.drawText(client.textRenderer, displayName, x + 25, y + (height - 8) / 2, 0xFFFFFF, true);
+        context.drawText(client.textRenderer, displayName, x + 25, y + (height - 8) / 2, ColorConstants.COLOR_WHITE, true);
 
         int buttonX = x + width - 10;
         for (int i = buttons.size() - 1; i >= 0; i--) {

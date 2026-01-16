@@ -1,6 +1,7 @@
 package net.bichal.bplb.gui.widget.entry;
 
 import net.bichal.bplb.gui.widget.CompactButton;
+import net.bichal.bplb.util.ColorConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -59,7 +60,7 @@ public final class SliderEntry extends BaseConfigEntry {
         context.fill(sliderX, sliderY + SLIDER_HEIGHT / 2 - 1, sliderX + fillWidth, sliderY + SLIDER_HEIGHT / 2 + 1, 0xFF00AA00);
 
         int thumbX = sliderX + (int) ((SLIDER_WIDTH - 6) * normalizedValue);
-        context.fill(thumbX, sliderY, thumbX + 6, sliderY + SLIDER_HEIGHT, 0xFFFFFFFF);
+        context.fill(thumbX, sliderY, thumbX + 6, sliderY + SLIDER_HEIGHT, ColorConstants.COLOR_WHITE);
         context.drawBorder(thumbX, sliderY, 6, SLIDER_HEIGHT, 0xFF000000);
 
         context.drawText(client.textRenderer, valueText, valueX, y + (height - 8) / 2, 0xAAFFAA, false);

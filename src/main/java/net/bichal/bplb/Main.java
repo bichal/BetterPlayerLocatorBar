@@ -13,9 +13,11 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 public class Main implements ModInitializer {
     @Override
     public void onInitialize() {
-        Logger.setModName(Constants.MOD_NAME_LARGE);
-        Logger.info("Mod initialization initialized");
+        // Ajustando los valores de Bichal Utils para adaptarse al mod
+        Logger.setModName(Constants.MOD_NAME_LARGE, Constants.MOD_NAME_SHORT);
         ModIdentifier.setNamespace(Constants.MOD_ID);
+
+        Logger.info("Mod initialization initialized");
 
         PayloadTypeRegistry.playS2C().register(PositionUpdatePayload.ID, PositionUpdatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(HandshakePayload.ID, HandshakePayload.CODEC);

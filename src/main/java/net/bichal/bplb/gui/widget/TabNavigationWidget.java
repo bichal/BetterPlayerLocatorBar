@@ -1,6 +1,7 @@
 package net.bichal.bplb.gui.widget;
 
 import net.bichal.bplb.gui.screen.BaseTabScreen;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -45,14 +46,14 @@ public class TabNavigationWidget extends ClickableWidget {
             float targetHover = (hovered || selected) ? 1f : 0f;
             tabHoverProgress[i] = MathHelper.lerp(0.2f, tabHoverProgress[i], targetHover);
             
-            int bgColor = selected ? 0xFF2A2A2A : 0xFF1A1A1A;
+            int bgColor = selected ? ColorConstants.COLOR_DISABLED : ColorConstants.COLOR_DARK_DISABLED;
             int brightness = (int) (tabHoverProgress[i] * 20);
             bgColor = (bgColor & 0xFF000000) | ((bgColor & 0xFF0000) + (brightness << 16)) | ((bgColor & 0xFF00) + (brightness << 8)) | ((bgColor & 0xFF) + brightness);
             
             context.fill(tabX, this.getY(), tabX + tabWidth - 1, this.getY() + this.height, bgColor);
             
             if (selected) {
-                context.fill(tabX, this.getY() + this.height - 2, tabX + tabWidth - 1, this.getY() + this.height, 0xFF55FF55);
+                context.fill(tabX, this.getY() + this.height - 2, tabX + tabWidth - 1, this.getY() + this.height, ColorConstants.COLOR_DARK_DISABLED);
             }
             
             Text tabText = Text.translatable(Constants.CONFIG_KEY_PREFIX + "tab." + tabs.get(i).key());

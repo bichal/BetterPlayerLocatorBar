@@ -1,6 +1,7 @@
 package net.bichal.bplb.gui.widget;
 
 import net.bichal.bplb.gui.config.ConfigState;
+import net.bichal.bplb.util.ColorConstants;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
@@ -61,7 +62,7 @@ public final class ConfigFooter extends AnimatedWidget {
 
         resetBtn.active = net.minecraft.client.gui.screen.Screen.hasShiftDown();
         if (resetConfirmation && net.minecraft.client.gui.screen.Screen.hasShiftDown()) {
-            resetBtn.setMessage(Text.translatable("bplb.config.reset_confirm.title").styled(s -> s.withColor(0xFF0000).withBold(true)));
+            resetBtn.setMessage(Text.translatable("bplb.config.reset_confirm.title").styled(s -> s.withColor(ColorConstants.COLOR_RED).withBold(true)));
         } else {
             resetBtn.setMessage(Text.translatable("bplb.config.reset_settings"));
         }

@@ -6,7 +6,6 @@ import net.bichal.bplb.client.command.ConfigCommand;
 import net.bichal.bplb.client.render.AssetScanner;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.HandshakePayload;
-import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -43,7 +42,6 @@ public class Client implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Logger.setModName(Constants.MOD_NAME_LARGE);
         Logger.info("Initializing mod client side!");
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -63,12 +61,10 @@ public class Client implements ClientModInitializer {
 
                 Logger.info("Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers", availableDots.size(), availableArrows.size(), availableIconBorders.size(), availableNameBorders.size(), availableDeathMarkers.size());
 
-                if (!availableDots.isEmpty() && !availableDots.contains(Config.getInstance().getDotType())) {
+                if (!availableDots.isEmpty() && !availableDots.contains(Config.getInstance().getDotType()))
                     Config.getInstance().setDotType(availableDots.getFirst());
-                }
-                if (!availableArrows.isEmpty() && !availableArrows.contains(Config.getInstance().getArrowType())) {
+                if (!availableArrows.isEmpty() && !availableArrows.contains(Config.getInstance().getArrowType()))
                     Config.getInstance().setArrowType(availableArrows.getFirst());
-                }
             }
         });
 

@@ -85,7 +85,7 @@ public class InGameHudMixin {
         int baseOffset = isExperience ? -5 + globalOffset : globalOffset - 1;
         
         if (showingTab && baseOffset <= 0) {
-            baseOffset += -(18 + (int)(12 * CONFIG.getNameplateScale()));
+            baseOffset -= (18 + (int) (12 * CONFIG.getNameplateScale()));
         }
 
         float delta = baseOffset - currentOffset;

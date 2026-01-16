@@ -1,0 +1,8 @@
+{
+  "positionUpdateRateTicks": 2,
+  "positionChangeThreshold": 0.1,
+  "cleanupIntervalTicks": 0,
+  "maxRelevantDistance": 512.0,
+  "threadPoolSize": 10,
+  "preset": "recommended"
+}

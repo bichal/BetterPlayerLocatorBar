@@ -1,16 +1,17 @@
 package net.bichal.bplb.gui.widget;
 
 import net.bichal.bplb.gui.animation.Transition;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 public final class SearchField extends TextFieldWidget {
     private final Transition focusTransition = Constants.createHoverTransition();
+    private final Transition modeTransition = Constants.createHoverTransition();
 
     public SearchField(net.minecraft.client.font.TextRenderer renderer, int x, int y, int w, int h) {
         super(renderer, x, y, w, h, Text.empty());
@@ -22,8 +23,8 @@ public final class SearchField extends TextFieldWidget {
         focusTransition.setTarget(focused ? 1f : 0f);
         float alpha = focusTransition.update();
 
-        int bgColor = 0x80101010 | ((int) (alpha * 32) << 24);
-        int borderColor = focused ? 0xFF909090 : 0xFF505050;
+        int bgColor = this.isFocused() ? ColorConstants.COLOR_BLACK : ColorConstants.COLOR_DARK;
+        int borderColor = focused ? ColorConstants.COLOR_DARK : ColorConstants.COLOR_DARK_DISABLED;
 
         context.fill(getX(), getY(), getX() + width, getY() + height, bgColor);
         context.drawBorder(getX(), getY(), width, height, borderColor);
@@ -47,7 +48,7 @@ public final class SearchField extends TextFieldWidget {
                 result.append(Text.literal(text.substring(lastEnd, idx)));
             }
             result.append(Text.literal(text.substring(idx, idx + query.length()))
-                    .setStyle(Style.EMPTY.withColor(Formatting.YELLOW).withBold(true)));
+                    .setStyle(Style.EMPTY.withColor(ColorConstants.COLOR_HIGHLIGHT).withBold(true)));
             lastEnd = idx + query.length();
         }
 

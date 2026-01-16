@@ -3,6 +3,7 @@ package net.bichal.bplb.gui.widget;
 import net.bichal.bichalutils.client.render.RenderUtil;
 import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.animation.Transition;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -62,7 +63,7 @@ public final class CompactButton extends AnimatedWidget {
         if (!showBackground) return;
         int bgColor;
         if (active) {
-            bgColor = 0xFF2A2A2A;
+            bgColor = ColorConstants.COLOR_BLACK;
             int brightness = (int) (hoverAlpha * 30);
             bgColor = (bgColor & 0xFF000000) | Math.min(255, ((bgColor >> 16) & 0xFF) + brightness) << 16 | Math.min(255, ((bgColor >> 8) & 0xFF) + brightness) << 8 | Math.min(255, (bgColor & 0xFF) + brightness);
         } else {

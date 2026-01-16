@@ -1,6 +1,7 @@
 package net.bichal.bplb.gui.widget.entry;
 
 import net.bichal.bplb.gui.widget.CompactButton;
+import net.bichal.bplb.util.ColorConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -53,7 +54,7 @@ public final class CycleEntry extends BaseConfigEntry {
 
     @Override
     protected void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta) {
-        context.drawText(client.textRenderer, getDisplayLabel(), x + 10, y + (height - 8) / 2, 0xFFFFFF, true);
+        context.drawText(client.textRenderer, getDisplayLabel(), x + 10, y + (height - 8) / 2, ColorConstants.COLOR_WHITE, true);
 
         resetButton.setX(x + width - 130);
         resetButton.setY(y + (height - 20) / 2);

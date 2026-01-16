@@ -1,12 +1,14 @@
 package net.bichal.bplb.gui.widget.entry;
 
 import net.bichal.bplb.gui.animation.Transition;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.RotationAxis;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -35,8 +37,8 @@ public final class SectionEntry extends BaseConfigEntry {
 
     @Override
     protected void renderContent(DrawContext context, int x, int y, int width, int height, int mouseX, int mouseY, float delta) {
-        context.fill(x + 4, y, x + width - 4, y + height, 0x40000000);
-        context.drawHorizontalLine(x + 4, x + width - 4, y + height - 1, 0xFF404040);
+        context.fill(x + 4, y, x + width - 4, y + height, ColorConstants.COLOR_BLACK_OVERLAY);
+        context.drawHorizontalLine(x + 4, x + width - 5, y + height - 1, ColorConstants.COLOR_DISABLED_OVERLAY);
 
         if (collapsible) {
             expandTransition.setTarget(expanded ? 1f : 0f);
@@ -44,13 +46,13 @@ public final class SectionEntry extends BaseConfigEntry {
 
             context.getMatrices().push();
             context.getMatrices().translate(x + 12, y + height / 2f, 0);
-            context.getMatrices().multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Z.rotationDegrees(progress * 90));
-            context.drawText(client.textRenderer, "▶", -4, -4, 0xFFFFFF, false);
+            context.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(progress * 90));
+            context.drawText(client.textRenderer, "▶", -4, -4, ColorConstants.COLOR_WHITE, false);
             context.getMatrices().pop();
 
-            context.drawText(client.textRenderer, label, x + 30, y + (height - 8) / 2, 0xFFFFFF, true);
+            context.drawText(client.textRenderer, label, x + 30, y + (height - 8) / 2, ColorConstants.COLOR_WHITE, true);
         } else {
-            context.drawText(client.textRenderer, label, x + 12, y + (height - 8) / 2, 0xFFFFFF, true);
+            context.drawText(client.textRenderer, label, x + 12, y + (height - 8) / 2, ColorConstants.COLOR_WHITE, true);
         }
     }
 

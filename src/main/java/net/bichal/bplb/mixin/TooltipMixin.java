@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(Screen.class)
+@SuppressWarnings("unused") @Mixin(Screen.class)
 public class TooltipMixin {
     @ModifyVariable(method = "renderWithTooltip", at = @At("HEAD"), ordinal = 1, argsOnly = true)
     private int adjustTooltipY(int y) {

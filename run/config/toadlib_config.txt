@@ -1,0 +1,3 @@
+interp_overview:false
+tooltipLineLength:280
+showCfgButton2:true

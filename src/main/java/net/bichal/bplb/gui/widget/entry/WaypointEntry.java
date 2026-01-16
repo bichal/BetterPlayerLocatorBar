@@ -4,6 +4,7 @@ import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.gui.animation.Transition;
 import net.bichal.bplb.gui.widget.CompactButton;
 import net.bichal.bplb.gui.widget.DotPreviewWidget;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -87,7 +88,7 @@ public final class WaypointEntry extends BaseConfigEntry {
                 float progress = 1f - (elapsed / (float) Constants.HIGHLIGHT_DURATION_MS);
                 float pulse = (float) Math.sin(elapsed * 0.008) * 0.5f + 0.5f;
                 int flashAlpha = (int) (pulse * progress * 96);
-                context.fill(x + 4, y, x + width - 4, y + height, Constants.COLOR_FLASH_OVERLAY | (flashAlpha << 24));
+                context.fill(x + 4, y, x + width - 4, y + height, ColorConstants.COLOR_FLASH_OVERLAY | (flashAlpha << 24));
             }
         }
 

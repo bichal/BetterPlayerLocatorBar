@@ -3,6 +3,7 @@ package net.bichal.bplb.gui.widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.gui.animation.Transition;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +57,7 @@ public final class SideNavigation extends AnimatedWidget {
         int currentWidth = (int) (COLLAPSED_WIDTH + (EXPANDED_WIDTH - COLLAPSED_WIDTH) * expandProgress);
         setWidth(currentWidth);
 
-        context.fill(x, y, x + currentWidth, y + height - 1, 0x80000000);
+        context.fill(x, y, x + currentWidth, y + height - 1, ColorConstants.COLOR_BLACK_OVERLAY);
         RenderSystem.enableBlend();
         context.drawTexture(VERTICAL_SEPARATOR, x + currentWidth, y + 1, 2, height - 3 , 0, 0, 2, 1, 3, 2);
         RenderSystem.disableBlend();
@@ -83,10 +85,10 @@ public final class SideNavigation extends AnimatedWidget {
             float hoverProgress = hoverTrans.update();
 
             int bgAlpha = (int) (hoverProgress * 80);
-            context.fill(x + 3, yPos, x + width - 3, yPos + sectionHeight, 0x40FFFFFF | (bgAlpha << 24));
+            context.fill(x + 3, yPos, x + width - 3, yPos + sectionHeight, ColorConstants.COLOR_WHITE_OVERLAY | (bgAlpha << 24));
 
             int textAlpha = (int) (alpha * 255);
-            int textColor = 0xFFFFFF | (textAlpha << 24);
+            int textColor = ColorConstants.COLOR_WHITE | (textAlpha << 24);
             context.drawText(mc.textRenderer, section.title(), x + 8, yPos + 9, textColor, true);
 
             yPos += sectionHeight + spacing;

@@ -1,39 +1,37 @@
 {
   "schemaVersion": 1,
-  "id": "bplb",
+  "id": "${mod_id}",
   "version": "${mod_version}",
-  "name": "Better Player Locator Bar",
-  "description": "A Minecraft Fabric mod that adds a HUD bar above the experience bar",
-  "authors": [
-    "Bichal"
-  ],
+  "name": "${mod_name_spaced}",
+  "description": "${mod_description}",
+  "authors": [],
   "license": "${license}",
   "contact": {
     "homepage": "${curseforge_page}",
     "sources": "${homepage}",
     "issues": "${homepage}/issues"
   },
-  "icon": "assets/bplb/icon.png",
+  "icon": "assets/${mod_id}/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.bichal.bplb.Main"
+      "${maven_group}.${mod_id}.Main"
     ],
     "client": [
-      "net.bichal.bplb.client.Client"
+      "${maven_group}.${mod_id}.client.Client"
     ],
     "modmenu": [
-      "net.bichal.bplb.integration.ModMenuImpl"
+      "${maven_group}.${mod_id}.integration.ModMenuImpl"
     ]
   },
   "mixins": [
-    "BetterPlayerLocateBar.mixins.json"
+    "${mod_name}.mixins.json"
   ],
   "depends": {
     "fabricloader": "${loader_version}",
     "minecraft": "${minecraft_version_range}",
-    "java": ">=21",
-    "fabric-api": "${loader_min_version}"
+    "java": ">=${java_version}",
+    "fabric-api": ">=${loader_min_version}"
   },
   "custom": {
     "modmenu": {

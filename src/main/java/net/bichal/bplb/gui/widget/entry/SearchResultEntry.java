@@ -2,6 +2,7 @@ package net.bichal.bplb.gui.widget.entry;
 
 import net.bichal.bplb.gui.config.SearchEngine;
 import net.bichal.bplb.gui.widget.CompactButton;
+import net.bichal.bplb.util.ColorConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -27,7 +28,7 @@ public final class SearchResultEntry extends BaseConfigEntry {
     protected void renderContent(DrawContext context, int x, int y, int width, int height,
                                  int mouseX, int mouseY, float delta) {
         context.drawText(client.textRenderer, highlightedLabel, x + 10,
-                y + (height - 8) / 2, 0xFFFFFF, true);
+                y + (height - 8) / 2, ColorConstants.COLOR_WHITE, true);
 
         jumpButton.setX(x + width - 40);
         jumpButton.setY(y + (height - 18) / 2);

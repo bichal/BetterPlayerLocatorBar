@@ -10,6 +10,7 @@ import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.tracker.LodestoneTracker;
 import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.PositionUpdatePayload;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -352,7 +353,7 @@ public class Hud {
                 int textWidth = client.textRenderer.getWidth(countText);
                 int textX = iconCenterX - textWidth / 2;
                 int textY = (int) (topLeftY + scaledSize + 2);
-                context.drawTextWithShadow(client.textRenderer, countText, textX, textY, 0xFFFFFFFF);
+                context.drawTextWithShadow(client.textRenderer, countText, textX, textY, ColorConstants.COLOR_WHITE);
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);

@@ -11,10 +11,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class ConfigScreen extends Screen {
@@ -36,6 +33,7 @@ public final class ConfigScreen extends Screen {
     private int dynamicTopOffset = 85;
     private int globalU = 0;
     private boolean isInGame = false;
+    private final Map<String, Boolean> pendingChanges = new HashMap<>();
 
     public ConfigScreen(Screen parent) {
         super(Text.translatable("bplb.config.title"));

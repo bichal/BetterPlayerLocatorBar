@@ -1,9 +1,11 @@
 package net.bichal.bplb.gui.widget;
 
 import net.bichal.bplb.gui.animation.Transition;
+import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -32,17 +34,17 @@ public final class TabBar extends AnimatedWidget {
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.fill(getX(), getY(), getX() + width, getY() + height, 0xE0000000);
-        context.drawHorizontalLine(getX(), getX() + width, getY(), 0xFF404040);
-        context.drawVerticalLine(getX(), getY(), getY() + height, 0xFF404040);
-        context.drawVerticalLine(getX() + width - 1, getY(), getY() + height, 0xFF404040);
+        context.fill(getX(), getY(), getX() + width, getY() + height, ColorConstants.COLOR_BLACK_OVERLAY);
+        context.drawHorizontalLine(getX(), getX() + width, getY(), ColorConstants.COLOR_DARK_DISABLED);
+        context.drawVerticalLine(getX(), getY(), getY() + height, ColorConstants.COLOR_DARK_DISABLED);
+        context.drawVerticalLine(getX() + width - 1, getY(), getY() + height, ColorConstants.COLOR_DARK_DISABLED);
 
         int tabWidth = width / tabs.size();
 
         MinecraftClient mc = MinecraftClient.getInstance();
         selectionTransition.setTarget(selectedTab * tabWidth);
         float selectionX = selectionTransition.update();
-        context.fill(getX() + (int) selectionX, getY() + height - 2, getX() + (int) selectionX + tabWidth, getY() + height, 0xFF00AA00);
+        context.fill(getX() + (int) selectionX, getY() + height - 2, getX() + (int) selectionX + tabWidth, getY() + height, ColorConstants.COLOR_ENABLED);
 
         for (int i = 0; i < tabs.size(); i++) {
             int tabX = getX() + i * tabWidth;
@@ -65,7 +67,7 @@ public final class TabBar extends AnimatedWidget {
                 context.enableScissor(tabX, getY(), nextTabX, getY() + height);
             }
 
-            int textColor = i == selectedTab ? 0xFFFFFF : 0xAAAAAA;
+            int textColor = i == selectedTab ? ColorConstants.COLOR_WHITE : ColorConstants.COLOR_DISABLED;
             context.drawText(mc.textRenderer, title, textX, getY() + 8, textColor, true);
 
             if (titleWidth > tabWidth - 4) {
@@ -85,7 +87,7 @@ public final class TabBar extends AnimatedWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(net.minecraft.client.gui.screen.narration.NarrationMessageBuilder builder) {}
+    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
 
     private record Tab(String key, Text title) {}
 }

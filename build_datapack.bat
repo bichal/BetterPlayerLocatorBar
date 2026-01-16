@@ -1,6 +1,6 @@
 @echo off
 cd src\main\resources
-if exist better-player-locator-bar-1.1.3.zip del better-player-locator-bar-1.1.3.zip
-powershell Compress-Archive -Path pack.mcmeta,data -DestinationPath better-player-locator-bar-1.1.3.zip -Force
-move better-player-locator-bar-1.1.3.zip ..\..\..\build\
-echo Datapack generado en build\better-player-locator-bar-1.1.3.zip
+if exist ${mod_file_name}-${mod_version}.zip del ${mod_file_name}-${mod_version}.zip
+powershell Compress-Archive -Path pack.mcmeta,data -DestinationPath ${mod_file_name}-${mod_version}.zip -Force
+move ${mod_file_name}-${mod_version}.zip ..\..\..\build\
+echo Datapack generado en build\${mod_file_name}-${mod_version}.zip
