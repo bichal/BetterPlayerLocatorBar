@@ -1,9 +1,0 @@
-{
-  "playerConfigs": {},
-  "playerExpandedStates": {},
-  "lerpSpeed": 0.65,
-  "applyHotbarOffset": true,
-  "alwaysShowPlayerHeads": false,
-  "alwaysShowPlayerNames": false,
-  "fadeStartDistance": 512,
-  "fadeEndDistance": 4096
