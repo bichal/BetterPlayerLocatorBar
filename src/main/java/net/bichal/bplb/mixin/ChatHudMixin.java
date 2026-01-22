@@ -1,8 +1,9 @@
 package net.bichal.bplb.mixin;
 
 import net.bichal.bichalutils.util.MathUtil;
-import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
+import net.bichal.bplb.client.ModConfig;
+import net.bichal.bplb.client.gui.Hud;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.ChatHud;
@@ -11,8 +12,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static net.bichal.bplb.util.Constants.CONFIG;
 
 @Mixin(ChatHud.class)
 public class ChatHudMixin {
@@ -39,15 +38,15 @@ public class ChatHudMixin {
 
     @Unique
     private static boolean shouldFreeze() {
-        return CONFIG.getGlobalHudYOffset() < -MAX_OFFSET_THRESHOLD;
+        return ModConfig.globalHudYOffset < -MAX_OFFSET_THRESHOLD;
     }
 
     @Unique
     private static float updateChatOffset(float currentOffset) {
-        float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
-        int globalOffset = CONFIG.getGlobalHudYOffset();
+        float t = Math.min(ModConfig.lerpSpeed * 0.5f, 1.0f);
+        int globalOffset = ModConfig.globalHudYOffset;
 
-        if (!CONFIG.isModEnabled()) {
+        if (!ModConfig.modEnabled) {
             float delta = globalOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
@@ -65,7 +64,7 @@ public class ChatHudMixin {
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        if (!CONFIG.isApplyHotbarOffset() && !showingTab) {
+        if (!ModConfig.applyHotbarOffset && !showingTab) {
             float targetOffset = globalOffset - 1;
             float delta = targetOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
@@ -74,7 +73,7 @@ public class ChatHudMixin {
         int baseOffset = globalOffset + (-1);
         
         if (showingTab && baseOffset <= 0) {
-            baseOffset -= (18 + (int) (12 * CONFIG.getNameplateScale()));
+            baseOffset -= (18 + (int) (12 * ModConfig.nameplateScale));
         }
 
         float delta = baseOffset - currentOffset;

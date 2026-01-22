@@ -14,10 +14,7 @@ base {
 
 repositories {
     maven {
-        url = "https://maven.shedaniel.me/"
-    }
-    maven {
-        url = "https://maven.terraformersmc.com/releases/"
+        url = "https://maven.teamresourceful.com/repository/maven-public/"
     }
     mavenLocal()
 }
@@ -29,8 +26,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "io.github.bichal:bichal-utils:${project.bichal_utils_version}"
-
-    modApi "com.terraformersmc:modmenu:${project.mod_menu_version}"
+    modImplementation "com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.20.5:2.5.2"
 }
 
 def authors = mod_authors.split(",").collect { it.trim() }

@@ -1,9 +1,7 @@
 package net.bichal.bplb.client;
 
 import net.bichal.bichalutils.util.Logger;
-import net.bichal.bplb.gui.ConfigScreen;
 import net.bichal.bplb.util.Constants;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -17,11 +15,13 @@ public class Keybinds {
         Logger.info("Registering Keybinds");
         KeyBindingHelper.registerKeyBinding(SHOW_PLAYER_NAME);
         KeyBindingHelper.registerKeyBinding(OPEN_CONFIG);
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (OPEN_CONFIG.wasPressed()) {
-                client.setScreen(new ConfigScreen(client.currentScreen));
-            }
-        });
+
+//        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+//            if (OPEN_CONFIG.wasPressed()) {
+//                client.setScreen());
+//            }
+//        });
+
         Logger.info("Keybinds registered");
     }
 

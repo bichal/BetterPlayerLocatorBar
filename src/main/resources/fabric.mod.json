@@ -19,9 +19,6 @@
     ],
     "client": [
       "${maven_group}.${mod_id}.client.Client"
-    ],
-    "modmenu": [
-      "${maven_group}.${mod_id}.integration.ModMenuImpl"
     ]
   },
   "mixins": [

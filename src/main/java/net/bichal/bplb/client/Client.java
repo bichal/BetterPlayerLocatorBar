@@ -2,9 +2,8 @@ package net.bichal.bplb.client;
 
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.ModIdentifier;
-import net.bichal.bplb.client.command.ConfigCommand;
+import net.bichal.bplb.client.gui.Hud;
 import net.bichal.bplb.client.render.AssetScanner;
-import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.HandshakePayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -15,6 +14,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -40,9 +40,14 @@ public class Client implements ClientModInitializer {
         lastServerUpdateTime = System.currentTimeMillis();
     }
 
+    public static final boolean SCREEN = FabricLoader.getInstance().isDevelopmentEnvironment() || Boolean.getBoolean("rconfig.mod_screen");
+
     @Override
     public void onInitializeClient() {
         Logger.info("Initializing mod client side!");
+
+        if (!SCREEN) return;
+        Logger.info("Mod Screen is enabled!");
 
         ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
@@ -60,11 +65,6 @@ public class Client implements ClientModInitializer {
                 availableLodestoneMarkers = AssetScanner.getIconBorderStyles(manager);
 
                 Logger.info("Scanned assets: {} dots, {} arrows, {} icon borders, {} name borders, {} death markers", availableDots.size(), availableArrows.size(), availableIconBorders.size(), availableNameBorders.size(), availableDeathMarkers.size());
-
-                if (!availableDots.isEmpty() && !availableDots.contains(Config.getInstance().getDotType()))
-                    Config.getInstance().setDotType(availableDots.getFirst());
-                if (!availableArrows.isEmpty() && !availableArrows.contains(Config.getInstance().getArrowType()))
-                    Config.getInstance().setArrowType(availableArrows.getFirst());
             }
         });
 
@@ -78,9 +78,7 @@ public class Client implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(Hud::tick);
         Hud.registerEvents();
-        Config.getInstance();
         Keybinds.register();
-        ConfigCommand.register();
 
         ClientPlayNetworking.registerGlobalReceiver(HandshakePayload.ID, (payload, context) -> {
             isLocalMode = false;

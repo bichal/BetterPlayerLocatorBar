@@ -2,10 +2,11 @@ package net.bichal.bplb.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bichalutils.client.render.RenderUtil;
+import net.bichal.bichalutils.util.ColorConstants;
 import net.bichal.bichalutils.util.ColorUtil;
 import net.bichal.bichalutils.util.Logger;
-import net.bichal.bplb.client.Hud;
-import net.bichal.bplb.gui.Config;
+import net.bichal.bplb.client.ModConfig;
+import net.bichal.bplb.client.gui.Hud;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -14,37 +15,35 @@ import net.minecraft.util.Identifier;
 import java.util.UUID;
 
 public class RenderAddons {
-
-    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, Config config, float alpha) {
-        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, config, alpha, null);
+    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, ModConfig modConfig, float alpha) {
+        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, modConfig, alpha, null);
     }
 
-    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, Config config) {
-        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, config, 1.0f, null);
+    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, ModConfig modConfig) {
+        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, modConfig, 1.0f, null);
     }
 
-    @SuppressWarnings("unused") // Future Implementation
-    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, Config config, String textureOverride) {
-        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, config, 1.0f, textureOverride);
+    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, ModConfig modConfig, String textureOverride) {
+        renderPlayerIcon(context, playerName, playerUuid, distance, x, y, showHead, modConfig, 1.0f, textureOverride);
     }
 
-    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, Config config, float alpha, String textureOverride) {
-        Config.PlayerAppearance appearance = config.getPlayerConfig(playerName);
-        int textureIndex = getAdjustedTextureIndex(distance, config);
-        String dotId = appearance != null && appearance.dotType != null ? appearance.dotType : config.getDotType();
-        String borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : config.getIconBorderStyle();
+    public static void renderPlayerIcon(DrawContext context, String playerName, UUID playerUuid, double distance, float x, float y, boolean showHead, ModConfig modConfig, float alpha, String textureOverride) {
+        ModConfig.PlayerAppearance appearance = ModConfig.getPlayerConfig(playerName);
+        int textureIndex = getAdjustedTextureIndex(distance, modConfig);
+        String dotId = appearance != null && appearance.dotType != null ? appearance.dotType : ModConfig.dotType;
+        String borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : ModConfig.getIconBorderStyle();
         int color = appearance != null && appearance.color != null ? appearance.color : ColorUtil.generateColorFromUUID(playerUuid);
-        renderIcon(context, x, y, alpha, dotId, borderStyle, config.getIconBorderType(), color, showHead ? 0 : textureIndex, config);
+        renderIcon(context, x, y, alpha, dotId, borderStyle, ModConfig.getIconBorderType(), color, showHead ? 0 : textureIndex, modConfig);
         if (showHead) {
             String skinOverride = textureOverride != null ? textureOverride : (appearance != null ? appearance.textureHeadOverride : null);
             renderPlayerHeadOverlay(context, playerUuid, x, y, skinOverride, alpha);
         }
     }
 
-    private static void renderIcon(DrawContext context, float x, float y, float alpha, String dotId, String borderStyle, String borderType, int color, int textureIndex, Config config) {
+    private static void renderIcon(DrawContext context, float x, float y, float alpha, String dotId, String borderStyle, String borderType, int color, int textureIndex, ModConfig modConfig) {
         Identifier dotTexture = TextureManager.getPlayerDotTexture(dotId, textureIndex);
         Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
-        int borderColor = config.isInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
+        int borderColor = ModConfig.inheritBorderColor ? ColorUtil.darkerColoring(color) : ColorConstants.GRAY;
 
         RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
         RenderUtil.renderTintedTexture(context, dotTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, color, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
@@ -73,12 +72,12 @@ public class RenderAddons {
         Hud.trySetShaderColor(context, (int) x, (int) y, alpha, skin);
     }
 
-    public static void renderDeathMarker(DrawContext context, float x, float y, float alpha, Config config) {
-        String markerType = config.getDeathMarkerType();
-        int color = config.getDeathMarkerColor();
+    public static void renderDeathMarker(DrawContext context, float x, float y, float alpha, ModConfig modConfig) {
+        String markerType = ModConfig.deathMarkerType;
+        int color = ModConfig.deathMarkerColor;
         Identifier markerTexture = TextureManager.getDeathMarkerTexture(markerType);
-        Identifier outlineTexture = TextureManager.getDeathMarkerOutlineTexture(markerType, config.getDeathMarkerBorderStyle(), config.getDeathMarkerBorderType());
-        int borderColor = config.isDeathMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
+        Identifier outlineTexture = TextureManager.getDeathMarkerOutlineTexture(markerType, ModConfig.getDeathMarkerBorderStyle(), ModConfig.getDeathMarkerBorderType());
+        int borderColor = ModConfig.deathMarkerInheritBorderColor ? ColorUtil.darkerColoring(color) : ColorConstants.BORDER_COLOR;
 
         try {
             RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
@@ -88,8 +87,8 @@ public class RenderAddons {
         }
     }
 
-    public static void renderDeathMarker(DrawContext context, float x, float y, Config config) {
-        renderDeathMarker(context, x, y, 1.0f, config);
+    public static void renderDeathMarker(DrawContext context, float x, float y, ModConfig modConfig) {
+        renderDeathMarker(context, x, y, 1.0f, modConfig);
     }
 
     public static void renderArrow(DrawContext context, String arrowType, boolean isUp, float x, float y, float alpha/*, AtlasAnimator animator*/) {
@@ -131,18 +130,18 @@ public class RenderAddons {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             context.getMatrices().translate(boxWidth / 2f, boxHeight / 2f, 1);
             context.getMatrices().scale(scale, scale, 1.0f);
-            int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
+            int textColor = ColorConstants.WHITE | ((int) (alpha * 255) << 24);
             context.drawText(client.textRenderer, text, -textWidth / 2, -client.textRenderer.fontHeight / 2, textColor, true);
         });
     }
 
-    public static void renderLodestoneMarker(DrawContext context, float x, float y, float alpha, Config config, double distance) {
-        String markerType = config.getLodestoneMarkerType();
-        int textureIndex = getAdjustedTextureIndex(distance, config);
+    public static void renderLodestoneMarker(DrawContext context, float x, float y, float alpha, ModConfig modConfig, double distance) {
+        String markerType = ModConfig.lodestoneMarkerType;
+        int textureIndex = getAdjustedTextureIndex(distance, modConfig);
         Identifier markerTexture = TextureManager.getPlayerDotTexture(markerType, textureIndex);
-        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(markerType, config.getLodestoneMarkerBorderStyle(), config.getLodestoneMarkerBorderType(), textureIndex);
+        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(markerType, ModConfig.getLodestoneMarkerBorderStyle(), ModConfig.getLodestoneMarkerBorderType(), textureIndex);
         int color = ColorUtil.generateColorFromUUID(UUID.randomUUID());
-        int borderColor = config.isLodestoneMarkerInheritBorderColor() ? ColorUtil.darkerColoring(color) : Constants.BLACK_BORDER_COLOR;
+        int borderColor = ModConfig.lodestoneMarkerInheritBorderColor ? ColorUtil.darkerColoring(color) : ColorConstants.BORDER_COLOR;
 
         try {
             RenderUtil.renderTintedTexture(context, outlineTexture, x, y, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, borderColor, alpha, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE);
@@ -152,9 +151,9 @@ public class RenderAddons {
         }
     }
 
-    private static int getAdjustedTextureIndex(double distance, Config config) {
+    private static int getAdjustedTextureIndex(double distance, ModConfig modConfig) {
         int baseIndex = TextureManager.getTextureIndexFromDistance(distance);
-        int configSize = config.getIconSize();
+        int configSize = ModConfig.iconSize;
         int offset = 4 - configSize;
         return Math.min(3, Math.max(0, baseIndex + offset));
     }

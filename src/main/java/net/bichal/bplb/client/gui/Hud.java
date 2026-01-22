@@ -1,16 +1,14 @@
-package net.bichal.bplb.client;
+package net.bichal.bplb.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bichalutils.client.render.RenderUtil;
-import net.bichal.bichalutils.util.ColorUtil;
-import net.bichal.bichalutils.util.DistanceUtils;
-import net.bichal.bichalutils.util.Logger;
-import net.bichal.bichalutils.util.MathUtil;
+import net.bichal.bichalutils.util.*;
+import net.bichal.bplb.client.Client;
+import net.bichal.bplb.client.ModConfig;
+import net.bichal.bplb.client.Keybinds;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.tracker.LodestoneTracker;
-import net.bichal.bplb.gui.Config;
 import net.bichal.bplb.network.PositionUpdatePayload;
-import net.bichal.bplb.util.ColorConstants;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -31,13 +29,12 @@ import org.lwjgl.opengl.GL11;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.bichal.bplb.util.Constants.CONFIG;
-
 @Environment(EnvType.CLIENT)
 public class Hud {
     public record PlayerPosition(UUID uuid, String name, double x, double y, double z) {
     }
 
+    private static ModConfig modConfig;
     private static final Map<UUID, PlayerPosition> playerPositions = new HashMap<>();
     private static final Map<Object, Float> currentIconPositions = new HashMap<>();
     public static final List<Vec3d> deathMarkers = new ArrayList<>();
@@ -65,7 +62,7 @@ public class Hud {
         positions.removeIf(pos -> pos.uuid().equals(client.player.getUuid()));
 
         Vec3d playerPos = client.player.getPos();
-        final int maxIcons = CONFIG.getMaxVisibleIcons();
+        final int maxIcons = ModConfig.maxVisibleIcons;
 
         positions.sort(Comparator.comparingDouble(pos -> {
             double dx = playerPos.x - pos.x;
@@ -178,7 +175,7 @@ public class Hud {
 
     public static void render(DrawContext context) {
         final MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player == null || client.world == null || !CONFIG.isModEnabled()) {
+        if (client.player == null || client.world == null || !ModConfig.modEnabled) {
             shouldApplyHudOffset = false;
             iconClusters.clear();
             return;
@@ -191,8 +188,8 @@ public class Hud {
         }
 
         final int barX = (context.getScaledWindowWidth() - Constants.BAR_WIDTH) / 2;
-        final int barY = context.getScaledWindowHeight() + Constants.BAR_Y_OFFSET + CONFIG.getGlobalHudYOffset();
-        final boolean showDetails = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
+        final int barY = context.getScaledWindowHeight() + Constants.BAR_Y_OFFSET + ModConfig.globalHudYOffset;
+        final boolean showDetails = Keybinds.shouldShowPlayerNames() || ModConfig.alwaysShowPlayerNames;
 
         List<RenderEntry> allEntries = new ArrayList<>();
 
@@ -219,7 +216,7 @@ public class Hud {
 
         allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
 
-        if (CONFIG.isEnableIconClustering()) {
+        if (ModConfig.enableIconClustering) {
             renderWithClustering(context, allEntries, barX, barY, showDetails);
         } else {
             renderWithoutClustering(context, allEntries, barX, barY, showDetails);
@@ -279,7 +276,7 @@ public class Hud {
             if (firstEntry == null) continue;
 
             float sizeMultiplier = 1.0f;
-            if (CONFIG.isEnableClusterSizeScaling() && count > 1) {
+            if (ModConfig.enableClusterSizeScaling && count > 1) {
                 float scaleFactor = Math.min(count, 5);
                 sizeMultiplier = 1.0f + (scaleFactor - 1) * 0.08f;
             }
@@ -296,7 +293,7 @@ public class Hud {
 
         SmoothPosition smoothPos = smoothPositions.computeIfAbsent(entry.key, k -> new SmoothPosition(cluster.centerX));
 
-        boolean showHead = !entry.isDeathMarker && !entry.isLodestone && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
+        boolean showHead = !entry.isDeathMarker && !entry.isLodestone && (ModConfig.alwaysShowPlayerHeads || Keybinds.shouldShowPlayerNames());
 
         smoothPos.update(cluster.centerX, showHead, showDetails);
 
@@ -315,19 +312,19 @@ public class Hud {
         float topLeftY = barY - scaledSize / 2f;
 
         RenderUtil.withMatrixPush(context, 0, 0, () -> {
-            Config.PlayerAppearance appearance = entry.isDeathMarker || entry.isLodestone ? null : CONFIG.getPlayerConfig(entry.pos.name());
+            ModConfig.PlayerAppearance appearance = entry.isDeathMarker || entry.isLodestone ? null : ModConfig.getPlayerConfig(entry.pos.name());
             String borderStyle;
             int color;
 
             if (entry.isDeathMarker) {
-                color = CONFIG.getDeathMarkerColor();
-                borderStyle = CONFIG.getDeathMarkerBorderStyle();
+                color = ModConfig.deathMarkerColor;
+                borderStyle = ModConfig.getDeathMarkerBorderStyle();
             } else if (entry.isLodestone) {
-                color = CONFIG.getLodestoneMarkerColor();
-                borderStyle = CONFIG.getLodestoneMarkerBorderStyle();
+                color = ModConfig.lodestoneMarkerColor;
+                borderStyle = ModConfig.getLodestoneMarkerBorderStyle();
             } else {
                 color = appearance != null && appearance.color != null ? appearance.color : ColorUtil.generateColorFromUUID(entry.pos.uuid());
-                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : CONFIG.getNameBorderStyle();
+                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : ModConfig.getNameBorderStyle();
             }
 
             context.getMatrices().push();
@@ -336,11 +333,11 @@ public class Hud {
             context.getMatrices().translate(-scaledSize / 2f, -scaledSize / 2f, 0);
 
             if (entry.isDeathMarker) {
-                RenderAddons.renderDeathMarker(context, 0, 0, finalAlpha, CONFIG);
+                RenderAddons.renderDeathMarker(context, 0, 0, finalAlpha, modConfig);
             } else if (entry.isLodestone) {
-                RenderAddons.renderLodestoneMarker(context, 0, 0, finalAlpha, CONFIG, entry.distance);
+                RenderAddons.renderLodestoneMarker(context, 0, 0, finalAlpha, modConfig, entry.distance);
             } else {
-                RenderAddons.renderPlayerIcon(context, entry.pos.name(), entry.pos.uuid(), entry.distance, 0, 0, false, CONFIG, finalAlpha);
+                RenderAddons.renderPlayerIcon(context, entry.pos.name(), entry.pos.uuid(), entry.distance, 0, 0, false, modConfig, finalAlpha);
                 if (showHead && smoothPos.alphaHead > 0.01f) {
                     renderPlayerHeadOverlay(context, entry.pos.uuid(), 0, 0, null, finalAlpha * smoothPos.alphaHead);
                 }
@@ -353,7 +350,7 @@ public class Hud {
                 int textWidth = client.textRenderer.getWidth(countText);
                 int textX = iconCenterX - textWidth / 2;
                 int textY = (int) (topLeftY + scaledSize + 2);
-                context.drawTextWithShadow(client.textRenderer, countText, textX, textY, ColorConstants.COLOR_WHITE);
+                context.drawTextWithShadow(client.textRenderer, countText, textX, textY, ColorConstants.TEXT_PRIMARY_COLOR);
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -362,7 +359,7 @@ public class Hud {
             if (showDetails && smoothPos.alphaName > 0.01f) {
                 String text = entry.isDeathMarker ? (int) entry.pos.x + " " + (int) entry.pos.y + " " + (int) entry.pos.z : entry.pos.name();
                 context.getMatrices().translate(0, 0, 1);
-                RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, finalAlpha * smoothPos.alphaName, CONFIG.getNameplateScale());
+                RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * ModConfig.nameplateScale + 4) / 2, topLeftY - (12 * ModConfig.nameplateScale) - 4, finalAlpha * smoothPos.alphaName, ModConfig.nameplateScale);
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -491,21 +488,21 @@ public class Hud {
         RenderUtil.withMatrixPush(context, 0, 0, () -> {
             boolean isDeathMarker = key instanceof Vec3d;
             boolean isLodestone = key instanceof UUID && LodestoneTracker.isLodestoneId((UUID) key);
-            boolean showHead = !isDeathMarker && !isLodestone && (CONFIG.isAlwaysShowPlayerHeads() || Keybinds.shouldShowPlayerNames());
+            boolean showHead = !isDeathMarker && !isLodestone && (ModConfig.alwaysShowPlayerHeads || Keybinds.shouldShowPlayerNames());
 
-            Config.PlayerAppearance appearance = isDeathMarker || isLodestone ? null : CONFIG.getPlayerConfig(pos.name());
+            ModConfig.PlayerAppearance appearance = isDeathMarker || isLodestone ? null : ModConfig.getPlayerConfig(pos.name());
             String borderStyle;
             int color;
 
             if (isDeathMarker) {
-                color = CONFIG.getDeathMarkerColor();
-                borderStyle = CONFIG.getDeathMarkerBorderStyle();
+                color = ModConfig.deathMarkerColor;
+                borderStyle = ModConfig.getDeathMarkerBorderStyle();
             } else if (isLodestone) {
-                color = CONFIG.getLodestoneMarkerColor();
-                borderStyle = CONFIG.getLodestoneMarkerBorderStyle();
+                color = ModConfig.lodestoneMarkerColor;
+                borderStyle = ModConfig.getLodestoneMarkerBorderStyle();
             } else {
                 color = appearance != null && appearance.color != null ? appearance.color : ColorUtil.generateColorFromUUID(pos.uuid());
-                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : CONFIG.getNameBorderStyle();
+                borderStyle = appearance != null && appearance.iconBorderStyle != null ? appearance.iconBorderStyle : ModConfig.getNameBorderStyle();
             }
 
             float nameplateAlpha = showDetails ? finalAlpha : 0f;
@@ -514,20 +511,20 @@ public class Hud {
             context.getMatrices().translate(0, 0, baseZ);
 
             if (isDeathMarker) {
-                RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, finalAlpha, CONFIG);
+                RenderAddons.renderDeathMarker(context, topLeftX, topLeftY, finalAlpha, modConfig);
             } else if (isLodestone) {
                 double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
-                RenderAddons.renderLodestoneMarker(context, topLeftX, topLeftY, finalAlpha, CONFIG, iconDistance);
+                RenderAddons.renderLodestoneMarker(context, topLeftX, topLeftY, finalAlpha, modConfig, iconDistance);
             } else {
                 double iconDistance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
-                RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, showHead, CONFIG, finalAlpha);
+                RenderAddons.renderPlayerIcon(context, pos.name(), pos.uuid(), iconDistance, topLeftX, topLeftY, showHead, modConfig, finalAlpha);
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             renderHeightIndicator(context, pos, iconCenterX, (int) (topLeftY + Constants.ICON_BASE_SIZE / 2f), finalAlpha, appearance);
 
             context.getMatrices().translate(0, 0, 1);
-            RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * CONFIG.getNameplateScale() + 4) / 2, topLeftY - (12 * CONFIG.getNameplateScale()) - 4, nameplateAlpha, CONFIG.getNameplateScale());
+            RenderAddons.renderNameplate(context, text, borderStyle, color, iconCenterX - (client.textRenderer.getWidth(text) * ModConfig.nameplateScale + 4) / 2, topLeftY - (12 * ModConfig.nameplateScale) - 4, nameplateAlpha, ModConfig.nameplateScale);
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         });
     }
@@ -544,19 +541,19 @@ public class Hud {
         return isArrowDown(client, pos);
     }
 
-    private static void renderHeightIndicator(DrawContext context, PlayerPosition pos, int centerX, int centerY, float alpha, Config.PlayerAppearance appearance) {
+    private static void renderHeightIndicator(DrawContext context, PlayerPosition pos, int centerX, int centerY, float alpha, ModConfig.PlayerAppearance appearance) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
 
         if (showUp(client, pos) || showDown(client, pos)) {
-            String arrowId = (appearance != null && appearance.arrowType != null) ? appearance.arrowType : CONFIG.getArrowType();
+            String arrowId = (appearance != null && appearance.arrowType != null) ? appearance.arrowType : ModConfig.arrowType;
             renderHeightArrow(context, centerX, centerY, alpha, showUp(client, pos), arrowId);
         }
     }
 
     private static void renderHeightArrow(DrawContext context, int centerX, int centerY, float alpha, boolean isUp, String arrowId) {
         int arrowX = centerX - Math.round((float) Constants.ARROW_BASE_SIZE_WIDTH / 2);
-        int arrowY = isUp ? (centerY - Constants.ARROW_BASE_SIZE_HEIGHT - Math.round((float) Constants.ARROW_BASE_SIZE_WIDTH / 2) - CONFIG.getVerticalPadding()) : (centerY + Constants.ARROW_BASE_SIZE_WIDTH / 2 + CONFIG.getVerticalPadding());
+        int arrowY = isUp ? (centerY - Constants.ARROW_BASE_SIZE_HEIGHT - Math.round((float) Constants.ARROW_BASE_SIZE_WIDTH / 2) - ModConfig.verticalPadding) : (centerY + Constants.ARROW_BASE_SIZE_WIDTH / 2 + ModConfig.verticalPadding);
 //        AtlasAnimator animator = arrowAnimators.computeIfAbsent(arrowId + "_" + isUp, k -> ARROW_ANIMATOR);
         RenderAddons.renderArrow(context, arrowId, isUp, arrowX, arrowY, alpha/*, animator*/);
     }
@@ -629,7 +626,7 @@ public class Hud {
 
             float distance = target - current;
 
-            if (CONFIG.isEnableBouncingAnimation()) {
+            if (ModConfig.enableBouncingAnimation) {
                 float springForce = distance * 10.0f;
                 float damping = velocity * 5.0f;
                 float acceleration = springForce - damping;
@@ -644,7 +641,7 @@ public class Hud {
                     velocity *= 0.7f;
                 }
             } else {
-                current = MathHelper.lerp(CONFIG.getLerpSpeed() * 0.3f, current, target);
+                current = MathHelper.lerp(ModConfig.lerpSpeed * 0.3f, current, target);
                 velocity = 0;
             }
 
@@ -670,10 +667,10 @@ public class Hud {
     }
 
     private static float getDistanceAlpha(double distance) {
-        if (distance > CONFIG.getFadeEndDistance()) return CONFIG.getFadeAlphaMin();
-        if (distance < CONFIG.getFadeStartDistance()) return CONFIG.getFadeAlphaMax();
-        float progress = (float) ((distance - CONFIG.getFadeStartDistance()) / (CONFIG.getFadeEndDistance() - CONFIG.getFadeStartDistance()));
-        return MathHelper.lerp(MathUtil.easeInOutQuad(progress), CONFIG.getFadeAlphaMax(), CONFIG.getFadeAlphaMin());
+        if (distance > ModConfig.fadeEndDistance) return ModConfig.fadeAlphaMin;
+        if (distance < ModConfig.fadeStartDistance) return ModConfig.fadeAlphaMax;
+        float progress = (float) ((distance - ModConfig.fadeStartDistance) / (ModConfig.fadeEndDistance - ModConfig.fadeStartDistance));
+        return MathHelper.lerp(MathUtil.easeInOutQuad(progress), ModConfig.fadeAlphaMax, ModConfig.fadeAlphaMin);
     }
 
     private static boolean isArrowUp(MinecraftClient client, PlayerPosition pos) {
@@ -719,7 +716,7 @@ public class Hud {
         float currentYaw = camera.getYaw();
         float currentPitch = camera.getPitch();
 
-        float cameraSmooth = 0.3f * CONFIG.getLerpSpeed();
+        float cameraSmooth = 0.3f * ModConfig.lerpSpeed;
         lastCameraPos = lastCameraPos.lerp(currentCameraPos, cameraSmooth);
         lastCameraYaw = MathHelper.lerp(cameraSmooth, lastCameraYaw, currentYaw);
         lastCameraPitch = MathHelper.lerp(cameraSmooth, lastCameraPitch, currentPitch);
@@ -734,7 +731,7 @@ public class Hud {
         if (lastPos != null && lastTime != null) {
             long timeDelta = currentTime - lastTime;
             if (timeDelta < 1000) {
-                float alpha = Math.min(timeDelta / 100f * CONFIG.getLerpSpeed() * 0.5f, 1f);
+                float alpha = Math.min(timeDelta / 100f * ModConfig.lerpSpeed * 0.5f, 1f);
                 smoothedPos = lastPos.lerp(currentPos, MathUtil.easeInOutQuad(alpha));
             }
         }
@@ -759,10 +756,10 @@ public class Hud {
     private static double getRelativeAngle(PlayerEntity viewer, Vec3d smoothedPos, float smoothYaw) {
         double relativeAngle = MathHelper.wrapDegrees(Math.toDegrees(Math.atan2(smoothedPos.z - viewer.getZ(), smoothedPos.x - viewer.getX())) - 90 - MathHelper.wrapDegrees(smoothYaw));
 
-        if (CONFIG.isAdjustToFov()) {
+        if (ModConfig.adjustToFov) {
             MinecraftClient client = RenderUtil.getClient();
             float fov = (float) client.options.getFov().getValue();
-            float fovFactor = (90.0f / fov) * CONFIG.getFovMultiplier();
+            float fovFactor = (90.0f / fov) * ModConfig.fovMultiplier;
             relativeAngle *= fovFactor;
         }
         return relativeAngle;
@@ -790,7 +787,7 @@ public class Hud {
     private static boolean shouldShowArrow(MinecraftClient client, PlayerPosition pos, boolean up) {
         if (client.player == null) return false;
 
-        if (CONFIG.getHeightDifferenceMode().equalsIgnoreCase("player")) {
+        if (ModConfig.getHeightDifferenceMode().equalsIgnoreCase("player")) {
             double diff = pos.y - (client.player.getY() + 1.0);
             return up ? diff > 5.5 : diff < -5.5;
         }

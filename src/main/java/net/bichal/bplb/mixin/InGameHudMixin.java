@@ -1,8 +1,9 @@
 package net.bichal.bplb.mixin;
 
 import net.bichal.bichalutils.util.MathUtil;
-import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
+import net.bichal.bplb.client.ModConfig;
+import net.bichal.bplb.client.gui.Hud;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,8 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static net.bichal.bplb.util.Constants.CONFIG;
 
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
@@ -50,15 +49,15 @@ public class InGameHudMixin {
 
     @Unique
     private static boolean shouldFreeze() {
-        return CONFIG.getGlobalHudYOffset() < -MAX_OFFSET_THRESHOLD;
+        return ModConfig.globalHudYOffset < -MAX_OFFSET_THRESHOLD;
     }
 
     @Unique
     private static float updateYOffset(boolean isExperience, float currentOffset) {
-        float t = Math.min(CONFIG.getLerpSpeed() * 0.5f, 1.0f);
-        int globalOffset = CONFIG.getGlobalHudYOffset();
+        float t = Math.min(ModConfig.lerpSpeed * 0.5f, 1.0f);
+        int globalOffset = ModConfig.globalHudYOffset;
 
-        if (!CONFIG.isModEnabled()) {
+        if (!ModConfig.modEnabled) {
             float delta = globalOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
@@ -76,7 +75,7 @@ public class InGameHudMixin {
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
         }
 
-        if (!CONFIG.isApplyHotbarOffset() && !showingTab) {
+        if (!ModConfig.applyHotbarOffset && !showingTab) {
             float targetOffset = isExperience ? -5 + globalOffset : globalOffset - 1;
             float delta = targetOffset - currentOffset;
             return currentOffset + delta * MathUtil.easeInOutQuad(t);
@@ -85,7 +84,7 @@ public class InGameHudMixin {
         int baseOffset = isExperience ? -5 + globalOffset : globalOffset - 1;
         
         if (showingTab && baseOffset <= 0) {
-            baseOffset -= (18 + (int) (12 * CONFIG.getNameplateScale()));
+            baseOffset -= (18 + (int) (12 * ModConfig.nameplateScale));
         }
 
         float delta = baseOffset - currentOffset;
