@@ -1,7 +1,6 @@
 {
   "key.bplb.show_player_name": "Mostrar nombres",
   "key.bplb.open_config": "Abrir ajustes",
-  "screen.bplb.config.apply": "Aplicar",
   "bplb.config.title": "Better Player Locator Bar - Ajustes",
   "bplb.config.search": "Buscar",
   "bplb.config.tab.general": "General",
@@ -12,7 +11,6 @@
   "bplb.config.section.icon": "Iconos",
   "bplb.config.section.player_appearance": "Apariencia por jugador",
   "bplb.config.section.markers": "Marcadores de muerte",
-  "bplb.config.section.lodestone_markers": "Marcadores de Magnetita",
   "bplb.config.section.player_name": "Etiquetas",
   "bplb.config.section.fading": "Desvanecimiento",
   "bplb.config.modEnabled": "Activar mod",
@@ -106,7 +104,9 @@
   "bplb.config.tooltip.enable_cluster_size_scaling": "Aumenta ligeramente el tamaño de iconos combinados según la cantidad",
   "bplb.config.tooltip.enable_bouncing_animation": "Activa animación de rebote tipo resorte para el movimiento de iconos",
   "bplb.config.tooltip.global_hud_y_offset": "Mueve todo el HUD arriba o abajo en la pantalla",
+
   "modmenu.source": "Ver en GitHub",
   "modmenu.curseforge": "Ver en CurseForge",
-  "modmenu.modrinth": "Ver en Modrinth"
+  "modmenu.modrinth": "Ver en Modrinth",
+  "modmenu.discord": "Unirse al Discord"
 }

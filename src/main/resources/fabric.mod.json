@@ -19,6 +19,9 @@
     ],
     "client": [
       "${maven_group}.${mod_id}.client.Client"
+    ],
+    "modmenu": [
+      "${maven_group}.${mod_id}.integration.ModMenuImpl"
     ]
   },
   "mixins": [
@@ -34,8 +37,10 @@
     "modmenu": {
       "links": {
         "modmenu.modrinth": "${modrinth_page}",
-        "modmenu.curseforge": "${curseforge_page}"
+        "modmenu.curseforge": "${curseforge_page}",
+        "modmenu.discord": "${discord_server}"
       }
-    }
+    },
+    "update_checker": true
   }
 }

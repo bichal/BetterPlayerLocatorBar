@@ -1,10 +1,12 @@
 package net.bichal.bplb.client;
 
+import com.teamresourceful.resourcefulconfig.client.ConfigsScreen;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bichalutils.util.ModIdentifier;
 import net.bichal.bplb.client.gui.Hud;
 import net.bichal.bplb.client.render.AssetScanner;
 import net.bichal.bplb.network.HandshakePayload;
+import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -79,6 +81,15 @@ public class Client implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(Hud::tick);
         Hud.registerEvents();
         Keybinds.register();
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (Keybinds.isOpenConfigPressed()) {
+                if (client.currentScreen == null) {
+                    client.setScreen(new ConfigsScreen(null, Constants.MOD_ID));
+                }
+                break;
+            }
+        });
 
         ClientPlayNetworking.registerGlobalReceiver(HandshakePayload.ID, (payload, context) -> {
             isLocalMode = false;

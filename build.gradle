@@ -16,6 +16,9 @@ repositories {
     maven {
         url = "https://maven.teamresourceful.com/repository/maven-public/"
     }
+    maven {
+        url = "https://maven.terraformersmc.com/"
+    }
     mavenLocal()
 }
 
@@ -26,6 +29,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "io.github.bichal:bichal-utils:${project.bichal_utils_version}"
+    implementation("com.terraformersmc:modmenu:${project.modmenu_version}")
     modImplementation "com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.20.5:2.5.2"
 }
 
@@ -47,6 +51,7 @@ processResources {
                 homepage          : homepage,
                 modrinth_page     : modrinth_page,
                 curseforge_page   : curseforge_page,
+                discord_server    : discord_server,
                 license           : license
         ])
 

@@ -1,7 +1,9 @@
 package net.bichal.bplb.client;
 
+import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen;
 import net.bichal.bichalutils.util.Logger;
 import net.bichal.bplb.util.Constants;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -16,13 +18,17 @@ public class Keybinds {
         KeyBindingHelper.registerKeyBinding(SHOW_PLAYER_NAME);
         KeyBindingHelper.registerKeyBinding(OPEN_CONFIG);
 
-//        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-//            if (OPEN_CONFIG.wasPressed()) {
-//                client.setScreen());
-//            }
-//        });
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (Keybinds.isOpenConfigPressed() && client.currentScreen == null) {
+                client.setScreen(ResourcefulConfigScreen.get(null, Constants.MOD_ID));
+            }
+        });
 
         Logger.info("Keybinds registered");
+    }
+
+    public static boolean isOpenConfigPressed() {
+        return OPEN_CONFIG.wasPressed();
     }
 
     public static boolean shouldShowPlayerNames() {
