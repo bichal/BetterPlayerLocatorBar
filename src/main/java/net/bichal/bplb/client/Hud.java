@@ -15,9 +15,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.Camera;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -444,8 +442,7 @@ public class Hud {
     }
 
     private static boolean shouldHideTarget(PlayerEntity target) {
-        final ItemStack headStack = target.getEquippedStack(EquipmentSlot.HEAD);
-        return target.isSneaking() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+        return target.isSneaking() || target.isInvisible();
     }
 
     private static boolean shouldShowArrow(MinecraftClient client, PlayerPosition pos, boolean up) {

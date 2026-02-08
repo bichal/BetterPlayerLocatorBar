@@ -8,8 +8,6 @@ import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -248,7 +246,6 @@ public class Server implements DedicatedServerModInitializer {
     }
 
     private boolean shouldHideTarget(ServerPlayerEntity target) {
-        ItemStack headStack = target.getEquippedStack(EquipmentSlot.HEAD);
-        return target.isSneaking() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+        return target.isSneaking() || target.isInvisible();
     }
 }

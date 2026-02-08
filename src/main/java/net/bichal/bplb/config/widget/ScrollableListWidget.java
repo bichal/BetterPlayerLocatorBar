@@ -46,6 +46,14 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
         this.rowLeft = rowLeft;
     }
 
+    public double getScrollAmount() {
+        return this.getScrollY();
+    }
+
+    public void setScrollAmount(double scroll) {
+        this.setScrollY((int) scroll);
+    }
+
     public void addPublicEntry(Entry entry) {
         super.addEntry(entry);
     }
