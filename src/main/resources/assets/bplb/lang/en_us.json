@@ -1,23 +1,15 @@
 {
   "key.bplb.show_player_name": "Show names",
   "key.bplb.open_config": "Open settings",
-  "bplb.config.apply": "Apply",
+  "screen.bplb.config.apply": "Apply",
   "bplb.config.title": "Better Player Locator Bar - Settings",
   "bplb.config.search": "Search",
-
-  "bplb.config.tab.general": "General",
-  "bplb.config.tab.dots": "Dots",
-  "bplb.config.tab.server": "Server",
-  "bplb.config.tab.waypoints": "Waypoints",
-
   "bplb.config.section.general": "General",
   "bplb.config.section.icon": "Icons",
   "bplb.config.section.player_appearance": "Customize player appearance",
-  "bplb.config.section.markers": "Death Markers",
-  "bplb.config.section.lodestone_marker": "Lodestone Markers",
+  "bplb.config.section.markers": "Markers",
   "bplb.config.section.player_name": "Name Tags",
   "bplb.config.section.fading": "Fading",
-  "bplb.config.section.experimental": "Experimental",
   "bplb.config.modEnabled": "Enable mod",
   "bplb.config.apply_hotbar_offset": "Adjust HUD position",
   "bplb.config.always_show_player_heads": "Always show heads",
@@ -35,41 +27,24 @@
   "bplb.config.height_difference_mode.camera": "By camera",
   "bplb.config.arrow_type": "Arrows",
   "bplb.config.vertical_padding": "Vertical distance",
-
   "bplb.config.adjust_to_fov": "Adjust to FOV",
   "bplb.config.fov_multiplier": "FOV multiplier",
-
   "bplb.config.death_marker_type": "Death marker",
   "bplb.config.death_marker_border_type": "Marker border type",
   "bplb.config.death_marker_inherit_border_color": "Colored marker borders",
-
-  "bplb.config.lodestone_marker_type": "Lodestone marker",
-  "bplb.config.lodestone_marker_border_type": "Marker border type",
-  "bplb.config.lodestone_marker_inherit_border_color": "Colored lodestone borders",
-
   "bplb.config.nameplate_scale": "Name tag size",
   "bplb.config.name_border_style": "Name tag border",
-
   "bplb.config.fade_end_distance": "Fade end distance",
   "bplb.config.fade_start_distance": "Fade start distance",
   "bplb.config.fade_alpha_max": "Max opacity",
   "bplb.config.fade_alpha_min": "Min opacity",
-
   "bplb.config.border_style.rounded": "Rounded",
   "bplb.config.border_style.squared": "Squared",
   "bplb.config.border_type.default": "Default",
   "bplb.config.border_type.minimal": "Minimal",
-
   "bplb.config.preview": "Preview",
   "bplb.config.render_nameplate_preview": "Nameplate preview",
   "bplb.config.asset_scanner.textures": "Detected textures",
-
-  "bplb.config.enable_icon_clustering": "Combine overlapping icons",
-  "bplb.config.enable_cluster_size_scaling": "Scale clustered icons",
-  "bplb.config.enable_bouncing_animation": "Bouncing animation",
-
-  "bplb.config.global_hud_y_offset": "HUD vertical offset",
-
   "bplb.config.player_appearance.add_player": "Add player",
   "bplb.config.player_appearance.color": "Color",
   "bplb.config.player_appearance.dot_type": "Icon",
@@ -77,15 +52,12 @@
   "bplb.config.player_appearance.icon_border_type": "Border type",
   "bplb.config.player_appearance.arrow_type": "Arrow",
   "bplb.config.player_appearance.textureHeadOverride": "Skin name or UUID",
-
   "bplb.config.reset_settings": "Reset settings",
   "bplb.config.reset_confirm.title": "Reset all?",
   "bplb.config.reset_confirm.message": "This will restore default values.",
-
   "bplb.config.local_mode_warning": "Using local data",
   "bplb.config.client_settings": "Client",
   "bplb.config.server_settings": "Server",
-
   "bplb.config.asset.dot.default": "Default",
   "bplb.config.asset.dot.minimal": "Minimal",
   "bplb.config.asset.dot.mojang": "Mojang",
@@ -94,39 +66,7 @@
   "bplb.config.asset.arrow.mojang": "Mojang",
   "bplb.config.asset.marker.default": "Default",
   "bplb.config.asset.marker.minimal": "Minimal",
-
-  "bplb.config.tooltip.modEnabled": "Enable or disable the entire mod functionality",
-  "bplb.config.tooltip.apply_hotbar_offset": "Adjust the HUD elements position when players are visible",
-  "bplb.config.tooltip.lerp_speed": "Controls how smoothly icons move on the bar",
-  "bplb.config.tooltip.icon_size": "Size of player icons (1=smallest, 4=largest)",
-  "bplb.config.tooltip.fade_start_distance": "Distance at which icons start to fade out",
-  "bplb.config.tooltip.always_show_player_heads": "Always display player head textures on icons",
-  "bplb.config.tooltip.always_show_player_names": "Always display player names above icons",
-  "bplb.config.tooltip.max_visible_icons": "Maximum number of player icons shown simultaneously",
-  "bplb.config.tooltip.dot_type": "Visual style of player icons",
-  "bplb.config.tooltip.icon_border_style": "Border shape around player icons (rounded or squared)",
-  "bplb.config.tooltip.icon_border_type": "Border thickness style (default or minimal)",
-  "bplb.config.tooltip.inherit_border_color": "Make borders use the same color as the icon",
-  "bplb.config.tooltip.height_difference_mode": "How vertical arrows are calculated (by player position or camera angle)",
-  "bplb.config.tooltip.arrow_type": "Visual style of height indicator arrows",
-  "bplb.config.tooltip.vertical_padding": "Space between icons and arrows",
-  "bplb.config.tooltip.adjust_to_fov": "Compensate icon positions based on field of view",
-  "bplb.config.tooltip.fov_multiplier": "Strength of FOV adjustment effect",
-  "bplb.config.tooltip.death_marker_type": "Visual style of death location markers",
-  "bplb.config.tooltip.death_marker_border_type": "Border style for death markers",
-  "bplb.config.tooltip.death_marker_inherit_border_color": "Make death marker borders use the marker color",
-  "bplb.config.tooltip.nameplate_scale": "Size multiplier for player name tags",
-  "bplb.config.tooltip.name_border_style": "Border shape for name tags",
-  "bplb.config.tooltip.fade_end_distance": "Distance where icons become completely transparent",
-  "bplb.config.tooltip.fade_alpha_max": "Maximum opacity for nearby icons",
-  "bplb.config.tooltip.fade_alpha_min": "Minimum opacity for distant icons",
-  "bplb.config.tooltip.enable_icon_clustering": "Merge multiple icons into one when they overlap",
-  "bplb.config.tooltip.enable_cluster_size_scaling": "Make clustered icons slightly larger based on count",
-  "bplb.config.tooltip.enable_bouncing_animation": "Enable spring-based bouncing for icon movement",
-  "bplb.config.tooltip.global_hud_y_offset": "Move the entire HUD up or down on the screen",
-
   "modmenu.source": "View on GitHub",
   "modmenu.curseforge": "View on CurseForge",
-  "modmenu.modrinth": "View on Modrinth",
-  "modmenu.discord": "Join Discord"
+  "modmenu.modrinth": "View on Modrinth"
 }

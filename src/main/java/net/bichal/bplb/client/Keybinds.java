@@ -1,7 +1,6 @@
 package net.bichal.bplb.client;
 
-import com.teamresourceful.resourcefulconfig.api.client.ResourcefulConfigScreen;
-import net.bichal.bichalutils.util.Logger;
+import net.bichal.bplb.config.ConfigScreen;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -14,21 +13,15 @@ public class Keybinds {
     private static final KeyBinding OPEN_CONFIG = new KeyBinding("key.bplb.open_config", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, Constants.MOD_NAME_LARGE);
 
     public static void register() {
-        Logger.info("Registering Keybinds");
+        Constants.LOGGER.info("[{}] Registering Keybinds", Constants.MOD_NAME_SHORT);
         KeyBindingHelper.registerKeyBinding(SHOW_PLAYER_NAME);
         KeyBindingHelper.registerKeyBinding(OPEN_CONFIG);
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (Keybinds.isOpenConfigPressed() && client.currentScreen == null) {
-                client.setScreen(ResourcefulConfigScreen.get(null, Constants.MOD_ID));
+            if (OPEN_CONFIG.wasPressed()) {
+                client.setScreen(new ConfigScreen(client.currentScreen));
             }
         });
-
-        Logger.info("Keybinds registered");
-    }
-
-    public static boolean isOpenConfigPressed() {
-        return OPEN_CONFIG.wasPressed();
+        Constants.LOGGER.info("[{}] Keybinds registered", Constants.MOD_NAME_SHORT);
     }
 
     public static boolean shouldShowPlayerNames() {

@@ -1,12 +1,9 @@
-import groovy.json.JsonOutput
-
 plugins {
-    id "fabric-loom" version "1.12.1"
-    id "maven-publish"
-    id "com.modrinth.minotaur" version "2.+"
-    id "com.matthewprenger.cursegradle" version "1.+"
-    id "com.github.breadmoirai.github-release" version "2.+"
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'maven-publish'
 }
+
+version = project.version
 
 base {
     archivesName = project.archives_base_name
@@ -14,12 +11,11 @@ base {
 
 repositories {
     maven {
-        url = "https://maven.teamresourceful.com/repository/maven-public/"
+        url = "https://maven.shedaniel.me/"
     }
     maven {
-        url = "https://maven.terraformersmc.com/"
+        url = "https://maven.terraformersmc.com/releases/"
     }
-    mavenLocal()
 }
 
 dependencies {
@@ -28,190 +24,38 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "io.github.bichal:bichal-utils:${project.bichal_utils_version}"
-    implementation("com.terraformersmc:modmenu:${project.modmenu_version}")
-    modImplementation "com.teamresourceful.resourcefulconfig:resourcefulconfig-fabric-1.20.5:2.5.2"
+    modApi "com.terraformersmc:modmenu:${project.mod_menu_version}"
 }
 
-def authors = mod_authors.split(",").collect { it.trim() }
+def modVersion = version
+def archiveName = base.archivesName.get()
+
 processResources {
+    inputs.property("version", modVersion)
+
     filesMatching("fabric.mod.json") {
-        expand([
-                maven_group       : maven_group,
-                mod_version       : mod_version_ext,
-                mod_id            : mod_id,
-                mod_name          : mod_name,
-                mod_name_spaced   : mod_name_spaced,
-                mod_description   : mod_description,
-                minecraft_version : minecraft_version,
-                minecraft_version_range: minecraft_version_range,
-                java_version      : java_version,
-                loader_min_version: loader_min_version,
-                loader_version    : loader_version,
-                homepage          : homepage,
-                modrinth_page     : modrinth_page,
-                curseforge_page   : curseforge_page,
-                discord_server    : discord_server,
-                license           : license
-        ])
-
-        // Reemplazamos el array de authors vacío con la lista real de autores
-        filter { line ->
-            line.replace(
-                    '"authors": []',
-                    '"authors": ' + JsonOutput.toJson(authors)
-            )
-        }
-    }
-
-    filesMatching("BetterPlayerLocatorBar.mixins.json") {
-        filter { String text ->
-            // Reemplazamos los valores de compatibilityLevel y package
-            // por los especificados en el gradle.properties
-            text.replace(
-                    '"compatibilityLevel": "Reemplazado en build.gradle (processResources)"',
-                    '"compatibilityLevel": "JAVA_' + java_version + '"'
-            ).replace(
-                    '"package": "Reemplazado en build.gradle (processResources)"',
-                    '"package": "' + maven_group + '.' + mod_id + '.mixin"'
-            )
-        }
-    }
-
-    filesMatching("build_datapack.bat") {
-        expand([
-                mod_file_name: archives_base_name,
-                mod_version  : mod_version
-        ])
-    }
-
-    filesMatching("pack.mcmeta") {
-        expand([mod_name: mod_name])
-        // Reemplazamos los valores de pack_format y description
-        filter {
-            it.replace(
-                    '"pack_format": "Reemplazado en build.gradle (processResources)"',
-                    '"pack_format": ' + pack_format
-            ).replace(
-                    '"description": "Reemplazado en build.gradle (processResources)"',
-                    '"description": "' + datapack_description + '"'
-            )
-        }
+        expand(version: modVersion)
     }
 }
 
-def targetJavaVersion = java_version.toInteger()
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10) {
-        sourceCompatibility = targetJavaVersion.toString()
-        targetCompatibility = targetJavaVersion.toString()
-    }
+    it.options.release = 21
 }
 
 java {
     withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
+
+
+
 
 jar {
+    inputs.property("archivesName", archiveName)
+
     from("LICENSE") {
-        rename { "${it}_${base.archivesName.get()}" }
+        rename { "${it}_${archiveName}" }
     }
-}
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = base.archivesName.get()
-            // noinspection GroovyAssignabilityCheck
-            from(components.java)
-        }
-    }
-}
-
-githubRelease {
-    println "githubKey: ${findProperty("githubKey") ? 'OK' : 'NO'}"
-    token = findProperty("githubKey") ?: "none"
-    owner = "bichal"
-    repo = "BetterPlayerLocatorBar"
-    tagName = "v${mod_version}"
-    releaseName = "${mod_version} - Better Player Locator Bar"
-    body = file("docs/CHANGELOG.md").text
-    draft = true
-    prerelease = version_type == "release"
-    releaseAssets = [file("libs/${base.archivesName.get()}-${mod_version}.jar")]
-}
-
-tasks.githubRelease.dependsOn(remapJar)
-
-curseforge {
-    project {
-        println("Pushing CurseGradle specifications for project ID: ${curse_id}")
-        println "curseKey: ${findProperty("curseKey") ? 'OK' : 'NO'}"
-        apiKey = findProperty("curseKey") ?: "none"
-        id = "${curse_id}"
-        releaseType = "${version_type}"
-        changelogType = "markdown"
-        changelog = file("docs/CHANGELOG.md")
-        mainArtifact(remapJar) {
-            displayName = "v${project.mod_version} - Better Player Locator Bar"
-        }
-        addArtifact sourcesJar
-
-        def mcVersions = (project.minecraft_version_list ?: "").split(",")
-        mcVersions.each { version ->
-            addGameVersion(version.trim())
-        }
-
-        addGameVersion "Fabric"
-        addGameVersion "Java ${project.java_version}"
-
-        relations {
-            requiredDependency "fabric-api"
-            optionalDependency "modmenu"
-        }
-
-        afterEvaluate {
-            uploadTask.dependsOn(remapJar)
-        }
-    }
-
-    options {
-        forgeGradleIntegration = false
-    }
-}
-
-modrinth {
-    println "modrinthKey: ${findProperty("modrinthKey") ? 'OK' : 'NO'}"
-    // Quisiera saber por que encuentra advertencias esto
-    // noinspection GroovyAssignabilityCheck, GroovyAccessibility
-    token = findProperty("modrinthKey") ?: "none"
-    projectId = "bplb"
-    versionNumber = "v" + project.mod_version
-    versionName = "Better Player Locator Bar v" + project.mod_version
-    versionType = "${version_type}"
-    changelog = rootProject.file("docs/CHANGELOG.md").text
-    uploadFile = remapJar
-    def mcVersions = (project.minecraft_version_list ?: "").split(",")
-    gameVersions = mcVersions.collect { it.trim() }
-    loaders = ["fabric"]
-
-    dependencies {
-        required.project "fabric-api"
-        optional.project "modmenu"
-    }
-
-    syncBodyFrom = rootProject.file("docs/README.md").text
-}
-
-tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
-
-afterEvaluate {
-    upload.dependsOn(remapJar)
-}
-
-tasks.register("upload") {
-    dependsOn("githubRelease")
-    dependsOn("modrinth")
-    dependsOn("curseforge")
 }
