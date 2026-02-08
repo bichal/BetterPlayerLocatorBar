@@ -48,7 +48,7 @@ Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above t
 ## Installation
 
 1. Install Fabric Loader and Fabric API
-2. Place `better-player-locator-bar-1.1.0-fabric+1.21(.1)mc.jar` into your `mods/` folder
+2. Place `better-player-locator-bar-1.1.0-fabric+1.21.2(.3)mc.jar` into your `mods/` folder
 3. Run Minecraft
 
 ## Known Issues & Limitations
