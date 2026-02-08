@@ -1,7 +1,7 @@
 <h1 align="center">Better Player Locator Bar</h1>
 
 <p align="center">
-    <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.2"><img src="https://img.shields.io/badge/Version%201%2E2%2E0-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
+    <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.2"><img src="https://img.shields.io/badge/Version%201%1E2%2E2-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/CC%E2%80%93BY%E2%80%93NC%E2%80%93SA%E2%80%934%2E0-1A1A1A?logo=creativecommons&logoColor=fff&style=for-the-badge" alt="License"/></a>
     <a href="https://modrinth.com/mod/bplb"><img src="https://img.shields.io/badge/Modrinth-00AF5C?logo=modrinth&logoColor=fff&style=for-the-badge" alt="Modrinth"/></a>
     <a href="https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar"><img src="https://img.shields.io/badge/CurseForge-F16436?logo=curseforge&logoColor=fff&style=for-the-badge" alt="CurseForge"/></a>
