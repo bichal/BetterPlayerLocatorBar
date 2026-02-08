@@ -12,10 +12,10 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
     public ScrollableListWidget(MinecraftClient client, int width, int top, int bottom, int itemHeight) {
         super(client, width, bottom - top, top, itemHeight);
         this.centerListVertically = false;
+        this.headerHeight = 0;
     }
 
     int rowWidth;
-    int rowLeft;
     int scrollbarX;
 
     public void tick() {
@@ -38,12 +38,13 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
     public void setRowWidth(int rowWidth) {
         this.rowWidth = rowWidth;
     }
-    @Override
-    public int getRowLeft() {
-        return rowLeft;
+
+    public double getScrollAmount() {
+        return this.getScrollY();
     }
-    public void setRowLeft(int rowLeft) {
-        this.rowLeft = rowLeft;
+
+    public void setScrollAmount(double scroll) {
+        this.setScrollY((int) scroll);
     }
 
     public void addPublicEntry(Entry entry) {
@@ -63,6 +64,14 @@ public class ScrollableListWidget extends ElementListWidget<ScrollableListWidget
         public List<? extends Selectable> selectableChildren() {
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    protected void renderHeader(net.minecraft.client.gui.DrawContext context, int x, int y) {
+    }
+
+    @Override
+    protected void drawHeaderAndFooterSeparators(net.minecraft.client.gui.DrawContext context) {
     }
 
     @Override

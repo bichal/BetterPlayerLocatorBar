@@ -1,12 +1,12 @@
 package net.bichal.bplb.config.widget;
 
+import net.bichal.bplb.client.render.RenderUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-@SuppressWarnings("unused") // Future Implementation
+@SuppressWarnings("unused")
 public class ToggleTextureButton extends AnimatedWidget {
     private final Identifier onTexture;
     private final Identifier offTexture;
@@ -29,7 +29,7 @@ public class ToggleTextureButton extends AnimatedWidget {
         context.drawBorder(this.getX(), this.getY(), this.width, this.height, borderColor);
 
         Identifier texture = state ? onTexture : offTexture;
-        context.drawTexture(RenderLayer::getGuiTextured, texture, this.getX(), this.getY(), 0, 0, 20, 20, 20, 20, 20, 20);
+        RenderUtils.renderTextureDirect(context, texture, this.getX(), this.getY(), 0, 0, 20, 20, 20, 20, 0xFFFFFFFF);
     }
 
     @Override

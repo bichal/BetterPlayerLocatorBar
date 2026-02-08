@@ -1,13 +1,11 @@
 package net.bichal.bplb.config.widget;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.bichal.bplb.util.Constants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.input.KeyCodes;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
@@ -19,14 +17,17 @@ public abstract class PressableWidget extends AnimatedWidget {
     public abstract void onPress();
 
     @Override
+    public void onClick(double mouseX, double mouseY) {
+        this.onPress();
+    }
+
+    @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         updateHoverAnimation(mouseX, mouseY, 0.2f);
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         renderButtonBase(context);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
         int color = this.active ? Constants.WHITE_COLOR : Constants.GRAY_COLOR;
         this.drawMessage(context, minecraftClient.textRenderer, color | MathHelper.ceil(this.alpha * 255.0F) << 24);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderButtonBase(DrawContext context) {
@@ -47,23 +48,5 @@ public abstract class PressableWidget extends AnimatedWidget {
         int x = this.getX() + (this.width - textRenderer.getWidth(this.getMessage())) / 2;
         int y = this.getY() + (this.height - 8) / 2;
         context.drawText(textRenderer, this.getMessage(), x, y, color, true);
-    }
-
-    @Override
-    public void onClick(double mouseX, double mouseY) {
-        this.onPress();
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.active || !this.visible) {
-            return false;
-        } else if (KeyCodes.isToggle(keyCode)) {
-            this.playDownSound(MinecraftClient.getInstance().getSoundManager());
-            this.onClick(0, 0);
-            return true;
-        } else {
-            return false;
-        }
     }
 }

@@ -52,10 +52,8 @@ public class ConfigScreen extends Screen {
     protected void init() {
         super.init();
         int uiWidth = Math.min(this.width - (10 * 5) * 2 - 25 * 2, MAX_UI_WIDTH);
-        int scrollListLeftOffset = 0;
         if (this.width < MAX_UI_WIDTH) {
             uiWidth = this.width - 25 * 2 - PREVIEW_BASE_SIZE - PREVIEW_BASE_SIZE / 2;
-            scrollListLeftOffset = -10;
         }
 
         TextInputWidget searchField = new TextInputWidget(this.textRenderer, this.width / 2 - 100, 30, 200, 20, Text.translatable("bplb.config.search"));
@@ -67,7 +65,6 @@ public class ConfigScreen extends Screen {
 
         this.scrollableList = new ScrollableListWidget(this.client, this.width, 60, this.height - 35, 24);
         this.scrollableList.setRowWidth(uiWidth);
-        this.scrollableList.setRowLeft(this.width / 2 - uiWidth / 2 + scrollListLeftOffset);
         this.scrollableList.setScrollbarX(this.width - 6);
         populateOptions();
         this.addSelectableChild(this.scrollableList);
@@ -388,40 +385,38 @@ public class ConfigScreen extends Screen {
     }
 
     private void renderIconPreview(DrawContext context, int centerX, int centerY) {
-        RenderUtils.withMatrixPush(context, centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, () -> {
-            int textureIndex = workingConfig.getIconSize() == 4 ? 0 : 4 - workingConfig.getIconSize();
+        int x = centerX - PREVIEW_BASE_SIZE / 2;
+        int y = centerY - PREVIEW_BASE_SIZE / 2;
+        int textureIndex = workingConfig.getIconSize() == 4 ? 0 : 4 - workingConfig.getIconSize();
 
-            String dotId = workingConfig.getDotType();
-            String borderStyle = workingConfig.getIconBorderStyle();
-            String borderType = workingConfig.getIconBorderType();
-            int color = Constants.WHITE_COLOR;
+        String dotId = workingConfig.getDotType();
+        String borderStyle = workingConfig.getIconBorderStyle();
+        String borderType = workingConfig.getIconBorderType();
+        int color = Constants.WHITE_COLOR;
 
-            Identifier dotTexture = TextureManager.getPlayerDotTexture(dotId, textureIndex);
-            Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
+        Identifier dotTexture = TextureManager.getPlayerDotTexture(dotId, textureIndex);
+        Identifier outlineTexture = TextureManager.getPlayerDotOutlineTexture(dotId, borderStyle, borderType, textureIndex);
 
-            int borderColor = workingConfig.isInheritBorderColor() ? ColorUtils.darkerColoring(color) : Constants.BLACK_COLOR;
-            RenderUtils.renderTintedTexture(context, outlineTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, borderColor, 1.0f);
-            RenderUtils.renderTintedTexture(context, dotTexture, 0, 0, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, color, 1.0f);
-
-        });
+        int borderColor = workingConfig.isInheritBorderColor() ? ColorUtils.darkerColoring(color) : Constants.BLACK_COLOR;
+        RenderUtils.renderTintedTexture(context, outlineTexture, x, y, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, borderColor, 1.0f);
+        RenderUtils.renderTintedTexture(context, dotTexture, x, y, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, color, 1.0f);
     }
 
     private void renderArrowPreview(DrawContext context, int centerX, int centerY, boolean isUp) {
-        RenderUtils.withMatrixPush(context, centerX, centerY, () -> {
-            if (previewArrowAnimator == null) previewArrowAnimator = new TextureAnimator(10, 4);
-            Identifier arrowTexture = TextureManager.getArrowTexture(workingConfig.getArrowType());
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-            int frame = previewArrowAnimator.getCurrentFrame();
-            float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
-            float v = frame * Constants.ICON_BASE_SIZE;
-            context.drawTexture(RenderLayer::getGuiTextured, arrowTexture, -PREVIEW_BASE_SIZE / 2, -PREVIEW_BASE_SIZE / 2, u, v, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2);
-        });
+        if (previewArrowAnimator == null) previewArrowAnimator = new TextureAnimator(10, 4);
+        Identifier arrowTexture = TextureManager.getArrowTexture(workingConfig.getArrowType());
+        int frame = previewArrowAnimator.getCurrentFrame();
+        float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
+        float v = frame * Constants.ICON_BASE_SIZE;
+        int x = centerX - PREVIEW_BASE_SIZE / 2;
+        int y = centerY - PREVIEW_BASE_SIZE / 2;
+        RenderUtils.renderTextureDirect(context, arrowTexture, x, y, u, v, PREVIEW_BASE_SIZE, PREVIEW_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2, 0xFFFFFFFF);
     }
 
     private void renderDeathMarkerPreview(DrawContext context, int centerX, int centerY) {
-        RenderUtils.withMatrixPush(context, centerX - PREVIEW_BASE_SIZE / 2f, centerY - PREVIEW_BASE_SIZE / 2f, () ->
-                RenderAddons.renderDeathMarker(context, 0, 0, PREVIEW_BASE_SIZE, 1.0f, workingConfig)
-        );
+        int x = centerX - PREVIEW_BASE_SIZE / 2;
+        int y = centerY - PREVIEW_BASE_SIZE / 2;
+        RenderAddons.renderDeathMarker(context, x, y, PREVIEW_BASE_SIZE, 1.0f, workingConfig, 0);
     }
 
     private void applyChanges() {

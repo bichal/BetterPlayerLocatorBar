@@ -41,7 +41,7 @@ public class ToggleOptionEntry extends ScrollableListWidget.Entry {
         button.setX(x + entryWidth - Constants.CONFIG_TOGGLE_WIDTH - Constants.CONFIG_PADDING);
         button.setY(y + 2);
         Text toggleText = value ? Text.translatable("gui.yes") : Text.translatable("gui.no");
-        int color = button.active ? (value ? 0x55FF55 : 0xFF5555) : 0xAAAAAA;
+        int color = button.active ? (value ? 0xFF55FF55 : 0xFFFF5555) : 0xFFAAAAAA;
         button.render(context, mouseX, mouseY, tickDelta);
         context.drawCenteredTextWithShadow(this.client.textRenderer, toggleText, button.getX() + button.getWidth() / 2, y + 8, color);
     }

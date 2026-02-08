@@ -31,5 +31,5 @@ public final class Constants {
 
     public static final int BLACK_COLOR = 0xFF1A1A1A;
     public static final int GRAY_COLOR = 0xFF6B6B6B;
-    public static final int WHITE_COLOR = 0xFAFAFA;
+    public static final int WHITE_COLOR = 0xFFFAFAFA;
 }

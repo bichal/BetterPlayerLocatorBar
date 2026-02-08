@@ -69,7 +69,7 @@ public class Config {
         this.dotType = "default";
         this.arrowType = "default";
         this.deathMarkerType = "default";
-        this.deathMarkerColor = 0xFF4c4c;
+        this.deathMarkerColor = 0xFFFF4C4C;
         this.heightDifferenceMode = "PLAYER";
         this.modEnabled = true;
         this.maxVisibleIcons = 100;

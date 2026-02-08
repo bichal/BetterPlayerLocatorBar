@@ -2,26 +2,22 @@
 .gradle/
 build/
 out/
-classes/
+!.gradle/wrapper/GradleWrapper.jar
 
-# IntelliJ IDEA
+# IDE
 .idea/
+*.iws
 *.iml
 *.ipr
-*.iws
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Minecraft
+*.class
+*.log
 
 # Fabric
-run/
-
-# Java
-hs_err_*.log
-replay_*.log
-*.hprof
-*.jfr
-
-# Utils
-java_files.txt
-json_files.txt
-images_files.txt
-clear.ps1
-*.png~
+fat-jar/
