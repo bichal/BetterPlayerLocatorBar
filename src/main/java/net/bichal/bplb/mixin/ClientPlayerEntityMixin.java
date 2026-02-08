@@ -1,6 +1,6 @@
 package net.bichal.bplb.mixin;
 
-import net.bichal.bplb.client.gui.Hud;
+import net.bichal.bplb.client.Hud;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
