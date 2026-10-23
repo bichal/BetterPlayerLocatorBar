@@ -1,6 +1,5 @@
 package net.bichal.bplb.client.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -20,13 +19,16 @@ public class RenderUtils {
      * texture into the box {@code (x, y, width, height)}, tinted with {@code color} (RGB) and {@code alpha}.
      */
     public static void renderTexture(GuiGraphics context, ResourceLocation texture, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight, int color, float alpha) {
-        //? if >=1.21.2 {
+        //? if >=1.21.6 {
+        /*int argb = (Math.round(Math.max(0f, Math.min(1f, alpha)) * 255f) << 24) | (color & 0xFFFFFF);
+        context.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight, argb);
+        *///?} else if >=1.21.2 {
         /*int argb = (Math.round(Math.max(0f, Math.min(1f, alpha)) * 255f) << 24) | (color & 0xFFFFFF);
         context.blit(net.minecraft.client.renderer.RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight, argb);
         *///?} else {
         setShaderColorRGBA(color, alpha);
         context.blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GuiCompat.resetShaderColor();
         //?}
     }
 
@@ -61,12 +63,12 @@ public class RenderUtils {
     }
 
     public static void withMatrixPush(GuiGraphics context, float x, float y, Runnable action) {
-        context.pose().pushPose();
-        context.pose().translate(x, y, 0);
+        GuiCompat.push(context);
+        GuiCompat.translate(context, x, y, 0);
         try {
             action.run();
         } finally {
-            context.pose().popPose();
+            GuiCompat.pop(context);
         }
     }
 
@@ -74,6 +76,6 @@ public class RenderUtils {
         float r = ((color >> 16) & 0xFF) / 255.0f;
         float g = ((color >> 8) & 0xFF) / 255.0f;
         float b = (color & 0xFF) / 255.0f;
-        RenderSystem.setShaderColor(r, g, b, alpha);
+        GuiCompat.setShaderColor(r, g, b, alpha);
     }
 }

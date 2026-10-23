@@ -57,6 +57,7 @@
   "bplb.config.reset_confirm.title": "Reset all?",
   "bplb.config.reset_confirm.message": "This will restore default values.",
   "bplb.config.local_mode_warning": "Local mode: server without the mod, only nearby players are shown",
+  "bplb.config.waypoint_mode": "Waypoint mode: using the vanilla locator bar",
   "bplb.config.remote_mode": "Server mode: all players are shown",
   "bplb.config.client_settings": "Client",
   "bplb.config.server_settings": "Server",

@@ -2,8 +2,10 @@ package net.bichal.bplb.client;
 
 import net.bichal.bplb.client.render.AssetScanner;
 import net.bichal.bplb.config.Config;
+//? if !waypoints {
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
+//?}
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -67,6 +69,7 @@ public class Client {
         LINK.reset();
     }
 
+    //? if !waypoints {
     public static void onHandshake(HandshakePayload payload) {
         LINK.onHandshake(payload.playerHasOp());
         Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, LINK.playerHasOp());
@@ -75,4 +78,5 @@ public class Client {
     public static void onPositionUpdate(PositionUpdatePayload payload) {
         Minecraft.getInstance().execute(() -> Hud.applyPositionUpdate(payload));
     }
+    //?}
 }

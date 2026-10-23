@@ -12,6 +12,7 @@ plugins {
 val mcVersion = stonecutter.current.version
 val isFabric = project.name.endsWith("-fabric")
 val loaderName = if (isFabric) "fabric" else "neoforge"
+val waypoints = stonecutter.eval(mcVersion, ">=1.21.6")
 
 val modId: String by project
 val modVersion: String by project
@@ -58,7 +59,17 @@ tasks.withType<JavaCompile>().configureEach {
 val otherLoader = if (isFabric) "neoforge" else "fabric"
 sourceSets.main {
     java.exclude("**/platform/$otherLoader/**")
+    if (waypoints) {
+        java.exclude("**/server/**", "**/network/**", "**/mixin/HotbarMixin.java")
+    } else {
+        java.exclude("**/WaypointSource.java", "**/mixin/LocatorBarMixin.java")
+    }
     resources.exclude(if (isFabric) "META-INF/neoforge.mods.toml" else "fabric.mod.json")
+}
+
+sourceSets.test {
+    if (waypoints) java.exclude("**/network/**")
+    else java.exclude("**/WaypointSourceTest.java")
 }
 
 if (isFabric) {
@@ -120,9 +131,10 @@ tasks.processResources {
         "mod_id" to modId,
         "mod_name" to modName,
         "mod_description" to modDescription,
+        "client_mixins" to if (waypoints) "\"ClientPlayerEntityMixin\", \"LocatorBarMixin\"" else "\"ClientPlayerEntityMixin\", \"HotbarMixin\"",
     )
     inputs.properties(props)
-    filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml")) {
+    filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml", "bplb.mixins.json")) {
         expand(props)
     }
 }

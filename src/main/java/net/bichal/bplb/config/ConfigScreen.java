@@ -352,9 +352,13 @@ public class ConfigScreen extends Screen {
         renderList(g, mouseX, mouseY);
         if (showPreview) renderPreviewPanel(g);
 
+        //? if waypoints {
+        /*Component mode = Component.translatable("bplb.config.waypoint_mode").withStyle(ChatFormatting.GREEN);
+        *///?} else {
         Component mode = Client.isLocalMode()
                 ? Component.translatable("bplb.config.local_mode_warning").withStyle(ChatFormatting.RED)
                 : Component.translatable("bplb.config.remote_mode").withStyle(ChatFormatting.GREEN);
+        //?}
         g.drawString(this.font, mode, this.width - this.font.width(mode) - 5, this.height - 12, Theme.TEXT, false);
     }
 
