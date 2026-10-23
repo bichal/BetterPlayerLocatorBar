@@ -51,9 +51,6 @@ public class Client {
     }
 
     public static void onHudRender(GuiGraphics context) {
-        if (LINK.checkTimeout(System.currentTimeMillis())) {
-            Constants.LOGGER.info("[{}] Server timeout, switching to local mode", Constants.MOD_NAME_SHORT);
-        }
         Hud.render(context);
     }
 
@@ -71,12 +68,11 @@ public class Client {
     }
 
     public static void onHandshake(HandshakePayload payload) {
-        LINK.onHandshake(payload.playerHasOp(), System.currentTimeMillis());
+        LINK.onHandshake(payload.playerHasOp());
         Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, LINK.playerHasOp());
     }
 
     public static void onPositionUpdate(PositionUpdatePayload payload) {
-        LINK.onUpdate(System.currentTimeMillis());
         Minecraft.getInstance().execute(() -> Hud.applyPositionUpdate(payload));
     }
 }

@@ -352,10 +352,10 @@ public class ConfigScreen extends Screen {
         renderList(g, mouseX, mouseY);
         if (showPreview) renderPreviewPanel(g);
 
-        if (Client.isLocalMode()) {
-            Component warning = Component.translatable("bplb.config.local_mode_warning").withStyle(ChatFormatting.RED);
-            g.drawString(this.font, warning, this.width - this.font.width(warning) - 5, this.height - 12, Theme.TEXT, false);
-        }
+        Component mode = Client.isLocalMode()
+                ? Component.translatable("bplb.config.local_mode_warning").withStyle(ChatFormatting.RED)
+                : Component.translatable("bplb.config.remote_mode").withStyle(ChatFormatting.GREEN);
+        g.drawString(this.font, mode, this.width - this.font.width(mode) - 5, this.height - 12, Theme.TEXT, false);
     }
 
     private void renderSidebar(GuiGraphics g, int mouseX, int mouseY) {
