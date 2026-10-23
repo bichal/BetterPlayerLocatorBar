@@ -3,9 +3,9 @@ package net.bichal.bplb.mixin;
 import net.bichal.bplb.client.Hud;
 import net.bichal.bplb.client.Keybinds;
 import net.bichal.bplb.util.MathUtils;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.DeltaTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,12 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.bichal.bplb.util.Constants.CONFIG;
 
-@Mixin(InGameHud.class)
+@Mixin(Gui.class)
 public class HotbarMixin {
     @Unique
     private static final float BASE_EXPERIENCE_OFFSET = -5;
     @Unique
-    private static final int TAB_OFFSET = (int) -(18 * CONFIG.getNameplateScale());
+    private static int tabOffset() {
+        return (int) -(18 * CONFIG.getNameplateScale());
+    }
     @Unique
     private float experienceYOffset = 0;
     @Unique
@@ -29,25 +31,25 @@ public class HotbarMixin {
 
 
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"))
-    private void adjustExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+    private void adjustExperienceLevel(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
         experienceYOffset = updateYOffset(true, experienceYOffset);
         applyTranslation(context, experienceYOffset + 1);
     }
 
     @Inject(method = "renderExperienceLevel", at = @At("RETURN"))
-    private void resetExperienceLevel(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        context.getMatrices().pop();
+    private void resetExperienceLevel(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+        context.pose().popPose();
     }
 
-    @Inject(method = "renderStatusBars", at = @At("HEAD"))
-    private void adjustStatusBars(DrawContext context, CallbackInfo ci) {
+    @Inject(method = "renderPlayerHealth", at = @At("HEAD"))
+    private void adjustStatusBars(GuiGraphics context, CallbackInfo ci) {
         statusYOffset = updateYOffset(false, statusYOffset);
         applyTranslation(context, statusYOffset);
     }
 
-    @Inject(method = "renderStatusBars", at = @At("RETURN"))
-    private void resetStatusBars(DrawContext context, CallbackInfo ci) {
-        context.getMatrices().pop();
+    @Inject(method = "renderPlayerHealth", at = @At("RETURN"))
+    private void resetStatusBars(GuiGraphics context, CallbackInfo ci) {
+        context.pose().popPose();
     }
 
     @Unique
@@ -90,7 +92,7 @@ public class HotbarMixin {
         int targetOffset = (int) (isExperience ? BASE_EXPERIENCE_OFFSET : defaultYOffset);
         boolean shouldShowNames = Keybinds.shouldShowPlayerNames() || CONFIG.isAlwaysShowPlayerNames();
         if (shouldShowNames) {
-            targetOffset += TAB_OFFSET;
+            targetOffset += tabOffset();
         }
 
         float delta = targetOffset - currentOffset;
@@ -98,8 +100,8 @@ public class HotbarMixin {
     }
 
     @Unique
-    private void applyTranslation(DrawContext context, float offset) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, offset, 0);
+    private void applyTranslation(GuiGraphics context, float offset) {
+        context.pose().pushPose();
+        context.pose().translate(0, offset, 0);
     }
 }

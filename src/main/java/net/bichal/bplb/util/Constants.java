@@ -1,7 +1,7 @@
 package net.bichal.bplb.util;
 
 import net.bichal.bplb.config.Config;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +11,7 @@ public final class Constants {
     public static final String MOD_NAME_LARGE = "Better Player Locator Bar";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME_LARGE);
     public static final Config CONFIG = Config.getInstance();
-    public static final Identifier STEVE_SKIN_TEXTURE = Identifier.of("minecraft", "textures/entity/player/wide/steve.png");
+    public static final ResourceLocation STEVE_SKIN_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/player/wide/steve.png");
     public static final int BAR_Y_OFFSET = -26;
     public static final int BAR_WIDTH = 182;
     public static final int EDGE_ALPHA_FADE_MARGIN = 10;

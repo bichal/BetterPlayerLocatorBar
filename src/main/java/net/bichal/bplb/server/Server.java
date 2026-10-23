@@ -2,17 +2,14 @@ package net.bichal.bplb.server;
 
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
+import net.bichal.bplb.platform.Platform;
 import net.bichal.bplb.util.Constants;
 import net.bichal.bplb.util.DistanceUtils;
-import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -21,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Server implements DedicatedServerModInitializer {
+public class Server {
     private final PlayerTracker playerTracker = new PlayerTracker();
     private static final long PLAYER_LIST_CACHE_DURATION = 50L;
     private final Set<UUID> newPlayers = ConcurrentHashMap.newKeySet(16);
@@ -36,45 +33,43 @@ public class Server implements DedicatedServerModInitializer {
                 return t;
             }
     );
-    private List<ServerPlayerEntity> playerListCache = new ArrayList<>();
+    private List<ServerPlayer> playerListCache = new ArrayList<>();
     private long playerListCacheTime = 0;
 
-    @Override
-    public void onInitializeServer() {
+    public void init() {
         Constants.LOGGER.info("[{}] Initializing server!", Constants.MOD_NAME_SHORT);
         ServerConfig.getInstance();
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (handler == null || handler.player == null) return;
-            UUID playerId = handler.player.getUuid();
-            if (playerId == null) return;
-            playerTracker.updatePlayer(handler.player);
-            newPlayers.add(playerId);
-            invalidatePlayerListCache();
-            if (ServerPlayNetworking.canSend(handler.player, HandshakePayload.ID)) {
-                boolean hasOp = server.getPlayerManager().isOperator(handler.player.getGameProfile());
-                ServerPlayNetworking.send(handler.player, new HandshakePayload(hasOp));
-            }
-        });
-
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            if (handler == null || handler.player == null) return;
-            UUID playerId = handler.player.getUuid();
-            if (playerId == null) return;
-            disconnectedPlayers.add(playerId);
-            playerTracker.removePlayer(playerId);
-            newPlayers.remove(playerId);
-            distanceCache.remove(playerId);
-            invalidatePlayerListCache();
-        });
-        ServerTickEvents.END_SERVER_TICK.register(this::tick);
         Constants.LOGGER.info("[{}] Server initialized!", Constants.MOD_NAME_SHORT);
     }
 
-    private void tick(@Nullable MinecraftServer server) {
+    public void onJoin(ServerPlayer player, MinecraftServer server) {
+        if (player == null) return;
+        UUID playerId = player.getUUID();
+        if (playerId == null) return;
+        playerTracker.updatePlayer(player);
+        newPlayers.add(playerId);
+        invalidatePlayerListCache();
+        if (Platform.canSend(player, HandshakePayload.TYPE)) {
+            boolean hasOp = server.getPlayerList().isOp(player.getGameProfile());
+            Platform.send(player, new HandshakePayload(hasOp));
+        }
+    }
+
+    public void onDisconnect(ServerPlayer player) {
+        if (player == null) return;
+        UUID playerId = player.getUUID();
+        if (playerId == null) return;
+        disconnectedPlayers.add(playerId);
+        playerTracker.removePlayer(playerId);
+        newPlayers.remove(playerId);
+        distanceCache.remove(playerId);
+        invalidatePlayerListCache();
+    }
+    public void tick(@Nullable MinecraftServer server) {
         if (server == null) return;
 
-        long currentTime = server.getTicks();
-        List<ServerPlayerEntity> players = getCachedPlayerList(server);
+        long currentTime = server.getTickCount();
+        List<ServerPlayer> players = getCachedPlayerList(server);
 
         if (players.size() > 10) {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -82,10 +77,10 @@ public class Server implements DedicatedServerModInitializer {
 
             for (int start = 0; start < players.size(); start += chunkSize) {
                 int end = Math.min(start + chunkSize, players.size());
-                List<ServerPlayerEntity> chunk = players.subList(start, end);
+                List<ServerPlayer> chunk = players.subList(start, end);
 
                 futures.add(CompletableFuture.runAsync(() -> {
-                    for (ServerPlayerEntity player : chunk) {
+                    for (ServerPlayer player : chunk) {
                         if (player != null) {
                             playerTracker.updatePlayer(player);
                         }
@@ -95,7 +90,7 @@ public class Server implements DedicatedServerModInitializer {
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         } else {
-            for (ServerPlayerEntity player : players) {
+            for (ServerPlayer player : players) {
                 if (player != null) {
                     playerTracker.updatePlayer(player);
                 }
@@ -110,11 +105,11 @@ public class Server implements DedicatedServerModInitializer {
         }
     }
 
-    private List<ServerPlayerEntity> getCachedPlayerList(@Nullable MinecraftServer server) {
+    private List<ServerPlayer> getCachedPlayerList(@Nullable MinecraftServer server) {
         if (server == null) return Collections.emptyList();
         long now = System.currentTimeMillis();
         if (now - playerListCacheTime > PLAYER_LIST_CACHE_DURATION) {
-            playerListCache = server.getPlayerManager().getPlayerList();
+            playerListCache = server.getPlayerList().getPlayers();
             playerListCacheTime = now;
         }
         return playerListCache;
@@ -126,7 +121,7 @@ public class Server implements DedicatedServerModInitializer {
 
     private void sendUpdate(MinecraftServer server) {
         if (server == null) return;
-        List<ServerPlayerEntity> players = getCachedPlayerList(server);
+        List<ServerPlayer> players = getCachedPlayerList(server);
         if (players.isEmpty()) return;
         List<PositionUpdatePayload.PlayerInfo> newPlayerInfos = new ArrayList<>();
         Map<UUID, PlayerTracker.PlayerPosition> initialPositions = new HashMap<>();
@@ -137,7 +132,7 @@ public class Server implements DedicatedServerModInitializer {
             if (info != null) {
                 newPlayerInfos.add(new PositionUpdatePayload.PlayerInfo(uuid, info.name));
 
-                ServerPlayerEntity player = server.getPlayerManager().getPlayer(uuid);
+                ServerPlayer player = server.getPlayerList().getPlayer(uuid);
                 if (player != null) {
                     PlayerTracker.PlayerPosition pos = new PlayerTracker.PlayerPosition(
                             player.getX(), player.getY(), player.getZ()
@@ -152,21 +147,21 @@ public class Server implements DedicatedServerModInitializer {
         Map<UUID, PlayerTracker.PlayerPosition> movedPlayersData = new HashMap<>(playerTracker.getAndClearMovedPlayers());
         movedPlayersData.putAll(initialPositions);
 
-        for (ServerPlayerEntity player : players) {
-            if (player != null && !movedPlayersData.containsKey(player.getUuid())) {
+        for (ServerPlayer player : players) {
+            if (player != null && !movedPlayersData.containsKey(player.getUUID())) {
                 PlayerTracker.PlayerPosition pos = new PlayerTracker.PlayerPosition(
                         player.getX(), player.getY(), player.getZ()
                 );
-                movedPlayersData.put(player.getUuid(), pos);
+                movedPlayersData.put(player.getUUID(), pos);
             }
         }
 
         if (movedPlayersData.isEmpty() && newPlayerInfos.isEmpty() && disconnectedPlayers.isEmpty()) {
             return;
         }
-        for (ServerPlayerEntity viewer : players) {
+        for (ServerPlayer viewer : players) {
             if (viewer == null) continue;
-            UUID viewerId = viewer.getUuid();
+            UUID viewerId = viewer.getUUID();
             if (viewerId == null) continue;
             List<PositionUpdatePayload.PositionData> positions = new ArrayList<>();
             Map<UUID, Double> viewerDistCache = distanceCache.computeIfAbsent(viewerId, k -> new ConcurrentHashMap<>());
@@ -193,9 +188,9 @@ public class Server implements DedicatedServerModInitializer {
                     continue;
                 }
 
-                ServerPlayerEntity targetPlayer = server.getPlayerManager().getPlayer(uuid);
+                ServerPlayer targetPlayer = server.getPlayerList().getPlayer(uuid);
                 if (targetPlayer == null) continue;
-                if (viewer.getWorld() != targetPlayer.getWorld()) continue;
+                if (viewer.serverLevel() != targetPlayer.serverLevel()) continue;
 
                 boolean shouldHide = shouldHideTarget(targetPlayer);
                 String playerName = targetPlayer.getName().getString();
@@ -218,8 +213,8 @@ public class Server implements DedicatedServerModInitializer {
                 PositionUpdatePayload payload = new PositionUpdatePayload(newPlayerInfos, positions, new ArrayList<>(disconnectedPlayers)
                 );
 
-                if (ServerPlayNetworking.canSend(viewer, PositionUpdatePayload.ID)) {
-                    ServerPlayNetworking.send(viewer, payload);
+                if (Platform.canSend(viewer, PositionUpdatePayload.TYPE)) {
+                    Platform.send(viewer, payload);
                 }
             }
         }
@@ -247,8 +242,8 @@ public class Server implements DedicatedServerModInitializer {
         }
     }
 
-    private boolean shouldHideTarget(ServerPlayerEntity target) {
-        ItemStack headStack = target.getEquippedStack(EquipmentSlot.HEAD);
-        return target.isSneaking() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+    private boolean shouldHideTarget(ServerPlayer target) {
+        ItemStack headStack = target.getItemBySlot(EquipmentSlot.HEAD);
+        return target.isShiftKeyDown() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
     }
 }

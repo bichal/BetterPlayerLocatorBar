@@ -3,7 +3,7 @@ package net.bichal.bplb.server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.bichal.bplb.util.Constants;
-import net.fabricmc.loader.api.FabricLoader;
+import net.bichal.bplb.platform.Platform;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.nio.file.Files;
 
 public record ServerConfig(int positionUpdateRateTicks, double positionChangeThreshold, int cleanupIntervalTicks, double maxRelevantDistance, int threadPoolSize, String preset) {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("bplb-server.json").toFile();
+    private static final File CONFIG_FILE = Platform.configDir().resolve("bplb-server.json").toFile();
     private static final Object LOCK = new Object();
     private static volatile ServerConfig instance;
 

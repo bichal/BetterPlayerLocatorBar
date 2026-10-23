@@ -1,28 +1,28 @@
 package net.bichal.bplb.network;
 
 import net.bichal.bplb.util.Constants;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record HandshakePayload(boolean playerHasOp) implements CustomPayload {
-    public static final Id<HandshakePayload> ID = new Id<>(Identifier.of(Constants.MOD_ID, "handshake"));
+public record HandshakePayload(boolean playerHasOp) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<HandshakePayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "handshake"));
 
-    public static final PacketCodec<PacketByteBuf, HandshakePayload> CODEC = new PacketCodec<>() {
+    public static final StreamCodec<FriendlyByteBuf, HandshakePayload> CODEC = new StreamCodec<>() {
         @Override
-        public HandshakePayload decode(PacketByteBuf buf) {
+        public HandshakePayload decode(FriendlyByteBuf buf) {
             return new HandshakePayload(buf.readBoolean());
         }
 
         @Override
-        public void encode(PacketByteBuf buf, HandshakePayload payload) {
+        public void encode(FriendlyByteBuf buf, HandshakePayload payload) {
             buf.writeBoolean(payload.playerHasOp());
         }
     };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
-        return ID;
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

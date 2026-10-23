@@ -5,8 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.util.Constants;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.math.MathHelper;
+import net.bichal.bplb.platform.Platform;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -19,8 +19,8 @@ import java.util.function.Consumer;
 
 public class Config {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("BetterPlayerLocatorBar/options.json").toFile();
-    private static final File PLAYERS_FILE = FabricLoader.getInstance().getConfigDir().resolve("BetterPlayerLocatorBar/players.json").toFile();
+    private static final File CONFIG_FILE = Platform.configDir().resolve("BetterPlayerLocatorBar/options.json").toFile();
+    private static final File PLAYERS_FILE = Platform.configDir().resolve("BetterPlayerLocatorBar/players.json").toFile();
     private final Map<String, PlayerAppearance> playerConfigs = new HashMap<>();
     private static Config instance;
     private final Map<String, Boolean> playerExpandedStates = new HashMap<>();
@@ -321,7 +321,7 @@ public class Config {
 
     @Nullable
     public PlayerAppearance getPlayerConfig(String playerName) { return playerConfigs.get(playerName); }
-    public void setMaxVisibleIcons(int value) { set(MathHelper.clamp(value, 1, 200), v -> this.maxVisibleIcons = v); }
+    public void setMaxVisibleIcons(int value) { set(Mth.clamp(value, 1, 200), v -> this.maxVisibleIcons = v); }
     public int getFadeEndDistance() { return fadeEndDistance; }
     public void setFadeEndDistance(int value) { set(value, v -> this.fadeEndDistance = v); }
     public int getFadeStartDistance() { return fadeStartDistance; }
@@ -335,9 +335,9 @@ public class Config {
     public boolean isAlwaysShowPlayerNames() { return alwaysShowPlayerNames; }
     public void setAlwaysShowPlayerNames(boolean value) { set(value, v -> this.alwaysShowPlayerNames = v); }
     public float getFadeAlphaMax() { return fadeAlphaMax; }
-    public void setFadeAlphaMax(float value) { float clampedValue = MathHelper.clamp(value, this.fadeAlphaMin + 0.01f, 1.0f); set(clampedValue, v -> this.fadeAlphaMax = v); }
+    public void setFadeAlphaMax(float value) { float clampedValue = Mth.clamp(value, this.fadeAlphaMin + 0.01f, 1.0f); set(clampedValue, v -> this.fadeAlphaMax = v); }
     public float getFadeAlphaMin() { return fadeAlphaMin; }
-    public void setFadeAlphaMin(float value) { float clampedValue = MathHelper.clamp(value, 0.0f, this.fadeAlphaMax - 0.01f); set(clampedValue, v -> this.fadeAlphaMin = v); }
+    public void setFadeAlphaMin(float value) { float clampedValue = Mth.clamp(value, 0.0f, this.fadeAlphaMax - 0.01f); set(clampedValue, v -> this.fadeAlphaMin = v); }
     public int getIconSize() { return iconSize; }
     public void setIconSize(int value) { set(value, v -> this.iconSize = v); }
     public String getNameBorderStyle() { return nameBorderStyle; }
@@ -374,7 +374,7 @@ public class Config {
     public void setDeathMarkerInheritBorderColor(boolean value) { set(value, v -> this.deathMarkerInheritBorderColor = v); }
     public void setAdjustToFov(boolean value) { set(value, v -> this.adjustToFov = v); }
     public float getFovMultiplier() { return fovMultiplier; }
-    public void setFovMultiplier(float value) { set(MathHelper.clamp(value, 0.5f, 2.0f), v -> this.fovMultiplier = v); }
+    public void setFovMultiplier(float value) { set(Mth.clamp(value, 0.5f, 2.0f), v -> this.fovMultiplier = v); }
 
     @SuppressWarnings("unused")
     public static class PlayerAppearance {

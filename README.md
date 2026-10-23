@@ -1,14 +1,14 @@
 <h1 align="center">Better Player Locator Bar</h1>
 
 <p align="center">
-    <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/Version%201%2E1%2E0-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
+    <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases/tag/v1.1.1"><img src="https://img.shields.io/badge/Version%201%2E1%2E1-2F6DB8?logo=openjdk&logoColor=fff&style=for-the-badge" alt="Version"/></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/CC%E2%80%93BY%E2%80%93NC%E2%80%93SA%E2%80%934%2E0-1A1A1A?logo=creativecommons&logoColor=fff&style=for-the-badge" alt="License"/></a>
     <a href="https://modrinth.com/mod/bplb"><img src="https://img.shields.io/badge/Modrinth-00AF5C?logo=modrinth&logoColor=fff&style=for-the-badge" alt="Modrinth"/></a>
     <a href="https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar"><img src="https://img.shields.io/badge/CurseForge-F16436?logo=curseforge&logoColor=fff&style=for-the-badge" alt="CurseForge"/></a>
     <a href="https://github.com/bichal/BetterPlayerLocatorBar/issues"><img src="https://img.shields.io/badge/Have%20An%20Issue%3F-BE3939?logo=theconversation&logoColor=fff&style=for-the-badge" alt="Issues"/></a>
 </p>
 
-Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above the XP bar. You can customize icons, borders, fades, and more.
+Better Player Locator Bar is a Fabric and NeoForge mod. It shows players in a HUD bar above the XP bar. You can customize icons, borders, fades, and more.
 
 ## 🎯 Features
 
@@ -40,21 +40,32 @@ Better Player Locator Bar is a Fabric mod. It shows players in a HUD bar above t
 
 ## Requirements
 
-- Minecraft 1.21 - 1.21.1
-- Fabric Loader ≥ 0.14.2
-- Java 21
-- Fabric API
+| Minecraft | Fabric | NeoForge |
+|---|---|---|
+| 1.21 - 1.21.1 | Loader ≥ 0.16, Fabric API | NeoForge 21.1+ |
+| 1.21.2 - 1.21.3 | Loader ≥ 0.16, Fabric API | NeoForge 21.3+ |
+
+Java 21 on every version. [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric; on NeoForge the settings are in the mod list.
+The mod works on a server without it installed (local mode) and gives exact positions when the server has it too.
 
 ## Installation
 
-1. Install Fabric Loader and Fabric API
-2. Place `better-player-locator-bar-1.1.0-fabric+1.21(.1)mc.jar` into your `mods/` folder
+1. Install your loader (and Fabric API on Fabric)
+2. Put `better-player-locator-bar-<version>+<minecraft>-<loader>.jar` into your `mods/` folder
 3. Run Minecraft
 
-## Known Issues & Limitations
+## Building
 
-- Only works in Fabric, no Forge/NeoForge/... support (yet? 🥀)
+One Gradle project per Minecraft version and loader, built from the same sources with [Stonecutter](https://stonecutter.kikugie.dev/):
 
+```
+./gradlew :1.21.1-fabric:build        # one version, one loader
+./gradlew build                       # everything
+./gradlew :1.21.1-fabric:runClient    # dev client (also :1.21.1-neoforge:runClient)
+```
+
+The shared code uses Mojang names and no loader API; each loader only has its entrypoints in
+`net.bichal.bplb.platform.<loader>`. Add a version in `settings.gradle.kts` and `versions/<version>-<loader>/gradle.properties`.
 ## License
 
 The contents of this repository and mod, are licensed under a <a href="LICENSE">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. ([Canonical URL](https://creativecommons.org/licenses/by-nc-sa/4.0/))
