@@ -19,7 +19,11 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+//? if >=1.21.4 {
+/*import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+*///?} else {
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+//?}
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
@@ -45,9 +49,15 @@ public class NeoForgeClient {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "locator_bar"), (graphics, deltaTracker) -> Client.onHudRender(graphics));
     }
 
+    //? if >=1.21.4 {
+    /*private static void registerReloadListeners(AddClientReloadListenersEvent event) {
+        event.addListener(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "asset_scanner"), (ResourceManagerReloadListener) Client::onResourcesReloaded);
+    }
+    *///?} else {
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener((ResourceManagerReloadListener) Client::onResourcesReloaded);
     }
+    //?}
 
     public static final class GameEvents {
         @SubscribeEvent

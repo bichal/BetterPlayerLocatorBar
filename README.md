@@ -44,6 +44,7 @@ Better Player Locator Bar is a Fabric and NeoForge mod. It shows players in a HU
 |---|---|---|
 | 1.21 - 1.21.1 | Loader ≥ 0.16, Fabric API | NeoForge 21.1+ |
 | 1.21.2 - 1.21.3 | Loader ≥ 0.16, Fabric API | NeoForge 21.3+ |
+| 1.21.4 | Loader ≥ 0.16, Fabric API | NeoForge 21.4+ |
 
 Java 21 on every version. [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric; on NeoForge the settings are in the mod list.
 How it works:
