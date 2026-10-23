@@ -85,12 +85,16 @@ public class RenderAddons {
         int frame = animator.getCurrentFrame();
         float u = isUp ? 0 : Constants.ICON_BASE_SIZE;
         float v = frame * Constants.ICON_BASE_SIZE;
+        //? if <1.21.5 {
         RenderSystem.enableBlend();
         try {
             RenderUtils.renderTexture(context, arrowTexture, (int) x, (int) y, size, size, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2, 0xFFFFFF, alpha);
         } finally {
             RenderSystem.disableBlend();
         }
+        //?} else {
+        /*RenderUtils.renderTexture(context, arrowTexture, (int) x, (int) y, size, size, u, v, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE, Constants.ICON_BASE_SIZE * 2, Constants.ICON_BASE_SIZE * 2, 0xFFFFFF, alpha);
+        *///?}
     }
     public static void renderNameplate(GuiGraphics context, String text, String borderStyle, int color, float x, float y, float alpha, float scale) {
         if (alpha <= 0.01f) return;
