@@ -5,6 +5,7 @@ plugins {
     id("java")
     id("maven-publish")
     id("fabric-loom") version "1.16.3" apply false
+    id("net.fabricmc.fabric-loom") version "1.16.3" apply false
     id("net.neoforged.moddev") version "2.0.148" apply false
 }
 
@@ -13,6 +14,9 @@ val mcVersion = stonecutter.current.version
 val isFabric = project.name.endsWith("-fabric")
 val loaderName = if (isFabric) "fabric" else "neoforge"
 val waypoints = stonecutter.eval(mcVersion, ">=1.21.6")
+// 26.1 ships unobfuscated: no mappings, no remapping, Java 25
+val unobfuscated = stonecutter.eval(mcVersion, ">=26.1")
+val javaVersion = if (unobfuscated) 25 else 21
 
 val modId: String by project
 val modVersion: String by project
@@ -33,7 +37,7 @@ repositories {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
     withSourcesJar()
 }
 
@@ -50,7 +54,7 @@ tasks.test {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release = 21
+    options.release = javaVersion
     options.encoding = "UTF-8"
 }
 
@@ -62,7 +66,7 @@ sourceSets.main {
     if (waypoints) {
         java.exclude("**/server/**", "**/network/**", "**/mixin/HotbarMixin.java")
     } else {
-        java.exclude("**/WaypointSource.java", "**/mixin/LocatorBarMixin.java")
+        java.exclude("**/WaypointSource.java", "**/mixin/WaypointBarMixin.java")
     }
     resources.exclude(if (isFabric) "META-INF/neoforge.mods.toml" else "fabric.mod.json")
 }
@@ -73,16 +77,20 @@ sourceSets.test {
 }
 
 if (isFabric) {
-    apply(plugin = "fabric-loom")
+    apply(plugin = if (unobfuscated) "net.fabricmc.fabric-loom" else "fabric-loom")
     val loom = extensions.getByType<LoomGradleExtensionAPI>()
 
+    // Unobfuscated versions use the plain Gradle configurations and need no mappings.
+    val api = if (unobfuscated) "implementation" else "modImplementation"
+    val compileOnly = if (unobfuscated) "compileOnly" else "modCompileOnly"
+    val localRuntime = if (unobfuscated) "runtimeOnly" else "modLocalRuntime"
     dependencies {
         add("minecraft", "com.mojang:minecraft:$mcVersion")
-        add("mappings", loom.officialMojangMappings())
-        add("modImplementation", "net.fabricmc:fabric-loader:${property("fabric_loader")}")
-        add("modImplementation", "net.fabricmc.fabric-api:fabric-api:${property("fabric_api")}")
-        add("modCompileOnly", "com.terraformersmc:modmenu:${property("mod_menu")}")
-        add("modLocalRuntime", "com.terraformersmc:modmenu:${property("mod_menu")}")
+        if (!unobfuscated) add("mappings", loom.officialMojangMappings())
+        add(api, "net.fabricmc:fabric-loader:${property("fabric_loader")}")
+        add(api, "net.fabricmc.fabric-api:fabric-api:${property("fabric_api")}")
+        add(compileOnly, "com.terraformersmc:modmenu:${property("mod_menu")}")
+        add(localRuntime, "com.terraformersmc:modmenu:${property("mod_menu")}")
     }
 
     loom.runs.named("client") {
@@ -136,7 +144,7 @@ tasks.processResources {
         "mod_id" to modId,
         "mod_name" to modName,
         "mod_description" to modDescription,
-        "client_mixins" to if (waypoints) "\"ClientPlayerEntityMixin\", \"LocatorBarMixin\"" else "\"ClientPlayerEntityMixin\", \"HotbarMixin\"",
+        "client_mixins" to if (waypoints) "\"ClientPlayerEntityMixin\", \"WaypointBarMixin\"" else "\"ClientPlayerEntityMixin\", \"HotbarMixin\"",
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml", "bplb.mixins.json")) {

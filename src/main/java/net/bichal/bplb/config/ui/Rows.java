@@ -321,10 +321,12 @@ public final class Rows {
             this.lastText = String.format("%06X", initial & 0xFFFFFF);
             this.box = new EditBox(font(), 0, 0, CONTROL_WIDTH - 26, 18, label);
             this.box.setMaxLength(6);
+            //? if <26.1 {
             this.box.setFilter(s -> s.matches("[0-9a-fA-F]{0,6}"));
+            //?}
             this.box.setValue(lastText);
             this.box.setResponder(text -> {
-                if (text.length() != 6 || text.equals(lastText)) return;
+                if (!text.matches("[0-9a-fA-F]{6}") || text.equals(lastText)) return;
                 lastText = text;
                 color = 0xFF000000 | Integer.parseInt(text, 16);
                 setter.accept(color);
@@ -341,7 +343,7 @@ public final class Rows {
         protected void drawControl(GuiGraphics g, int cx, int y, int mouseX, int mouseY, boolean hovered) {
             box.setX(cx);
             box.setY(y + 2);
-            box.render(g, mouseX, mouseY, 0f);
+            InputCompat.draw(box, g, mouseX, mouseY);
             int sx = cx + CONTROL_WIDTH - 20;
             g.fill(sx, y + 2, sx + 20, y + 20, getter.get());
             GuiCompat.outline(g, sx, y + 2, 20, 18, Theme.BORDER);
@@ -456,7 +458,7 @@ public final class Rows {
         public void render(GuiGraphics g, int x, int y, int width, int mouseX, int mouseY, boolean hovered) {
             box.setX(x + PAD);
             box.setY(y + 2);
-            box.render(g, mouseX, mouseY, 0f);
+            InputCompat.draw(box, g, mouseX, mouseY);
             int bx = x + PAD + 150 + 6;
             boolean can = canAdd();
             boolean over = can && mouseX >= bx && mouseX < bx + 18 && mouseY >= y + 2 && mouseY < y + 20;

@@ -14,7 +14,11 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+//? if >=26.1 {
+/*import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+*///?} else {
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//?}
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 //? if !waypoints {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -51,8 +55,13 @@ public class FabricClient implements ClientModInitializer {
         //?}
         ClientTickEvents.END_CLIENT_TICK.register(Client::onClientTick);
 
+        //? if >=26.1 {
+        /*KeyMappingHelper.registerKeyMapping(Keybinds.SHOW_PLAYER_NAME);
+        KeyMappingHelper.registerKeyMapping(Keybinds.OPEN_CONFIG);
+        *///?} else {
         KeyBindingHelper.registerKeyBinding(Keybinds.SHOW_PLAYER_NAME);
         KeyBindingHelper.registerKeyBinding(Keybinds.OPEN_CONFIG);
+        //?}
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> Client.onJoin(client));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> Client.onDisconnect());

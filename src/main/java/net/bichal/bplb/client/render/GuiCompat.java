@@ -40,6 +40,22 @@ public final class GuiCompat {
         //?}
     }
 
+    public static net.minecraft.client.Camera camera(net.minecraft.client.Minecraft client) {
+        //? if >=26.2 {
+        /*return client.gameRenderer.mainCamera();
+        *///?} else {
+        return client.gameRenderer.getMainCamera();
+        //?}
+    }
+
+    public static net.minecraft.client.gui.screens.Screen screen(net.minecraft.client.Minecraft client) {
+        //? if >=26.2 {
+        /*return client.gui.screen();
+        *///?} else {
+        return client.screen;
+        //?}
+    }
+
     /** A 1 pixel border; GuiGraphics.renderOutline is not available from 1.21.9, so it is drawn with fills. */
     public static void outline(GuiGraphics g, int x, int y, int width, int height, int color) {
         g.fill(x, y, x + width, y + 1, color);

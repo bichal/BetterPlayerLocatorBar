@@ -348,10 +348,18 @@ public class ConfigScreen extends Screen {
     // ------------------------------------------------------------- rendering
 
     @Override
+    //? if >=26.1 {
+    /*public void extractRenderState(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    *///?} else {
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    //?}
         // Screen.render draws the (blurred) background and the widgets exactly once; drawing the
         // background here as well would blur the screen twice.
+        //? if >=26.1 {
+        /*super.extractRenderState(g, mouseX, mouseY, delta);
+        *///?} else {
         super.render(g, mouseX, mouseY, delta);
+        //?}
         g.drawCenteredString(this.font, this.title, this.width / 2, 10, Theme.TEXT);
 
         renderSidebar(g, mouseX, mouseY);
@@ -576,12 +584,12 @@ public class ConfigScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        return onKeyPressed(event.key(), event.scancode(), event.modifiers()) || super.keyPressed(event);
+        return onKeyPressed(event.key(), InputCompat.scancode(event), event.modifiers()) || super.keyPressed(event);
     }
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        return onCharTyped((char) event.codepoint(), event.modifiers()) || super.charTyped(event);
+        return onCharTyped((char) event.codepoint(), InputCompat.modifiers(event)) || super.charTyped(event);
     }
     *///?} else {
     @Override

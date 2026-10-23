@@ -2,10 +2,10 @@ package net.bichal.bplb.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.bichal.bplb.config.ConfigScreen;
+import net.bichal.bplb.client.render.GuiCompat;
 import net.bichal.bplb.util.Constants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
     //? if >=1.21.9 {
@@ -14,13 +14,18 @@ public class Keybinds {
     private static final String CATEGORY = Constants.MOD_NAME_LARGE;
     //?}
 
-    public static final KeyMapping SHOW_PLAYER_NAME = new KeyMapping("key.bplb.show_player_name", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_TAB, CATEGORY);
-    public static final KeyMapping OPEN_CONFIG = new KeyMapping("key.bplb.open_config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
+    //? if >=26.3 {
+    /*private static final InputConstants.Type KEY_TYPE = InputConstants.Type.KEYBOARD;
+    *///?} else {
+    private static final InputConstants.Type KEY_TYPE = InputConstants.Type.KEYSYM;
+    //?}
+    public static final KeyMapping SHOW_PLAYER_NAME = new KeyMapping("key.bplb.show_player_name", KEY_TYPE, InputConstants.KEY_TAB, CATEGORY);
+    public static final KeyMapping OPEN_CONFIG = new KeyMapping("key.bplb.open_config", KEY_TYPE, InputConstants.KEY_F8, CATEGORY);
 
     /** Called once per client tick by the loader. */
     public static void onClientTick(Minecraft client) {
         while (OPEN_CONFIG.consumeClick()) {
-            client.setScreen(new ConfigScreen(client.screen));
+            client.setScreen(new ConfigScreen(GuiCompat.screen(client)));
         }
     }
 

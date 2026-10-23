@@ -1,5 +1,6 @@
 package net.bichal.bplb.client;
 
+import net.bichal.bplb.client.render.GuiCompat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -26,7 +27,7 @@ final class WaypointSource {
         if (connection == null || viewer == null || client.player == null) return List.of();
 
         Level level = viewer.level();
-        Camera camera = client.gameRenderer.getMainCamera();
+        Camera camera = GuiCompat.camera(client);
         List<Hud.PlayerPosition> out = new ArrayList<>();
 
         connection.getWaypointManager().forEachWaypoint(viewer, waypoint -> {

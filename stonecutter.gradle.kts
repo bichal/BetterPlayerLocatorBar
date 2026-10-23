@@ -12,5 +12,16 @@ stonecutter parameters {
     replacements.string(eval(node.metadata.version, ">=1.21.11")) {
         replace("ResourceLocation", "Identifier")
     }
+    // 26.1 replaced immediate-mode GuiGraphics with GuiGraphicsExtractor (drawing calls renamed)
+    replacements.string(eval(node.metadata.version, ">=26.1")) {
+        replace("GuiGraphics", "GuiGraphicsExtractor")
+        replace(".drawString(", ".text(")
+        replace(".drawCenteredString(", ".centeredText(")
+    }
+    // 26.2: the locator bar renderer lost its suffix and setScreen became setScreenAndShow
+    replacements.string(eval(node.metadata.version, ">=26.2")) {
+        replace("LocatorBarRenderer", "LocatorBar")
+        replace(".setScreen(", ".setScreenAndShow(")
+    }
     constants["waypoints"] = eval(node.metadata.version, ">=1.21.6")
 }

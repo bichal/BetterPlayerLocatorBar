@@ -12,8 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /** Draws the mod's icons in place of the vanilla dots; the vanilla bar background stays. */
 @Mixin(LocatorBarRenderer.class)
-public class LocatorBarMixin {
+public class WaypointBarMixin {
+    //? if >=26.1 {
+    /*@Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
+    *///?} else {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    //?}
     private void bplb$render(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
         if (!Constants.CONFIG.isModEnabled()) return;
         Client.onHudRender(context);
