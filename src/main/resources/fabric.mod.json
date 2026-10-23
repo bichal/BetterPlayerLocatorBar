@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "id": "${mod_id}",
-  "version": "${version}",
+  "version": "${mod_version}",
   "name": "${mod_name}",
   "description": "${mod_description}",
   "authors": [
-    "Bichal"
+    "${mod_authors}"
   ],
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "${mod_license}",
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar",
     "sources": "https://github.com/bichal/BetterPlayerLocatorBar",
-    "issues": "https://github.com/bichal/BetterPlayerLocatorBar/issues"
+    "issues": "${mod_issues}"
   },
   "icon": "assets/bplb/icon.png",
   "environment": "*",
@@ -30,8 +30,8 @@
     "bplb.mixins.json"
   ],
   "depends": {
-    "fabricloader": "${loader_range}",
-    "minecraft": "${mc_range}",
+    "fabricloader": ">=0.16",
+    "minecraft": "${fabric_minecraft_version_range}",
     "java": ">=21",
     "fabric-api": "*"
   },

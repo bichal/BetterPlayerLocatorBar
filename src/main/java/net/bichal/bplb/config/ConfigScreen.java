@@ -366,7 +366,7 @@ public class ConfigScreen extends Screen {
         renderList(g, mouseX, mouseY);
         if (showPreview) renderPreviewPanel(g);
 
-        //? if waypoints {
+        //? if >=1.21.6 {
         /*Component mode = Component.translatable("bplb.config.waypoint_mode").withStyle(ChatFormatting.GREEN);
         *///?} else {
         Component mode = Client.isLocalMode()

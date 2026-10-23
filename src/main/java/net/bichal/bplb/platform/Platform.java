@@ -1,6 +1,6 @@
 package net.bichal.bplb.platform;
 
-//? if !waypoints {
+//? if <1.21.6 {
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 //?}
@@ -17,7 +17,7 @@ public final class Platform {
 
         Path gameDir();
 
-        //? if !waypoints {
+        //? if <1.21.6 {
         /** Whether the client behind {@code player} registered the payload channel. */
         boolean canSend(ServerPlayer player, CustomPacketPayload.Type<?> type);
 
@@ -44,7 +44,7 @@ public final class Platform {
         return p != null ? p.gameDir() : Path.of(".");
     }
 
-    //? if !waypoints {
+    //? if <1.21.6 {
     public static boolean canSend(ServerPlayer player, CustomPacketPayload.Type<?> type) {
         Provider p = provider;
         return p != null && p.canSend(player, type);

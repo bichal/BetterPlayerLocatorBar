@@ -1,13 +1,13 @@
 modLoader = "javafml"
-loaderVersion = "${loader_range}"
-license = "CC-BY-NC-SA-4.0"
-issueTrackerURL = "https://github.com/bichal/BetterPlayerLocatorBar/issues"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
+issueTrackerURL = "${mod_issues}"
 
 [[mods]]
 modId = "${mod_id}"
-version = "${version}"
+version = "${mod_version}"
 displayName = "${mod_name}"
-authors = "Bichal"
+authors = "${mod_authors}"
 displayURL = "https://github.com/bichal/BetterPlayerLocatorBar"
 logoFile = "assets/bplb/icon.png"
 description = '''${mod_description}'''
@@ -18,13 +18,13 @@ config = "bplb.mixins.json"
 [[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "${neo_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"
-versionRange = "${mc_range}"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"

@@ -1,3 +1,14 @@
+# Managed by panzer-build-logic (shared/mod/.gitattributes): `panzer sync`
+# overwrites this file.
+#
+# Shell scripts keep LF and Windows scripts CRLF on every OS; native and
+# archive files are never touched by line-ending conversion.
 /gradlew        text eol=lf
+*.sh            text eol=lf
 *.bat           text eol=crlf
-
+*.cmd           text eol=crlf
+*.jar           binary
+*.so            binary
+*.dll           binary
+*.dylib         binary
+*.png           binary

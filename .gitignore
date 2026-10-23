@@ -1,6 +1,21 @@
+# >>> panzer-build-logic: managed by `panzer sync`, add your own entries below the block
+.*/
+!.github/
+build/
+build-native/
+versions/
+run/
+logs/
+# generated from mod.stonecutter.properties.toml + the common TOML
+stonecutter.properties.toml
+# local secrets and settings (see panzer-build-logic/.env.example)
+.env
+repomix*
+__pycache__/
+# <<< panzer-build-logic
+
 # Gradle
 .gradle/
-build/
 out/
 classes/
 
@@ -9,9 +24,6 @@ classes/
 *.iml
 *.ipr
 *.iws
-
-# Fabric
-run/
 
 # Java
 hs_err_*.log

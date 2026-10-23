@@ -29,13 +29,13 @@ Better Player Locator Bar is a Fabric and NeoForge mod. It shows players in a HU
     <blockquote>A preview of how you would see other players with the mod</blockquote>
     <img src="https://github.com/user-attachments/assets/5d6d6bc1-5097-4b5c-b510-6e7ffeea6be9" alt="HUD" width="100%"/>
     <blockquote>A preview of a player on the HUD</blockquote>
-    <img src="./media/OnePlayerBarPreview.gif" alt="OnePlayerBarPreview" width="100%"/>
+    <img src="./docs/media/OnePlayerBarPreview.gif" alt="OnePlayerBarPreview" width="100%"/>
     <blockquote>A preview of two players on the HUD</blockquote>
-    <img src="./media/TwoPlayerBarPreview.gif" alt="TwoPlayerBarPreview" width="100%"/>
+    <img src="./docs/media/TwoPlayerBarPreview.gif" alt="TwoPlayerBarPreview" width="100%"/>
     <blockquote>This would be a preview of the settings screen so you can customize it as much as you want</blockquote>
-    <img src="./media/ConfigScreenPreview.gif" alt="ConfigScreenPreview" width="100%"/>
+    <img src="./docs/media/ConfigScreenPreview.gif" alt="ConfigScreenPreview" width="100%"/>
     <blockquote>Now you can customize your friends icons</blockquote>
-    <img src="./media/PlayerCustomPreview.gif" alt="PlayerCustomPreview" width="100%"/>
+    <img src="./docs/media/PlayerCustomPreview.gif" alt="PlayerCustomPreview" width="100%"/>
 </p>
 
 ## Requirements
@@ -65,18 +65,44 @@ How it works:
 2. Put `better-player-locator-bar-<version>+<minecraft>-<loader>.jar` into your `mods/` folder
 3. Run Minecraft
 
+<!-- publish:off -->
+
 ## Building
 
-One Gradle project per Minecraft version and loader, built from the same sources with [Stonecutter](https://stonecutter.kikugie.dev/):
+Clone [PanzerBuildLogic](https://github.com/PanzerDevOrg/PanzerBuildLogic) next to this repository as `panzer-build-logic`
+(Gradle 9.8 on Java 25; the build downloads the Java 21 toolchain it needs for 1.21.x):
 
-```
-./gradlew :1.21.1-fabric:build        # one version, one loader
-./gradlew build                       # everything
-./gradlew :1.21.1-fabric:runClient    # dev client (also :1.21.1-neoforge:runClient)
+```bash
+git clone https://github.com/PanzerDevOrg/PanzerBuildLogic.git panzer-build-logic
+cd BetterPlayerLocatorBar
+./gradlew buildAndCollect                      # every version and loader, jars in build/libs/<version>/
+./gradlew :1.21.1:build :1.21.1-fabric:build   # one version: NeoForge is the plain name, Fabric ends in -fabric
+./gradlew :1.21.1-fabric:runClient             # dev client (-Pbplb.quickplay=<host> joins a server)
 ```
 
-The shared code uses Mojang names and no loader API; each loader only has its entrypoints in
-`net.bichal.bplb.platform.<loader>`. Add a version in `settings.gradle.kts` and `versions/<version>-<loader>/gradle.properties`.
+The versions, their ranges and the renamed-class replacements are in `mod.stonecutter.properties.toml`.
+Loader code is only in `net.bichal.bplb.platform.<loader>`; the rest uses Mojang names and no loader API.
+1.21.6, 1.21.7 and 1.21.9 are Fabric only (NeoForge never released them).
+
+<!-- panzer:license -->
 ## License
 
-The contents of this repository and mod, are licensed under a <a href="LICENSE">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>. ([Canonical URL](https://creativecommons.org/licenses/by-nc-sa/4.0/))
+| Content | License |
+|---|---|
+| Source code | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), see [`LICENSE-CC`](./LICENSE-CC) |
+| Artwork, branding and documentation | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/), see [`LICENSE-CC`](./LICENSE-CC) |
+
+**Source code:** credit Bichal, no commercial use without permission, and share derivatives under the same license.
+
+**Artwork:** credit Bichal, no commercial use without permission, and share derivatives under the same license.
+
+See [`LICENSE`](./LICENSE) for the full summary.
+<!-- /panzer:license -->
+
+<!-- publish:on -->
+
+---
+
+<!-- panzer:footer -->
+Code: **CC BY-NC-SA 4.0** · Art: **CC BY-NC-SA 4.0** · Made by **Bichal**
+<!-- /panzer:footer -->
