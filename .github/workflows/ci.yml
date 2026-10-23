@@ -1,0 +1,57 @@
+# Managed by panzer-build-logic (shared/mod/.github/workflows/ci.yml): `panzer sync`
+# overwrites this file. The pipeline is panzer-build-logic's mod-ci.yml, configured
+# by this mod's mod.stonecutter.properties.toml ([natives.*], [depends_on.*],
+# [publish], [ci]):
+#   every push / PR   build, test, package and verify every jar, then a release
+#                     dry run that uploads a private "release-preview" artifact
+#   v* tag            the same, then publish: GitHub release, Modrinth, CurseForge
+#                     (and the Maven repository when [publish] maven_pages = true)
+#   manual run        dry run by default; on a tag ref, untick it to publish
+# Secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN (see panzer-build-logic/.env.example),
+# passed by name: the pipeline gets those two and nothing else.
+# mod-ci.yml is pinned to the panzer-build-logic commit `panzer sync` ran from;
+# that run's tools and nested workflows come from the same commit.
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+    # Docs-only commits rebuild nothing (path filters never apply to tags);
+    # descriptions.yml handles README changes.
+    paths-ignore: ["docs/**", "**.md", "LICENSE*", "NOTICE", ".gitignore"]
+  pull_request:
+    paths-ignore: ["docs/**", "**.md", "LICENSE*", "NOTICE", ".gitignore"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Release dry run: build, check and preview only (on a tag ref, untick to publish)"
+        type: boolean
+        default: true
+      targets:
+        description: "Release targets"
+        type: string
+        default: github,modrinth,curseforge
+
+# No token permissions by default; the one job grants what the pipeline's
+# publishing jobs (GitHub release, Maven on gh-pages) need, and mod-ci.yml
+# narrows every other job to read.
+permissions: {}
+
+# A newer push to the same branch or PR replaces a run still in progress;
+# tag runs (releases) are never cancelled.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  mod:
+    uses: PanzerDevOrg/PanzerBuildLogic/.github/workflows/mod-ci.yml@9aa62b4c1bea51b4b82d8f0e11953ec1fad76e0c # panzer-build-logic master, 2026-10-23 (no release tags yet)
+    permissions:
+      contents: write
+    with:
+      dry-run: ${{ format('{0}', inputs.dry_run) }}
+      targets: ${{ inputs.targets || 'github,modrinth,curseforge' }}
+    secrets:
+      MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+      CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}

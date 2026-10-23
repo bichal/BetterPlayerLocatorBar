@@ -6,7 +6,7 @@ import net.bichal.bplb.util.Constants;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
-//? if !waypoints {
+//? if <1.21.6 {
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -36,7 +36,7 @@ public class NeoForgeMain {
                 return FMLPaths.GAMEDIR.get();
             }
 
-            //? if !waypoints {
+            //? if <1.21.6 {
 
             @Override
             public boolean canSend(ServerPlayer player, CustomPacketPayload.Type<?> type) {
@@ -50,12 +50,12 @@ public class NeoForgeMain {
             //?}
         });
 
-        //? if !waypoints {
+        //? if <1.21.6 {
         modBus.addListener(NeoForgeMain::registerPayloads);
         NeoForge.EVENT_BUS.register(ServerEvents.class);
         //?}
     }
-    //? if !waypoints {
+    //? if <1.21.6 {
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         // optional(): a client or server without this mod can still connect

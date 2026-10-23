@@ -1,13 +1,14 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "net.bichal.bplb.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": [
-  ],
+  "compatibilityLevel": "${java}",
+  "mixins": [],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    ${client_mixins}
+    "ClientPlayerEntityMixin",
+    "@LOCATOR_MIXIN@"
   ]
 }

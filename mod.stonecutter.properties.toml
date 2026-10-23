@@ -1,0 +1,172 @@
+# Better Player Locator Bar build configuration. Merged at configuration time with
+# ../panzer-build-logic/common.stonecutter.properties.toml (panzer.settings):
+# any table declared here replaces the common table of the same name.
+
+[mod]
+id = "bplb"
+name = "Better Player Locator Bar"
+group = "net.bichal"
+package = "net.bichal.bplb"
+version = "1.1.1"
+authors = "Bichal"
+description = "Adds a HUD bar above the experience bar that shows the direction of other players."
+side = "BOTH"
+issues = "https://github.com/bichal/BetterPlayerLocatorBar/issues"
+
+# The mod keeps its own licence (not the common AGPL/CC pair).
+[legal]
+holder = "Bichal"
+code = "CC-BY-NC-SA-4.0"
+assets = "CC-BY-NC-SA-4.0"
+
+[publish]
+client_side = "required"
+server_side = "optional"
+
+[ci]
+gradle_tasks = "build buildAndCollect"
+
+# One node per Minecraft version whose game code differs enough to need its own
+# build. NeoForge never released 1.21.6, 1.21.7 and 1.21.9: Fabric only there.
+[stonecutter]
+versions = ["1.21.1", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11", "26.1", "26.2", "26.3"]
+loaders = ["neoforge", "fabric"]
+fabric_only = ["1.21.6", "1.21.7", "1.21.9"]
+vcs_version = "1.21.1"
+
+# Classes the game renamed; the sources are written for 1.21.1.
+[stonecutter.replace.identifier]
+since = "1.21.11"
+from = "ResourceLocation"
+to = "Identifier"
+
+# 26.1 replaced immediate-mode GuiGraphics with GuiGraphicsExtractor.
+[stonecutter.replace.gui_graphics]
+since = "26.1"
+from = "GuiGraphics"
+to = "GuiGraphicsExtractor"
+
+[stonecutter.replace.draw_string]
+since = "26.1"
+from = ".drawString("
+to = ".text("
+
+[stonecutter.replace.draw_centered_string]
+since = "26.1"
+from = ".drawCenteredString("
+to = ".centeredText("
+
+# 26.2: the locator bar renderer lost its suffix and setScreen became setScreenAndShow.
+[stonecutter.replace.locator_bar]
+since = "26.2"
+from = "LocatorBarRenderer"
+to = "LocatorBar"
+
+[stonecutter.replace.set_screen]
+since = "26.2"
+from = ".setScreen("
+to = ".setScreenAndShow("
+
+# mod_menu: Mod Menu build compiled against (Fabric only).
+["1.21.1"]
+minecraft_version_range = "[1.21,1.21.2)"
+neo_version_range = "[21.1,21.2)"
+game_versions = ["1.21", "1.21.1"]
+mod_menu = "11.0.3"
+
+["1.21.3"]
+minecraft_version = "1.21.3"
+minecraft_version_range = "[1.21.2,1.21.4)"
+neo_version = "21.3.100"
+neo_version_range = "[21.2,21.4)"
+fabric_api_version = "0.114.1+1.21.3"
+game_versions = ["1.21.2", "1.21.3"]
+mod_menu = "12.0.1"
+
+["1.21.4"]
+minecraft_version = "1.21.4"
+minecraft_version_range = "[1.21.4,1.21.5)"
+neo_version = "21.4.161"
+neo_version_range = "[21.4,21.5)"
+fabric_api_version = "0.119.4+1.21.4"
+game_versions = ["1.21.4"]
+mod_menu = "13.0.4"
+
+["1.21.5"]
+minecraft_version = "1.21.5"
+minecraft_version_range = "[1.21.5,1.21.6)"
+neo_version = "21.5.101"
+neo_version_range = "[21.5,21.6)"
+fabric_api_version = "0.128.2+1.21.5"
+game_versions = ["1.21.5"]
+mod_menu = "14.0.0"
+
+["1.21.6"]
+minecraft_version = "1.21.6"
+minecraft_version_range = "[1.21.6,1.21.7)"
+fabric_api_version = "0.128.2+1.21.6"
+game_versions = ["1.21.6"]
+mod_menu = "15.0.0"
+
+["1.21.7"]
+minecraft_version = "1.21.7"
+minecraft_version_range = "[1.21.7,1.21.8)"
+fabric_api_version = "0.129.0+1.21.7"
+game_versions = ["1.21.7"]
+mod_menu = "15.0.0"
+
+["1.21.8"]
+minecraft_version = "1.21.8"
+minecraft_version_range = "[1.21.8,1.21.9)"
+neo_version = "21.8.57"
+neo_version_range = "[21.8,21.9)"
+fabric_api_version = "0.136.1+1.21.8"
+game_versions = ["1.21.8"]
+mod_menu = "15.0.0"
+
+["1.21.9"]
+minecraft_version = "1.21.9"
+minecraft_version_range = "[1.21.9,1.21.10)"
+fabric_api_version = "0.134.1+1.21.9"
+game_versions = ["1.21.9"]
+mod_menu = "16.0.0"
+
+["1.21.10"]
+minecraft_version_range = "[1.21.10,1.21.11)"
+neo_version_range = "[21.10,21.11)"
+game_versions = ["1.21.10"]
+mod_menu = "16.0.0"
+
+["1.21.11"]
+minecraft_version_range = "[1.21.11,1.21.12)"
+neo_version_range = "[21.11,21.12)"
+game_versions = ["1.21.11"]
+mod_menu = "17.0.1"
+
+# Built against 26.1.2, the release players run; 26.1 is the node name.
+["26.1"]
+minecraft_version = "26.1.2"
+minecraft_version_range = "[26.1,26.2)"
+neo_version = "26.1.2.122"
+neo_version_range = "[26.1,26.2)"
+fabric_api_version = "0.155.3+26.1.2"
+game_versions = ["26.1", "26.1.1", "26.1.2"]
+mod_menu = "18.0.2"
+
+["26.2"]
+minecraft_version = "26.2"
+minecraft_version_range = "[26.2,26.3)"
+neo_version = "26.2.0.93"
+neo_version_range = "[26.2,26.3)"
+fabric_api_version = "0.161.0+26.2"
+game_versions = ["26.2"]
+mod_menu = "20.0.3"
+
+["26.3"]
+minecraft_version = "26.3"
+minecraft_version_range = "[26.3,26.4)"
+neo_version = "26.3.0.95"
+neo_version_range = "[26.3,26.4)"
+fabric_api_version = "0.165.0+26.3"
+game_versions = ["26.3"]
+mod_menu = "21.0.0"

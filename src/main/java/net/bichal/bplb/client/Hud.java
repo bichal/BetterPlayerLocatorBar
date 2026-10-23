@@ -4,7 +4,7 @@ import net.bichal.bplb.client.render.GuiCompat;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.render.RenderUtils;
 import net.bichal.bplb.config.Config;
-//? if !waypoints {
+//? if <1.21.6 {
 import net.bichal.bplb.network.PositionUpdatePayload;
 //?}
 import net.bichal.bplb.util.Constants;
@@ -118,7 +118,7 @@ public class Hud {
         Constants.LOGGER.info("[{}] Cleared all caches on join", Constants.MOD_NAME_SHORT);
     }
 
-    //? if !waypoints {
+    //? if <1.21.6 {
     public static void applyPositionUpdate(PositionUpdatePayload payload) {
         final Minecraft client = Minecraft.getInstance();
         if (payload == null) return;
@@ -182,7 +182,7 @@ public class Hud {
         List<RenderEntry> allEntries = new ArrayList<>();
         for (PlayerPosition pos : positionsToRenderCache) {
             final Player targetPlayer = client.level.getPlayerByUUID(pos.uuid());
-            //? if !waypoints {
+            //? if <1.21.6 {
             if (targetPlayer != null && shouldHideTarget(targetPlayer)) continue;
             //?}
             double distance = DistanceUtils.calculateDistance(client.player.getX(), client.player.getY(), client.player.getZ(), pos.x, pos.y, pos.z);
@@ -347,7 +347,7 @@ public class Hud {
 
     private static List<PlayerPosition> getPositionsToRender(Minecraft client) {
         if (client.level == null || client.player == null) return Collections.emptyList();
-        //? if waypoints {
+        //? if >=1.21.6 {
         /*if (true) return WaypointSource.collect(client);
         *///?}
         // Server has the mod: its list is the truth (it also hides sneaking or invisible players),

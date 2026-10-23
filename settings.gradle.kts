@@ -1,43 +1,32 @@
+// Managed by panzer-build-logic (shared/mod/settings.gradle.kts): `panzer sync`
+// overwrites this file. Everything it does lives in the panzer.settings plugin:
+// merging mod.stonecutter.properties.toml with the common TOML, choosing the
+// Minecraft versions ([stonecutter], -Pstonecutter.versions=...), the
+// Stonecutter tree and early validation.
 pluginManagement {
+    // The build logic is a sibling checkout, not a published plugin. Say how to
+    // get it instead of failing later with "plugin panzer.settings not found".
+    val buildLogic = settingsDir.resolve("../panzer-build-logic")
+    if (!buildLogic.resolve("settings.gradle.kts").isFile) {
+        throw GradleException(
+            "panzer-build-logic not found at ${buildLogic.normalize()}.\n" +
+                "This mod builds with the shared build logic checked out next to it:\n" +
+                "  git clone https://github.com/PanzerDevOrg/PanzerBuildLogic.git ${buildLogic.normalize()}\n" +
+                "(see \"Building\" in this mod's README)."
+        )
+    }
+    includeBuild("../panzer-build-logic")
+
     repositories {
-        mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.fabricmc.net/") { name = "Fabric" }
+        mavenCentral()
         maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
-        maven("https://maven.kikugie.dev/releases") { name = "KikuGie" }
+        maven("https://maven.fabricmc.net/") { name = "Fabric" }
+        maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
+        maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
     }
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.9.8"
+    id("panzer.settings")
 }
-
-stonecutter {
-    create(rootProject) {
-        // Project name is "<minecraft>-<loader>"; the second argument is the Minecraft version.
-        // NeoForge skipped some Minecraft versions, so every target lists its own loaders.
-        val targets = mapOf(
-            "1.21.1" to listOf("fabric", "neoforge"),
-            "1.21.3" to listOf("fabric", "neoforge"),
-            "1.21.4" to listOf("fabric", "neoforge"),
-            "1.21.5" to listOf("fabric", "neoforge"),
-            "1.21.6" to listOf("fabric"),
-            "1.21.7" to listOf("fabric"),
-            "1.21.8" to listOf("fabric", "neoforge"),
-            "1.21.9" to listOf("fabric"),
-            "1.21.10" to listOf("fabric", "neoforge"),
-            "1.21.11" to listOf("fabric", "neoforge"),
-            "26.1.2" to listOf("fabric", "neoforge"),
-            "26.2" to listOf("fabric", "neoforge"),
-            "26.3" to listOf("fabric", "neoforge"),
-        )
-        for ((mc, loaders) in targets) {
-            for (loader in loaders) {
-                version("$mc-$loader", mc)
-            }
-        }
-        vcsVersion = "1.21.1-fabric"
-    }
-}
-
-rootProject.name = "BetterPlayerLocatorBar"

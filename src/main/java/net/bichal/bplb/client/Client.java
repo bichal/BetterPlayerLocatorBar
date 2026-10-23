@@ -2,7 +2,7 @@ package net.bichal.bplb.client;
 
 import net.bichal.bplb.client.render.AssetScanner;
 import net.bichal.bplb.config.Config;
-//? if !waypoints {
+//? if <1.21.6 {
 import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
 //?}
@@ -69,7 +69,7 @@ public class Client {
         LINK.reset();
     }
 
-    //? if !waypoints {
+    //? if <1.21.6 {
     public static void onHandshake(HandshakePayload payload) {
         LINK.onHandshake(payload.playerHasOp());
         Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, LINK.playerHasOp());
