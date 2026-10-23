@@ -15,7 +15,7 @@ plugins {
 stonecutter {
     create(rootProject) {
         // Project name is "<minecraft>-<loader>"; the second argument is the Minecraft version.
-        for (mc in listOf("1.21.1", "1.21.3")) {
+        for (mc in listOf("1.21.1", "1.21.3", "1.21.4")) {
             for (loader in listOf("fabric", "neoforge")) {
                 version("$mc-$loader", mc)
             }
