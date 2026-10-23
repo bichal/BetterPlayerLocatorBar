@@ -342,8 +342,9 @@ public class Hud {
 
     private static List<PlayerPosition> getPositionsToRender(Minecraft client) {
         if (client.level == null || client.player == null) return Collections.emptyList();
-        boolean useServerData = !Client.isLocalMode();
-        if (useServerData && !playerPositions.isEmpty()) {
+        // Server has the mod: its list is the truth (it also hides sneaking or invisible players),
+        // even when empty. Without the mod only what this client can see is known.
+        if (!Client.isLocalMode()) {
             return new ArrayList<>(playerPositions.values());
         }
         return client.level.players().stream().filter(p -> !p.getUUID().equals(client.player.getUUID())).map(p -> new PlayerPosition(p.getUUID(), p.getName().getString(), p.getX(), p.getY(), p.getZ())).collect(Collectors.toList());

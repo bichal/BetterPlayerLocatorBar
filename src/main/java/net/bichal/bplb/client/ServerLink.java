@@ -1,18 +1,20 @@
 package net.bichal.bplb.client;
 
 /**
- * Whether the server is feeding us positions (remote mode) or we fall back to the players the
- * client itself can see (local mode). Time is passed in so the logic can be tested.
+ * Whether the server we are connected to runs the mod.
+ * <ul>
+ *   <li>Remote mode: the server sent its handshake. Positions of every player come from the server,
+ *       however far away they are, for as long as the connection lasts. Silence only means nobody
+ *       else is around (the server sends nothing while a player is alone); it never ends remote mode.</li>
+ *   <li>Local mode: no handshake. Only the players the client itself can see are shown.</li>
+ * </ul>
  */
 public final class ServerLink {
-    public static final long TIMEOUT_MS = 5000;
-
-    private boolean local = true;
+    private boolean remote;
     private boolean playerHasOp;
-    private long lastUpdate;
 
     public boolean isLocal() {
-        return local;
+        return !remote;
     }
 
     public boolean playerHasOp() {
@@ -20,33 +22,14 @@ public final class ServerLink {
     }
 
     /** The server announced that it runs the mod. */
-    public void onHandshake(boolean playerHasOp, long now) {
-        this.local = false;
+    public void onHandshake(boolean playerHasOp) {
+        this.remote = true;
         this.playerHasOp = playerHasOp;
-        this.lastUpdate = now;
     }
 
-    /**
-     * A position update arrived. The server sends nothing while a player is alone, so a timeout
-     * may already have switched us to local mode; any update proves the server is there again.
-     */
-    public void onUpdate(long now) {
-        this.local = false;
-        this.lastUpdate = now;
-    }
-
-    /** Returns true when this call switched to local mode because the server went quiet. */
-    public boolean checkTimeout(long now) {
-        if (!local && now - lastUpdate > TIMEOUT_MS) {
-            local = true;
-            return true;
-        }
-        return false;
-    }
-
+    /** Back to local mode when the connection ends. */
     public void reset() {
-        local = true;
+        remote = false;
         playerHasOp = false;
-        lastUpdate = 0;
     }
 }

@@ -46,7 +46,12 @@ Better Player Locator Bar is a Fabric and NeoForge mod. It shows players in a HU
 | 1.21.2 - 1.21.3 | Loader ≥ 0.16, Fabric API | NeoForge 21.3+ |
 
 Java 21 on every version. [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric; on NeoForge the settings are in the mod list.
-The mod works on a server without it installed (local mode) and gives exact positions when the server has it too.
+How it works:
+
+- **Server has the mod (server mode):** every player's position comes from the server, however far away, for as long as you stay connected.
+- **Server without the mod (local mode):** only players your game can see (inside render distance) are shown.
+
+The settings screen shows which mode you are in.
 
 ## Installation
 

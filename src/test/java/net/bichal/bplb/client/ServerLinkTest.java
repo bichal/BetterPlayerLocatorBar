@@ -7,45 +7,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ServerLinkTest {
     @Test
-    void startsLocalAndHandshakeSwitchesToRemote() {
+    void startsLocalWithoutAHandshake() {
         ServerLink link = new ServerLink();
         assertTrue(link.isLocal());
-        link.onHandshake(true, 1000);
+        assertFalse(link.playerHasOp());
+    }
+
+    @Test
+    void handshakeSwitchesToRemoteMode() {
+        ServerLink link = new ServerLink();
+        link.onHandshake(true);
         assertFalse(link.isLocal());
         assertTrue(link.playerHasOp());
     }
 
-    @Test
-    void silenceSwitchesToLocalAfterTheTimeout() {
-        ServerLink link = new ServerLink();
-        link.onHandshake(false, 0);
-        assertFalse(link.checkTimeout(ServerLink.TIMEOUT_MS));
-        assertTrue(link.checkTimeout(ServerLink.TIMEOUT_MS + 1));
-        assertTrue(link.isLocal());
-        assertFalse(link.checkTimeout(ServerLink.TIMEOUT_MS * 3), "only reports the switch once");
-    }
-
     /**
-     * Regression: a lone player gets no updates, so the link timed out to local mode; when a second
-     * player (for example a Carpet bot) joined, updates came in again but the client stayed local and
-     * never showed players beyond render distance.
+     * Regression: the server sends no updates while a player is alone. Silence used to drop the client
+     * back to local mode for good, so players that joined later were only seen inside render distance.
+     * A server known to have the mod stays in remote mode for the whole connection.
      */
     @Test
-    void anUpdateAfterATimeoutRestoresRemoteMode() {
+    void remoteModeDoesNotDependOnUpdatesArriving() {
         ServerLink link = new ServerLink();
-        link.onHandshake(false, 0);
-        link.checkTimeout(10_000);
-        assertTrue(link.isLocal());
-
-        link.onUpdate(12_000);
+        link.onHandshake(false);
+        // nothing else ever happens: there is no timeout path any more
         assertFalse(link.isLocal());
-        assertFalse(link.checkTimeout(12_000 + ServerLink.TIMEOUT_MS));
     }
 
     @Test
-    void resetReturnsToLocal() {
+    void disconnectReturnsToLocalMode() {
         ServerLink link = new ServerLink();
-        link.onHandshake(true, 5);
+        link.onHandshake(true);
         link.reset();
         assertTrue(link.isLocal());
         assertFalse(link.playerHasOp());
