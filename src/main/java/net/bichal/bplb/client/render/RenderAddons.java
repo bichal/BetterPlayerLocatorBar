@@ -53,11 +53,11 @@ public class RenderAddons {
                 UUID overrideUuid = getUuidFromCache(textureOverride);
                 if (overrideUuid != null) {
                     AbstractClientPlayer overridePlayer = (AbstractClientPlayer) client.level.getPlayerByUUID(overrideUuid);
-                    if (overridePlayer != null && overridePlayer.getSkin() != null) skin = overridePlayer.getSkin().texture();
+                    if (overridePlayer != null && overridePlayer.getSkin() != null) skin = skinTexture(overridePlayer);
                 }
             } else {
                 AbstractClientPlayer player = (AbstractClientPlayer) client.level.getPlayerByUUID(playerUuid);
-                if (player != null && player.getSkin() != null) skin = player.getSkin().texture();
+                if (player != null && player.getSkin() != null) skin = skinTexture(player);
             }
         } catch (Exception e) {
             Constants.LOGGER.debug("Error loading skin texture", e);
@@ -111,6 +111,14 @@ public class RenderAddons {
             int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
             context.drawString(client.font, text, -textWidth / 2, -client.font.lineHeight / 2, textColor, true);
         });
+    }
+
+    private static ResourceLocation skinTexture(AbstractClientPlayer player) {
+        //? if >=1.21.9 {
+        /*return player.getSkin().body().texturePath();
+        *///?} else {
+        return player.getSkin().texture();
+        //?}
     }
 
     private static int getAdjustedTextureIndex(double distance, Config config) {

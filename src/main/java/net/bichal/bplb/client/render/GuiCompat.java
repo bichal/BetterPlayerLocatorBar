@@ -40,6 +40,14 @@ public final class GuiCompat {
         //?}
     }
 
+    /** A 1 pixel border; GuiGraphics.renderOutline is not available from 1.21.9, so it is drawn with fills. */
+    public static void outline(GuiGraphics g, int x, int y, int width, int height, int color) {
+        g.fill(x, y, x + width, y + 1, color);
+        g.fill(x, y + height - 1, x + width, y + height, color);
+        g.fill(x, y + 1, x + 1, y + height - 1, color);
+        g.fill(x + width - 1, y + 1, x + width, y + height - 1, color);
+    }
+
     /** Tint for the legacy blit path; later versions pass the colour with each draw call. */
     public static void setShaderColor(float r, float g, float b, float a) {
         //? if <1.21.6 {

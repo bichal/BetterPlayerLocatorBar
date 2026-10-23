@@ -8,8 +8,14 @@ import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
 public class Keybinds {
-    public static final KeyMapping SHOW_PLAYER_NAME = new KeyMapping("key.bplb.show_player_name", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_TAB, Constants.MOD_NAME_LARGE);
-    public static final KeyMapping OPEN_CONFIG = new KeyMapping("key.bplb.open_config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, Constants.MOD_NAME_LARGE);
+    //? if >=1.21.9 {
+    /*private static final KeyMapping.Category CATEGORY = new KeyMapping.Category(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "keys"));
+    *///?} else {
+    private static final String CATEGORY = Constants.MOD_NAME_LARGE;
+    //?}
+
+    public static final KeyMapping SHOW_PLAYER_NAME = new KeyMapping("key.bplb.show_player_name", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_TAB, CATEGORY);
+    public static final KeyMapping OPEN_CONFIG = new KeyMapping("key.bplb.open_config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
 
     /** Called once per client tick by the loader. */
     public static void onClientTick(Minecraft client) {

@@ -33,7 +33,7 @@ final class WaypointSource {
             UUID id = waypoint.id().left().orElse(null);
             if (id == null || id.equals(client.player.getUUID())) return;
 
-            double yawOffset = waypoint.yawAngleToCamera(level, camera);
+            double yawOffset = yawOffset(client, waypoint, level, camera);
             double distance = Math.sqrt(waypoint.distanceSquared(viewer));
             if (Double.isNaN(yawOffset) || Double.isNaN(distance)) return;
 
@@ -41,7 +41,7 @@ final class WaypointSource {
             double x = xz[0];
             double z = xz[1];
             double rise = Math.max(6.0, distance * 0.5) + 2.0;
-            double y = switch (waypoint.pitchDirectionToCamera(level, client.gameRenderer)) {
+            double y = switch (pitchDirection(client, waypoint, level)) {
                 case UP -> viewer.getY() + rise;
                 case DOWN -> viewer.getY() - rise;
                 default -> viewer.getY();
@@ -61,9 +61,29 @@ final class WaypointSource {
         return new double[]{viewerX + Math.cos(heading) * distance, viewerZ + Math.sin(heading) * distance};
     }
 
+    private static double yawOffset(Minecraft client, TrackedWaypoint waypoint, Level level, Camera camera) {
+        //? if >=1.21.9 {
+        /*return waypoint.yawAngleToCamera(level, camera, entity -> client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        *///?} else {
+        return waypoint.yawAngleToCamera(level, camera);
+        //?}
+    }
+
+    private static TrackedWaypoint.PitchDirection pitchDirection(Minecraft client, TrackedWaypoint waypoint, Level level) {
+        //? if >=1.21.9 {
+        /*return waypoint.pitchDirectionToCamera(level, client.gameRenderer, entity -> client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        *///?} else {
+        return waypoint.pitchDirectionToCamera(level, client.gameRenderer);
+        //?}
+    }
+
     private static String nameOf(Minecraft client, Level level, UUID id) {
         PlayerInfo info = client.getConnection().getPlayerInfo(id);
+        //? if >=1.21.9 {
+        /*if (info != null) return info.getProfile().name();
+        *///?} else {
         if (info != null) return info.getProfile().getName();
+        //?}
         var player = level.getPlayerByUUID(id);
         return player != null ? player.getName().getString() : "Player";
     }

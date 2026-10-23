@@ -389,12 +389,24 @@ public class Hud {
     }
 
     private static double getCameraAngleDifference(Camera camera, PlayerPosition pos) {
+        //? if >=1.21.11 {
+        /*Vec3 cameraPos = camera.position();
+        *///?} else {
         Vec3 cameraPos = camera.getPosition();
+        //?}
         double dx = pos.x - cameraPos.x;
         double dz = pos.z - cameraPos.z;
         double horizontalDist = Math.sqrt(dx * dx + dz * dz);
         double targetY = pos.y + 1.62;
-        return -(Math.toDegrees(Math.atan2(targetY - cameraPos.y, horizontalDist)) + camera.getXRot());
+        return -(Math.toDegrees(Math.atan2(targetY - cameraPos.y, horizontalDist)) + cameraXRot(camera));
+    }
+
+    private static float cameraXRot(Camera camera) {
+        //? if >=1.21.11 {
+        /*return camera.xRot();
+        *///?} else {
+        return camera.getXRot();
+        //?}
     }
 
     private static float calculateRelativePosition(Player viewer, PlayerPosition target) {

@@ -1,5 +1,6 @@
 package net.bichal.bplb.config.ui;
 
+import net.bichal.bplb.client.render.GuiCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -141,7 +142,7 @@ public final class Rows {
             int tx = cx + CONTROL_WIDTH - w;
             int ty = y + (Row.HEIGHT - 2 - h) / 2;
             g.fill(tx, ty, tx + w, ty + h, on ? Theme.ACCENT_DIM : Theme.TRACK);
-            g.renderOutline(tx, ty, w, h, on ? Theme.ACCENT : Theme.BORDER);
+            GuiCompat.outline(g, tx, ty, w, h, on ? Theme.ACCENT : Theme.BORDER);
             int knob = on ? tx + w - h + 2 : tx + 2;
             g.fill(knob, ty + 2, knob + h - 4, ty + h - 2, on ? Theme.TEXT : Theme.TEXT_DIM);
             Component state = Component.translatable(on ? "options.on" : "options.off");
@@ -343,22 +344,22 @@ public final class Rows {
             box.render(g, mouseX, mouseY, 0f);
             int sx = cx + CONTROL_WIDTH - 20;
             g.fill(sx, y + 2, sx + 20, y + 20, getter.get());
-            g.renderOutline(sx, y + 2, 20, 18, Theme.BORDER);
+            GuiCompat.outline(g, sx, y + 2, 20, 18, Theme.BORDER);
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button, int x, int y, int width) {
-            return box.mouseClicked(mouseX, mouseY, button);
+            return InputCompat.click(box, mouseX, mouseY, button);
         }
 
         @Override
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            return box.isFocused() && box.keyPressed(keyCode, scanCode, modifiers);
+            return box.isFocused() && InputCompat.key(box, keyCode, scanCode, modifiers);
         }
 
         @Override
         public boolean charTyped(char chr, int modifiers) {
-            return box.isFocused() && box.charTyped(chr, modifiers);
+            return box.isFocused() && InputCompat.typed(box, chr, modifiers);
         }
 
         @Override
@@ -470,7 +471,7 @@ public final class Rows {
                 submit();
                 return true;
             }
-            return box.mouseClicked(mouseX, mouseY, button);
+            return InputCompat.click(box, mouseX, mouseY, button);
         }
 
         @Override
@@ -480,12 +481,12 @@ public final class Rows {
                 submit();
                 return true;
             }
-            return box.keyPressed(keyCode, scanCode, modifiers);
+            return InputCompat.key(box, keyCode, scanCode, modifiers);
         }
 
         @Override
         public boolean charTyped(char chr, int modifiers) {
-            return box.isFocused() && box.charTyped(chr, modifiers);
+            return box.isFocused() && InputCompat.typed(box, chr, modifiers);
         }
 
         @Override
@@ -527,7 +528,7 @@ public final class Rows {
             boolean on = enabled.getAsBoolean();
             boolean over = on && mouseX >= bx && mouseX < bx + bw && mouseY >= y && mouseY < y + Row.HEIGHT - 2;
             g.fill(bx, y + 1, bx + bw, y + Row.HEIGHT - 3, over ? Theme.DANGER : Theme.TRACK);
-            g.renderOutline(bx, y + 1, bw, Row.HEIGHT - 4, on ? Theme.DANGER : Theme.BORDER);
+            GuiCompat.outline(g, bx, y + 1, bw, Row.HEIGHT - 4, on ? Theme.DANGER : Theme.BORDER);
             g.drawCenteredString(font(), label, bx + bw / 2, textY(y), on ? Theme.TEXT : Theme.TEXT_DISABLED);
         }
 

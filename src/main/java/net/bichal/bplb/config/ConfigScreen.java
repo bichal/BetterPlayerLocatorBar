@@ -1,6 +1,12 @@
 package net.bichal.bplb.config;
 
+//? if >=1.21.9 {
+/*import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+*///?}
 import net.bichal.bplb.client.Client;
+import net.bichal.bplb.config.ui.InputCompat;
 import net.bichal.bplb.client.render.RenderAddons;
 import net.bichal.bplb.client.render.RenderUtils;
 import net.bichal.bplb.client.render.TextureAnimator;
@@ -267,7 +273,7 @@ public class ConfigScreen extends Screen {
         if (searchQuery.isEmpty()) {
             rows.addAll(rowsFor(category));
             if (category == Category.PLAYERS || category == Category.GENERAL) {
-                rows.add(new Rows.Action(label("reset_settings").copy(), net.minecraft.client.gui.screens.Screen::hasShiftDown, this::confirmReset));
+                rows.add(new Rows.Action(label("reset_settings").copy(), InputCompat::shiftDown, this::confirmReset));
             }
         } else {
             for (Category c : Category.values()) {
@@ -459,8 +465,7 @@ public class ConfigScreen extends Screen {
 
     // ----------------------------------------------------------------- input
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    private boolean onMouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0 && mouseX >= sidebarLeft && mouseX < sidebarLeft + sidebarWidth && mouseY >= listTop && mouseY < listBottom) {
             int index = (int) ((mouseY - listTop - 4) / TAB_HEIGHT);
             Category[] all = Category.values();
@@ -486,7 +491,7 @@ public class ConfigScreen extends Screen {
             this.setFocused(null);
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
     private boolean showScrollbar() {
@@ -501,8 +506,7 @@ public class ConfigScreen extends Screen {
         clampScroll();
     }
 
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+    private boolean onMouseDragged(double mouseX, double mouseY) {
         if (draggingScrollbar) {
             dragScrollbar(mouseY);
             return true;
@@ -510,14 +514,12 @@ public class ConfigScreen extends Screen {
         for (int i = 0; i < rows.size(); i++) {
             if (rows.get(i).mouseDragged(mouseX, mouseY, rowX(), rowTop(i), rowWidth())) return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dx, dy);
+        return false;
     }
 
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    private void onMouseReleased() {
         draggingScrollbar = false;
         for (Row row : rows) row.mouseReleased();
-        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
@@ -534,8 +536,7 @@ public class ConfigScreen extends Screen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    private boolean onKeyPressed(int keyCode, int scanCode, int modifiers) {
         for (Row row : rows) {
             if (row.hasFocus()) {
                 if (row.keyPressed(keyCode, scanCode, modifiers)) return true;
@@ -546,16 +547,69 @@ public class ConfigScreen extends Screen {
                 }
             }
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return false;
+    }
+
+    private boolean onCharTyped(char chr, int modifiers) {
+        for (Row row : rows) {
+            if (row.hasFocus() && row.charTyped(chr, modifiers)) return true;
+        }
+        return false;
+    }
+
+    //? if >=1.21.9 {
+    /*@Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        return onMouseClicked(event.x(), event.y(), event.button()) || super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        return onMouseDragged(event.x(), event.y()) || super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        onMouseReleased();
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return onKeyPressed(event.key(), event.scancode(), event.modifiers()) || super.keyPressed(event);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return onCharTyped((char) event.codepoint(), event.modifiers()) || super.charTyped(event);
+    }
+    *///?} else {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return onMouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+        return onMouseDragged(mouseX, mouseY) || super.mouseDragged(mouseX, mouseY, button, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        onMouseReleased();
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return onKeyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        for (Row row : rows) {
-            if (row.hasFocus() && row.charTyped(chr, modifiers)) return true;
-        }
-        return super.charTyped(chr, modifiers);
+        return onCharTyped(chr, modifiers) || super.charTyped(chr, modifiers);
     }
+    //?}
 
     // --------------------------------------------------------------- actions
 
