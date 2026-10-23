@@ -76,6 +76,7 @@ if (isFabric) {
 
     loom.runs.named("client") {
         runDir = "../../run/$mcVersion-fabric"
+        vmArg("-Dbplb.debug=true")
     }
     loom.runs.named("server") {
         runDir = "../../run/$mcVersion-fabric-server"

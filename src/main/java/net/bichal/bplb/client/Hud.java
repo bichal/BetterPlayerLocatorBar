@@ -37,6 +37,10 @@ public class Hud {
     private static final Map<Object, Long> lastPositionUpdateTime = new HashMap<>();
     private static boolean shouldApplyHudOffset = false;
     private static final float MIN_Z_DEPTH = 500f;
+    /** -Dbplb.debug=true logs the tracked and drawn icon counts about every two seconds. */
+    private static final boolean DEBUG = Boolean.getBoolean("bplb.debug");
+    private static int debugTicks = 0;
+    private static int lastDrawnIcons = 0;
 
     private static void updateRenderCache(Minecraft client) {
         if (client.player == null) {
@@ -80,6 +84,9 @@ public class Hud {
     public static void tick(Minecraft client) {
         if (client.level == null) return;
         updateRenderCache(client);
+        if (DEBUG && ++debugTicks % 40 == 0) {
+            Constants.LOGGER.info("[{}] debug: remote={} serverPlayers={} levelPlayers={} candidates={} drawn={}", Constants.MOD_NAME_SHORT, !Client.isLocalMode(), playerPositions.size(), client.level.players().size(), positionsToRenderCache.size(), lastDrawnIcons);
+        }
         if (client.player != null) {
             deathMarkers.removeIf(marker -> {
                 if (client.player.position().distanceTo(marker) < 10) {
@@ -185,6 +192,7 @@ public class Hud {
         }
 
         allEntries.sort(Comparator.comparingDouble(RenderEntry::distance).reversed());
+        lastDrawnIcons = allEntries.size();
 
         int totalVisibleIcons = allEntries.size();
         for (int i = 0; i < allEntries.size(); i++) {
