@@ -21,16 +21,10 @@ public class Client {
     public static List<String> availableIconBorders = new ArrayList<>();
     public static List<String> availableNameBorders = new ArrayList<>();
     public static List<String> availableDeathMarkers = new ArrayList<>();
-    private static long lastServerUpdateTime = 0;
-    private static boolean isLocalMode = true;
-    private static boolean playerHasOp = false;
+    private static final ServerLink LINK = new ServerLink();
 
     public static boolean isLocalMode() {
-        return isLocalMode;
-    }
-
-    public static void updateLastServerUpdateTime() {
-        lastServerUpdateTime = System.currentTimeMillis();
+        return LINK.isLocal();
     }
 
     public static void init() {
@@ -57,8 +51,7 @@ public class Client {
     }
 
     public static void onHudRender(GuiGraphics context) {
-        if (!isLocalMode && System.currentTimeMillis() - lastServerUpdateTime > 5000) {
-            isLocalMode = true;
+        if (LINK.checkTimeout(System.currentTimeMillis())) {
             Constants.LOGGER.info("[{}] Server timeout, switching to local mode", Constants.MOD_NAME_SHORT);
         }
         Hud.render(context);
@@ -74,20 +67,16 @@ public class Client {
     }
 
     public static void onDisconnect() {
-        isLocalMode = true;
-        playerHasOp = false;
-        lastServerUpdateTime = 0;
+        LINK.reset();
     }
 
     public static void onHandshake(HandshakePayload payload) {
-        isLocalMode = false;
-        playerHasOp = payload.playerHasOp();
-        lastServerUpdateTime = System.currentTimeMillis();
-        Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, playerHasOp);
+        LINK.onHandshake(payload.playerHasOp(), System.currentTimeMillis());
+        Constants.LOGGER.info("[{}] Server has mod installed (OP: {}), switching to remote mode", Constants.MOD_NAME_SHORT, LINK.playerHasOp());
     }
 
     public static void onPositionUpdate(PositionUpdatePayload payload) {
-        updateLastServerUpdateTime();
+        LINK.onUpdate(System.currentTimeMillis());
         Minecraft.getInstance().execute(() -> Hud.applyPositionUpdate(payload));
     }
 }
