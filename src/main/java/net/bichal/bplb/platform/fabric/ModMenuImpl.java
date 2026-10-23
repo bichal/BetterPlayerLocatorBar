@@ -1,4 +1,4 @@
-package net.bichal.bplb.integration;
+package net.bichal.bplb.platform.fabric;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;

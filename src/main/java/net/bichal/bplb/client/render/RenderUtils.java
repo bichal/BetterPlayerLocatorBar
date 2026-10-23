@@ -1,36 +1,45 @@
 package net.bichal.bplb.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 
-import java.awt.*;
+import java.awt.Dimension;
 
+/**
+ * Texture drawing in one place, because the GuiGraphics blit API changed in 1.21.2.
+ */
 public class RenderUtils {
-    private static MinecraftClient clientInstance;
-
-    public static MinecraftClient getClient() {
-        if (clientInstance == null) {
-            clientInstance = MinecraftClient.getInstance();
-        }
-        return clientInstance;
+    public static Minecraft getClient() {
+        return Minecraft.getInstance();
     }
 
-    public static void renderTintedTexture(DrawContext context, Identifier texture, float x, float y, float width, float height, int color, float alpha) {
+    /**
+     * Draws the region {@code (u, v, regionWidth, regionHeight)} of a {@code textureWidth x textureHeight}
+     * texture into the box {@code (x, y, width, height)}, tinted with {@code color} (RGB) and {@code alpha}.
+     */
+    public static void renderTexture(GuiGraphics context, ResourceLocation texture, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight, int color, float alpha) {
+        //? if >=1.21.2 {
+        /*int argb = (Math.round(Math.max(0f, Math.min(1f, alpha)) * 255f) << 24) | (color & 0xFFFFFF);
+        context.blit(net.minecraft.client.renderer.RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight, argb);
+        *///?} else {
         setShaderColorRGBA(color, alpha);
-        Dimension dim = AssetScanner.getTextureDimensions(texture);
-        context.drawTexture(texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height);
+        context.blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        //?}
     }
 
-    public static void drawNineSlicedTexture(DrawContext context, Identifier texture, int x, int y, int width, int height) {
+    public static void renderTintedTexture(GuiGraphics context, ResourceLocation texture, float x, float y, float width, float height, int color, float alpha) {
+        Dimension dim = AssetScanner.getTextureDimensions(texture);
+        renderTexture(context, texture, (int) x, (int) y, (int) width, (int) height, 0f, 0f, dim.width, dim.height, dim.width, dim.height, color, alpha);
+    }
+
+    public static void drawNineSlicedTexture(GuiGraphics context, ResourceLocation texture, int x, int y, int width, int height, int tint, float alpha) {
         int corner = 2;
         int textureWidth = 12;
         int textureHeight = 12;
 
-        float u0 = 0f;
-        float v0 = 0f;
         float u2 = textureWidth - corner;
         float v2 = textureHeight - corner;
 
@@ -39,25 +48,25 @@ public class RenderUtils {
         int destMiddleWidth = width - corner * 2;
         int destMiddleHeight = height - corner * 2;
 
-        context.drawTexture(texture, x, y, corner, corner, u0, v0, corner, corner, textureWidth, textureHeight);
-        context.drawTexture(texture, x + width - corner, y, corner, corner, u2, v0, corner, corner, textureWidth, textureHeight);
-        context.drawTexture(texture, x, y + height - corner, corner, corner, u0, v2, corner, corner, textureWidth, textureHeight);
-        context.drawTexture(texture, x + width - corner, y + height - corner, corner, corner, u2, v2, corner, corner, textureWidth, textureHeight);
+        renderTexture(context, texture, x, y, corner, corner, 0, 0, corner, corner, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x + width - corner, y, corner, corner, u2, 0, corner, corner, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x, y + height - corner, corner, corner, 0, v2, corner, corner, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x + width - corner, y + height - corner, corner, corner, u2, v2, corner, corner, textureWidth, textureHeight, tint, alpha);
 
-        context.drawTexture(texture, x + corner, y, destMiddleWidth, corner, (float) corner, v0, middleWidth, corner, textureWidth, textureHeight);
-        context.drawTexture(texture, x + corner, y + height - corner, destMiddleWidth, corner, (float) corner, v2, middleWidth, corner, textureWidth, textureHeight);
-        context.drawTexture(texture, x, y + corner, corner, destMiddleHeight, u0, (float) corner, corner, middleHeight, textureWidth, textureHeight);
-        context.drawTexture(texture, x + width - corner, y + corner, corner, destMiddleHeight, u2, (float) corner, corner, middleHeight, textureWidth, textureHeight);
-        context.drawTexture(texture, x + corner, y + corner, destMiddleWidth, destMiddleHeight, (float) corner, (float) corner, middleWidth, middleHeight, textureWidth, textureHeight);
+        renderTexture(context, texture, x + corner, y, destMiddleWidth, corner, corner, 0, middleWidth, corner, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x + corner, y + height - corner, destMiddleWidth, corner, corner, v2, middleWidth, corner, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x, y + corner, corner, destMiddleHeight, 0, corner, corner, middleHeight, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x + width - corner, y + corner, corner, destMiddleHeight, u2, corner, corner, middleHeight, textureWidth, textureHeight, tint, alpha);
+        renderTexture(context, texture, x + corner, y + corner, destMiddleWidth, destMiddleHeight, corner, corner, middleWidth, middleHeight, textureWidth, textureHeight, tint, alpha);
     }
 
-    public static void withMatrixPush(DrawContext context, float x, float y, Runnable action) {
-        context.getMatrices().push();
-        context.getMatrices().translate(x, y, 0);
+    public static void withMatrixPush(GuiGraphics context, float x, float y, Runnable action) {
+        context.pose().pushPose();
+        context.pose().translate(x, y, 0);
         try {
             action.run();
         } finally {
-            context.getMatrices().pop();
+            context.pose().popPose();
         }
     }
 

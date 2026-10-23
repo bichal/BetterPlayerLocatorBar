@@ -1,17 +1,17 @@
 package net.bichal.bplb.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.bichal.bplb.config.Config;
 import net.bichal.bplb.util.Constants;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -43,40 +43,28 @@ public class ConfigCommand {
         OPTIONS.put("death_marker_inherit_color", new BooleanOption("deathMarkerInheritBorderColor", Config::isDeathMarkerInheritBorderColor, Config::setDeathMarkerInheritBorderColor));
     }
 
-    public static void register() {
-        Constants.LOGGER.info("[{}] Registering client configuration commands", Constants.MOD_NAME_SHORT);
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(
-                    CommandManager.literal("betterplayerlocatorbar")
-                            .then(CommandManager.literal("config")
-                                    .then(CommandManager.argument("option", StringArgumentType.word())
-                                            .suggests((ctx, builder) -> suggestOptions(builder))
-                                            .executes(ctx -> getOption(ctx.getSource(), StringArgumentType.getString(ctx, "option")))
-                                            .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                                    .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
-                                                    .executes(ctx -> setOption(ctx.getSource(), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value")))
-                                            )
-                                    )
-                            )
-            );
+    /** Where command results go; the loader maps it onto its own command source type. */
+    public interface Feedback {
+        void success(Component message);
 
-            dispatcher.register(
-                    CommandManager.literal("bplb")
-                            .then(CommandManager.literal("config")
-                                    .then(CommandManager.argument("option", StringArgumentType.word())
-                                            .suggests((ctx, builder) -> suggestOptions(builder))
-                                            .executes(ctx -> getOption(ctx.getSource(), StringArgumentType.getString(ctx, "option")))
-                                            .then(CommandManager.argument("value", StringArgumentType.greedyString())
-                                                    .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
-                                                    .executes(ctx -> setOption(ctx.getSource(), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value")))
-                                            )
-                                    )
-                            )
-            );
-        });
-        Constants.LOGGER.info("[{}]  Client configuration commands registered", Constants.MOD_NAME_SHORT);
+        void failure(Component message);
     }
 
+    /** The command roots ("/bplb" and its long alias), ready to be registered on a client dispatcher. */
+    public static <S> List<LiteralArgumentBuilder<S>> build(Function<S, Feedback> feedback) {
+        return List.of(root("betterplayerlocatorbar", feedback), root("bplb", feedback));
+    }
+
+    private static <S> LiteralArgumentBuilder<S> root(String name, Function<S, Feedback> feedback) {
+        return LiteralArgumentBuilder.<S>literal(name)
+                .then(LiteralArgumentBuilder.<S>literal("config")
+                        .then(RequiredArgumentBuilder.<S, String>argument("option", StringArgumentType.word())
+                                .suggests((ctx, builder) -> suggestOptions(builder))
+                                .executes(ctx -> getOption(feedback.apply(ctx.getSource()), StringArgumentType.getString(ctx, "option")))
+                                .then(RequiredArgumentBuilder.<S, String>argument("value", StringArgumentType.greedyString())
+                                        .suggests((ctx, builder) -> suggestValues(builder, StringArgumentType.getString(ctx, "option")))
+                                        .executes(ctx -> setOption(feedback.apply(ctx.getSource()), StringArgumentType.getString(ctx, "option"), StringArgumentType.getString(ctx, "value"))))));
+    }
     private static CompletableFuture<Suggestions> suggestOptions(SuggestionsBuilder builder) {
         String remaining = builder.getRemaining().toLowerCase();
         for (String option : OPTIONS.keySet()) {
@@ -104,23 +92,23 @@ public class ConfigCommand {
         return builder.buildFuture();
     }
 
-    private static int getOption(ServerCommandSource source, String optionName) {
+    private static int getOption(Feedback source, String optionName) {
         ConfigOption option = OPTIONS.get(optionName.toLowerCase());
         if (option == null) {
-            source.sendError(Text.literal("Command not found: " + optionName).formatted(Formatting.RED));
+            source.failure(Component.literal("Command not found: " + optionName).withStyle(ChatFormatting.RED));
             return 0;
         }
 
         Config config = Config.getInstance();
         String value = option.getValue(config);
-        source.sendFeedback(() -> Text.literal("📊 " + optionName + ": ").formatted(Formatting.GOLD).append(Text.literal(value).formatted(Formatting.GREEN)), false);
+        source.success(Component.literal("📊 " + optionName + ": ").withStyle(ChatFormatting.GOLD).append(Component.literal(value).withStyle(ChatFormatting.GREEN)));
         return 1;
     }
 
-    private static int setOption(ServerCommandSource source, String optionName, String value) {
+    private static int setOption(Feedback source, String optionName, String value) {
         ConfigOption option = OPTIONS.get(optionName.toLowerCase());
         if (option == null) {
-            source.sendError(Text.literal("Command not found: " + optionName).formatted(Formatting.RED));
+            source.failure(Component.literal("Command not found: " + optionName).withStyle(ChatFormatting.RED));
             return 0;
         }
 
@@ -129,14 +117,14 @@ public class ConfigCommand {
             boolean success = option.setValue(config, value);
             if (success) {
                 config.save();
-                source.sendFeedback(() -> Text.literal(optionName + " established to: ").formatted(Formatting.GREEN).append(Text.literal(value).formatted(Formatting.GOLD)), true);
+                source.success(Component.literal(optionName + " set to: ").withStyle(ChatFormatting.GREEN).append(Component.literal(value).withStyle(ChatFormatting.GOLD)));
                 return 1;
             } else {
-                source.sendError(Text.literal("Invalid value: " + value).formatted(Formatting.RED));
+                source.failure(Component.literal("Invalid value: " + value).withStyle(ChatFormatting.RED));
                 return 0;
             }
         } catch (Exception e) {
-            source.sendError(Text.literal("Error: " + e.getMessage()).formatted(Formatting.RED));
+            source.failure(Component.literal("Error: " + e.getMessage()).withStyle(ChatFormatting.RED));
             return 0;
         }
     }
@@ -176,7 +164,7 @@ public class ConfigCommand {
         @Override
         public boolean setValue(Config config, String value) {
             try {
-                int intValue = Integer.parseInt(value);
+                int intValue = Integer.parseInt(value.trim());
                 if (intValue >= min && intValue <= max) {
                     setter.accept(config, intValue);
                     return true;
@@ -193,7 +181,7 @@ public class ConfigCommand {
 
         @Override
         public String getValue(Config config) {
-            return String.format("%.2f", getter.apply(config));
+            return String.format(java.util.Locale.ROOT, "%.2f", getter.apply(config));
         }
 
         @Override

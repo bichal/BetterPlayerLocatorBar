@@ -1,6 +1,6 @@
 package net.bichal.bplb.server;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -19,9 +19,9 @@ public class PlayerTracker {
         this.positionThresholdSq = Math.pow(config.positionChangeThreshold(), 2);
     }
 
-    public void updatePlayer(ServerPlayerEntity player) {
+    public void updatePlayer(ServerPlayer player) {
         if (player == null) return;
-        UUID uuid = player.getUuid();
+        UUID uuid = player.getUUID();
         PlayerPosition newPos = new PlayerPosition(player.getX(), player.getY(), player.getZ());
 
         PlayerPosition oldPos = currentPositions.put(uuid, newPos);
