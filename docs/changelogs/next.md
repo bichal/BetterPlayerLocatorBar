@@ -6,3 +6,4 @@
 - Before 1.21.6 the mod keeps its own bar. With the mod on the server every player is shown; otherwise only players in render distance.
 - New config screen; fixes the blurry screen caused by rendering twice.
 - Settings screen shows the active mode.
+- On 1.21.6 and newer, a server with the mod spends less time updating vanilla waypoints (same connections and packets; `-Dbplb.optimizeWaypoints=false` switches it off).
