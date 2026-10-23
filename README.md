@@ -57,7 +57,7 @@ Java 21 up to 1.21.11, Java 25 from 26.1. [Mod Menu](https://modrinth.com/mod/mo
 How it works:
 
 - **1.21 to 1.21.5** have no locator bar of their own, so the mod brings one. If the server has the mod (server mode) every player's position comes from the server, however far away. Without it (local mode) only players your game can see (inside render distance) are shown. The settings screen shows which mode you are in.
-- **1.21.6 and newer** already have Mojang's locator bar. The mod does not add a second one or its own network traffic: it uses the vanilla waypoints and only draws them with your icons, colours, fading and name plates. The server does not need the mod.
+- **1.21.6 and newer** already have Mojang's locator bar. The mod does not add a second one or its own network traffic: it uses the vanilla waypoints and only draws them with your icons, colours, fading and name plates. The server does not need the mod. If it has it, the server also does less work per player movement for the vanilla waypoints (same result, about a quarter less time in that code with 100 moving players); `-Dbplb.optimizeWaypoints=false` turns that off.
 
 ## Installation
 

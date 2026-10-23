@@ -3,7 +3,9 @@
   "minVersion": "0.8",
   "package": "net.bichal.bplb.mixin",
   "compatibilityLevel": "${java}",
-  "mixins": [],
+  "mixins": [
+    "@SERVER_MIXIN@"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

@@ -35,7 +35,10 @@ sourceSets.main {
     if (waypoints) {
         java.exclude("**/server/**", "**/network/**", "**/mixin/HotbarMixin.java")
     } else {
-        java.exclude("**/WaypointSource.java", "**/mixin/WaypointBarMixin.java")
+        java.exclude(
+            "**/WaypointSource.java", "**/mixin/WaypointBarMixin.java",
+            "**/mixin/ServerWaypointManagerMixin.java", "**/waypoint/ServerOps.java"
+        )
     }
 }
 
@@ -52,9 +55,12 @@ tasks.test {
 // The mixin that draws the locator bar depends on the mode.
 tasks.processResources {
     val locatorMixin = if (waypoints) "WaypointBarMixin" else "HotbarMixin"
+    // Only the waypoint mode has a server mixin (it speeds up the vanilla waypoint manager).
+    val serverMixin = if (waypoints) "\"ServerWaypointManagerMixin\"" else ""
     inputs.property("locator_mixin", locatorMixin)
+    inputs.property("server_mixin", serverMixin)
     filesMatching("bplb.mixins.json") {
-        filter { it.replace("@LOCATOR_MIXIN@", locatorMixin) }
+        filter { it.replace("@LOCATOR_MIXIN@", locatorMixin).replace("\"@SERVER_MIXIN@\"", serverMixin) }
     }
 }
 
