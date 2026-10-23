@@ -4,7 +4,7 @@ import net.neoforged.moddevgradle.dsl.NeoForgeExtension
 plugins {
     id("java")
     id("maven-publish")
-    id("fabric-loom") version "1.13.6" apply false
+    id("fabric-loom") version "1.16.3" apply false
     id("net.neoforged.moddev") version "2.0.148" apply false
 }
 
