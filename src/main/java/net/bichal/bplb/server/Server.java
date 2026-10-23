@@ -4,10 +4,8 @@ import net.bichal.bplb.network.HandshakePayload;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.platform.Platform;
 import net.bichal.bplb.util.Constants;
+import net.bichal.bplb.util.HeadGear;
 import net.bichal.bplb.util.DistanceUtils;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
@@ -243,7 +241,6 @@ public class Server {
     }
 
     private boolean shouldHideTarget(ServerPlayer target) {
-        ItemStack headStack = target.getItemBySlot(EquipmentSlot.HEAD);
-        return target.isShiftKeyDown() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+        return HeadGear.hidesPlayer(target);
     }
 }

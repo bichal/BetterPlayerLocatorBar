@@ -6,15 +6,13 @@ import net.bichal.bplb.client.render.RenderUtils;
 import net.bichal.bplb.config.Config;
 import net.bichal.bplb.network.PositionUpdatePayload;
 import net.bichal.bplb.util.Constants;
+import net.bichal.bplb.util.HeadGear;
 import net.bichal.bplb.util.DistanceUtils;
 import net.bichal.bplb.util.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Camera;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -444,8 +442,7 @@ public class Hud {
     }
 
     private static boolean shouldHideTarget(Player target) {
-        final ItemStack headStack = target.getItemBySlot(EquipmentSlot.HEAD);
-        return target.isShiftKeyDown() || target.isInvisible() || (!headStack.isEmpty() && !(headStack.getItem() instanceof ArmorItem));
+        return HeadGear.hidesPlayer(target);
     }
 
     private static boolean shouldShowArrow(Minecraft client, PlayerPosition pos, boolean up) {
