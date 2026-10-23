@@ -88,9 +88,14 @@ if (isFabric) {
     loom.runs.named("client") {
         runDir = "../../run/$mcVersion-fabric"
         vmArg("-Dbplb.debug=true")
+        providers.gradleProperty("bplb.addMods").orNull?.let { vmArg("-Dfabric.addMods=$it") }
+        // -Pbplb.quickplay=<host> joins that server straight away (dev testing)
+        providers.gradleProperty("bplb.quickplay").orNull?.let { programArgs("--quickPlayMultiplayer", it) }
     }
     loom.runs.named("server") {
         runDir = "../../run/$mcVersion-fabric-server"
+        // -Pbplb.addMods=<jar>[,<jar>] loads extra mods in dev runs (for example Carpet fake players)
+        providers.gradleProperty("bplb.addMods").orNull?.let { vmArg("-Dfabric.addMods=$it") }
     }
 } else {
     apply(plugin = "net.neoforged.moddev")
