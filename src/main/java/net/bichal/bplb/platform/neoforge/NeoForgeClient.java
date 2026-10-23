@@ -18,7 +18,9 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+//? if !waypoints {
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+//?}
 //? if >=1.21.4 {
 /*import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 *///?} else {
@@ -34,7 +36,9 @@ public class NeoForgeClient {
     public NeoForgeClient(IEventBus modBus, ModContainer container) {
         Client.init();
         modBus.addListener(NeoForgeClient::registerKeys);
+        //? if !waypoints {
         modBus.addListener(NeoForgeClient::registerLayers);
+        //?}
         modBus.addListener(NeoForgeClient::registerReloadListeners);
         NeoForge.EVENT_BUS.register(GameEvents.class);
         container.registerExtensionPoint(IConfigScreenFactory.class, (modContainer, parent) -> new ConfigScreen(parent));
@@ -45,9 +49,11 @@ public class NeoForgeClient {
         event.register(Keybinds.OPEN_CONFIG);
     }
 
+    //? if !waypoints {
     private static void registerLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "locator_bar"), (graphics, deltaTracker) -> Client.onHudRender(graphics));
     }
+    //?}
 
     //? if >=1.21.4 {
     /*private static void registerReloadListeners(AddClientReloadListenersEvent event) {

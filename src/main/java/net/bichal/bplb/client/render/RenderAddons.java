@@ -106,8 +106,8 @@ public class RenderAddons {
         int tintColor = ColorUtils.darkerColoring(color);
         RenderUtils.withMatrixPush(context, x, y, () -> {
             RenderUtils.drawNineSlicedTexture(context, nameplateTexture, 0, 0, boxWidth, boxHeight, tintColor, alpha);
-            context.pose().translate(boxWidth / 2f, boxHeight / 2f, 1);
-            context.pose().scale(scale, scale, 1.0f);
+            GuiCompat.translate(context, boxWidth / 2f, boxHeight / 2f, 1);
+            GuiCompat.scale(context, scale, scale);
             int textColor = Constants.WHITE_COLOR | ((int) (alpha * 255) << 24);
             context.drawString(client.font, text, -textWidth / 2, -client.font.lineHeight / 2, textColor, true);
         });
