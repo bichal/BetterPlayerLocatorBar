@@ -27,6 +27,9 @@ stonecutter {
             "1.21.9" to listOf("fabric"),
             "1.21.10" to listOf("fabric", "neoforge"),
             "1.21.11" to listOf("fabric", "neoforge"),
+            "26.1.2" to listOf("fabric", "neoforge"),
+            "26.2" to listOf("fabric", "neoforge"),
+            "26.3" to listOf("fabric", "neoforge"),
         )
         for ((mc, loaders) in targets) {
             for (loader in loaders) {

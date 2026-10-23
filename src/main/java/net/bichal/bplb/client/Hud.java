@@ -475,7 +475,7 @@ public class Hud {
             return up ? diff > 5.5 : diff < -5.5;
         }
 
-        double angleDiff = getCameraAngleDifference(client.gameRenderer.getMainCamera(), pos);
+        double angleDiff = getCameraAngleDifference(GuiCompat.camera(client), pos);
         double threshold = getDynamicAngleThreshold(client, pos);
         return up ? angleDiff < -threshold : angleDiff > threshold;
     }

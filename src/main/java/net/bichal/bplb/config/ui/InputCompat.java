@@ -30,10 +30,41 @@ public final class InputCompat {
     }
 
     public static boolean typed(EditBox box, char chr, int modifiers) {
-        //? if >=1.21.9 {
+        //? if >=26.1 {
+        /*return box.charTyped(new CharacterEvent(chr));
+        *///?} else if >=1.21.9 {
         /*return box.charTyped(new CharacterEvent(chr, modifiers));
         *///?} else {
         return box.charTyped(chr, modifiers);
+        //?}
+    }
+
+    //? if >=26.3 {
+    /*public static int scancode(KeyEvent event) {
+        return 0;
+    }
+    *///?} else if >=1.21.9 {
+    /*public static int scancode(KeyEvent event) {
+        return event.scancode();
+    }
+    *///?}
+
+    //? if >=26.1 {
+    /*public static int modifiers(CharacterEvent event) {
+        return 0;
+    }
+    *///?} else if >=1.21.9 {
+    /*public static int modifiers(CharacterEvent event) {
+        return event.modifiers();
+    }
+    *///?}
+
+    /** EditBox drawing: render(...) became extractRenderState(...) in 26.1. */
+    public static void draw(EditBox box, net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY) {
+        //? if >=26.1 {
+        /*box.extractRenderState(g, mouseX, mouseY, 0f);
+        *///?} else {
+        box.render(g, mouseX, mouseY, 0f);
         //?}
     }
 
