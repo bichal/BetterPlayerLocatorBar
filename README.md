@@ -40,19 +40,24 @@ Better Player Locator Bar is a Fabric and NeoForge mod. It shows players in a HU
 
 ## Requirements
 
-| Minecraft | Fabric | NeoForge |
-|---|---|---|
-| 1.21 - 1.21.1 | Loader ≥ 0.16, Fabric API | NeoForge 21.1+ |
-| 1.21.2 - 1.21.3 | Loader ≥ 0.16, Fabric API | NeoForge 21.3+ |
-| 1.21.4 | Loader ≥ 0.16, Fabric API | NeoForge 21.4+ |
+| Minecraft | Fabric | NeoForge | Mode |
+|---|---|---|---|
+| 1.21 - 1.21.1 | Loader ≥ 0.16, Fabric API | 21.1+ | own locator bar |
+| 1.21.2 - 1.21.3 | Loader ≥ 0.16, Fabric API | 21.3+ | own locator bar |
+| 1.21.4 | Loader ≥ 0.16, Fabric API | 21.4+ | own locator bar |
+| 1.21.5 | Loader ≥ 0.16, Fabric API | 21.5+ | own locator bar |
+| 1.21.6 - 1.21.7 | Loader ≥ 0.16, Fabric API | not released by NeoForge | vanilla waypoints |
+| 1.21.8 | Loader ≥ 0.16, Fabric API | 21.8+ | vanilla waypoints |
+| 1.21.9 - 1.21.10 | Loader ≥ 0.16, Fabric API | 21.10+ (1.21.10) | vanilla waypoints |
+| 1.21.11 | Loader ≥ 0.16, Fabric API | 21.11+ | vanilla waypoints |
+| 26.1 - 26.3 | Loader ≥ 0.19, Fabric API | 26.1.2+, 26.2+, 26.3+ | vanilla waypoints |
 
-Java 21 on every version. [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric; on NeoForge the settings are in the mod list.
+Java 21 up to 1.21.11, Java 25 from 26.1. [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric; on NeoForge the settings are in the mod list.
+
 How it works:
 
-- **Server has the mod (server mode):** every player's position comes from the server, however far away, for as long as you stay connected.
-- **Server without the mod (local mode):** only players your game can see (inside render distance) are shown.
-
-The settings screen shows which mode you are in.
+- **1.21 to 1.21.5** have no locator bar of their own, so the mod brings one. If the server has the mod (server mode) every player's position comes from the server, however far away. Without it (local mode) only players your game can see (inside render distance) are shown. The settings screen shows which mode you are in.
+- **1.21.6 and newer** already have Mojang's locator bar. The mod does not add a second one or its own network traffic: it uses the vanilla waypoints and only draws them with your icons, colours, fading and name plates. The server does not need the mod.
 
 ## Installation
 
