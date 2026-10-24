@@ -13,7 +13,7 @@ import java.util.zip.Deflater;
 
 /**
  * Not a regression test: measures what one position update costs, to judge whether a faster
- * serializer or packet compression would matter (see docs/celeris-evaluation.md).
+ * serializer or packet compression would matter.
  * Run with {@code ./gradlew :1.21.1-fabric:test -Dbplb.bench=true -i --tests '*PayloadCostBench'}.
  * A plain nanoTime loop, not JMH: the numbers only need to be right to an order of magnitude.
  */
