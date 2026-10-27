@@ -3,19 +3,30 @@
 // merging mod.stonecutter.properties.toml with the common TOML, choosing the
 // Minecraft versions ([stonecutter], -Pstonecutter.versions=...), the
 // Stonecutter tree and early validation.
+// Names the build-logic checkout may have: the folder is matched ignoring case and
+// separators, so PanzerBuildLogic, panzer-build-logic and BICHAL_BUILD_LOGIC all match.
+// Keep in step with net.bichal.gradle.BuildLogicNames.
+val buildLogicNames = setOf("bichalbuildlogic", "panzerbuildlogic", "bichallogic", "panzerlogic")
+
+fun isBuildLogicFolder(dir: File): Boolean =
+    dir.isDirectory && dir.resolve("settings.gradle.kts").isFile &&
+        dir.name.lowercase().filter { it.isLetterOrDigit() } in buildLogicNames
+
+// The build logic is a sibling checkout, not a published plugin. BICHAL_BUILD_LOGIC_DIR
+// points at it explicitly; otherwise any sibling folder with an accepted name is used.
+val buildLogic: File = System.getenv("BICHAL_BUILD_LOGIC_DIR")?.let { file(it) }?.takeIf { it.resolve("settings.gradle.kts").isFile }
+    ?: settingsDir.parentFile?.listFiles()?.firstOrNull { isBuildLogicFolder(it) }
+    ?: throw GradleException(
+        "The shared build logic was not found next to this mod (looked in ${settingsDir.parentFile}).\n" +
+            "Clone it into that folder under any of these names: bichal-build-logic, PanzerBuildLogic,\n" +
+            "or set BICHAL_BUILD_LOGIC_DIR to its path.\n" +
+            "  git clone https://github.com/bichal/BichalBuildLogic.git"
+    )
+// bichal.settings reads this to find the common TOML.
+extra["bichal.buildLogicDir"] = buildLogic
+
 pluginManagement {
-    // The build logic is a sibling checkout, not a published plugin. Say how to
-    // get it instead of failing later with "plugin bichal.settings not found".
-    val buildLogic = settingsDir.resolve("../bichal-build-logic")
-    if (!buildLogic.resolve("settings.gradle.kts").isFile) {
-        throw GradleException(
-            "bichal-build-logic not found at ${buildLogic.normalize()}.\n" +
-                "This mod builds with the shared build logic checked out next to it:\n" +
-                "  git clone https://github.com/bichal/BichalBuildLogic.git ${buildLogic.normalize()}\n" +
-                "(see \"Building\" in this mod's README)."
-        )
-    }
-    includeBuild("../bichal-build-logic")
+    includeBuild(buildLogic)
 
     repositories {
         gradlePluginPortal()
