@@ -1,5 +1,5 @@
-# Managed by panzer-build-logic (shared/mod/.github/workflows/ci.yml): `panzer sync`
-# overwrites this file. The pipeline is panzer-build-logic's mod-ci.yml, configured
+# Managed by bichal-build-logic (shared/mod/.github/workflows/ci.yml): `bichal sync`
+# overwrites this file. The pipeline is bichal-build-logic's mod-ci.yml, configured
 # by this mod's mod.stonecutter.properties.toml ([natives.*], [depends_on.*],
 # [publish], [ci]):
 #   every push / PR   build, test, package and verify every jar, then a release
@@ -7,9 +7,9 @@
 #   v* tag            the same, then publish: GitHub release, Modrinth, CurseForge
 #                     (and the Maven repository when [publish] maven_pages = true)
 #   manual run        dry run by default; on a tag ref, untick it to publish
-# Secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN (see panzer-build-logic/.env.example),
+# Secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN (see bichal-build-logic/.env.example),
 # passed by name: the pipeline gets those two and nothing else.
-# mod-ci.yml is pinned to the panzer-build-logic commit `panzer sync` ran from;
+# mod-ci.yml is pinned to the bichal-build-logic commit `bichal sync` ran from;
 # that run's tools and nested workflows come from the same commit.
 name: CI
 
@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   mod:
-    uses: PanzerDevOrg/PanzerBuildLogic/.github/workflows/mod-ci.yml@9aa62b4c1bea51b4b82d8f0e11953ec1fad76e0c # panzer-build-logic master, 2026-10-23 (no release tags yet)
+    uses: bichal/BichalBuildLogic/.github/workflows/mod-ci.yml@aab7d10739ce2f6baffe3afde0086f5d2e6e853b # bichal-build-logic master, 2026-10-27 (no release tags yet)
     permissions:
       contents: write
     with:

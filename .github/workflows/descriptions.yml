@@ -1,5 +1,5 @@
-# Managed by panzer-build-logic (shared/mod/.github/workflows/descriptions.yml):
-# `panzer sync` overwrites this file.
+# Managed by bichal-build-logic (shared/mod/.github/workflows/descriptions.yml):
+# `bichal sync` overwrites this file.
 #
 # README.md is the description on Modrinth (pushed by the API) and CurseForge
 # (curseforge.html in the "descriptions" artifact, pasted by hand: CurseForge
@@ -25,7 +25,7 @@ permissions: {}
 
 jobs:
   descriptions:
-    uses: PanzerDevOrg/PanzerBuildLogic/.github/workflows/mod-description.yml@9aa62b4c1bea51b4b82d8f0e11953ec1fad76e0c # panzer-build-logic master, 2026-10-23 (no release tags yet)
+    uses: bichal/BichalBuildLogic/.github/workflows/mod-description.yml@aab7d10739ce2f6baffe3afde0086f5d2e6e853b # bichal-build-logic master, 2026-10-27 (no release tags yet)
     # Reads the repository; Modrinth is updated with its own token.
     permissions:
       contents: read

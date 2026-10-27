@@ -1,5 +1,5 @@
 # Better Player Locator Bar build configuration. Merged at configuration time with
-# ../panzer-build-logic/common.stonecutter.properties.toml (panzer.settings):
+# ../Bichal-build-logic/common.stonecutter.properties.toml (Bichal.settings):
 # any table declared here replaces the common table of the same name.
 
 [mod]
