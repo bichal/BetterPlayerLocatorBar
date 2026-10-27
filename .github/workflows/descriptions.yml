@@ -4,7 +4,7 @@
 # README.md is the description on Modrinth (pushed by the API) and CurseForge
 # (curseforge.html in the "descriptions" artifact, pasted by hand: CurseForge
 # has no description API).
-#   push to master (README/media/TOML changed): render only, as a private check
+#   push to main (README/media/TOML changed): render only, as a private check
 #   v* tag: update Modrinth, so the page changes together with the release
 #   manual run: dry run by default; untick to update Modrinth now
 name: Sync descriptions
@@ -17,7 +17,7 @@ on:
         type: boolean
         default: true
   push:
-    branches: [master]
+    branches: [main]
     tags: ["v*"]
     paths: ["README.md", "docs/media/**", "mod.stonecutter.properties.toml"]
 
@@ -25,7 +25,7 @@ permissions: {}
 
 jobs:
   descriptions:
-    uses: bichal/BichalBuildLogic/.github/workflows/mod-description.yml@5ee7559054898fe7a8ce3b92f6ca91840aab752e # bichal-build-logic master, 2026-10-27 (no release tags yet)
+    uses: bichal/BichalBuildLogic/.github/workflows/mod-description.yml@181cefb9231a90e71b8d169f8fcf7e2288d5fc44 # bichal-build-logic main, 2026-10-27 (no release tags yet)
     # Reads the repository; Modrinth is updated with its own token.
     permissions:
       contents: read

@@ -15,7 +15,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     tags: ["v*"]
     # Docs-only commits rebuild nothing (path filters never apply to tags);
     # descriptions.yml handles README changes.
@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   mod:
-    uses: bichal/BichalBuildLogic/.github/workflows/mod-ci.yml@5ee7559054898fe7a8ce3b92f6ca91840aab752e # bichal-build-logic master, 2026-10-27 (no release tags yet)
+    uses: bichal/BichalBuildLogic/.github/workflows/mod-ci.yml@181cefb9231a90e71b8d169f8fcf7e2288d5fc44 # bichal-build-logic main, 2026-10-27 (no release tags yet)
     permissions:
       contents: write
     with:
