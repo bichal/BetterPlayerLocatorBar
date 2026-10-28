@@ -1,16 +1,16 @@
-import com.panzer.gradle.PanzerModExtension
+import net.bichal.gradle.BichalModExtension
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 
-// Shared build logic: panzer-build-logic's panzer.mod (NeoForge or Fabric node by name,
+// Shared build logic: bichal-build-logic's bichal.mod (NeoForge or Fabric node by name,
 // dependencies, resources, legal files, buildAndCollect). Only what is specific to
 // Better Player Locator Bar belongs here.
 plugins {
-    id("panzer.mod")
+    id("bichal.mod")
     idea
 }
 
-val modProps = extensions.getByType(PanzerModExtension::class.java).props
+val modProps = extensions.getByType(BichalModExtension::class.java).props
 val stonecutter = extensions.getByType(StonecutterBuildExtension::class.java)
 val mcParsed = stonecutter.current.parsed
 
