@@ -106,5 +106,5 @@ See [`LICENSE`](./LICENSE) for the full summary.
 ---
 
 <!-- bichal:footer -->
-Code: **CC BY-NC-SA 4.0** | Art: **CC BY-NC-SA 4.0** | Made by **Bichal**
+Code: **CC BY-NC-SA 4.0** · Art: **CC BY-NC-SA 4.0** · Made by **Bichal**
 <!-- /bichal:footer -->
