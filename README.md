@@ -101,6 +101,12 @@ Loader code is only in `net.bichal.bplb.platform.<loader>`; the rest uses Mojang
 See [`LICENSE`](./LICENSE) for the full summary.
 <!-- /bichal:license -->
 
+## Credit
+
+Better Player Locator Bar is made by Bichal. If you use, modify, or redistribute Better Player Locator Bar, or build on it, keep this credit and name Bichal as the original author. This requirement is an additional term under section 7 of the AGPL-3.0.
+
+Want to use Better Player Locator Bar in a closed-source or commercial project? Contact Bichal for a separate commercial license.
+
 <!-- publish:on -->
 
 ---
