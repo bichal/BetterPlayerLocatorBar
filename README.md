@@ -8,23 +8,17 @@
 
 > **Better Player Locator Bar shows where your friends are in a HUD bar above the XP bar.** Pick the icons, borders, fades and names you like, and set a different look for each player.
 
+<p align="center">
 <!-- publish:only modrinth -->
-<p align="center">
-<a href="https://modrinth.com/mod/bplb"><img src="https://img.shields.io/badge/Download_on-Modrinth-1bd96a?style=for-the-badge&logo=modrinth&logoColor=white" alt="Download on Modrinth"></a>
-</p>
-<!-- /publish:only -->
-
-<!-- publish:only curseforge -->
-<p align="center">
 <a href="https://www.curseforge.com/minecraft/mc-mods/better-player-locator-bar"><img src="https://img.shields.io/badge/Download_on-CurseForge-f16436?style=for-the-badge&logo=curseforge&logoColor=white" alt="Download on CurseForge"></a>
-</p>
 <!-- /publish:only -->
-
+<!-- publish:only curseforge -->
+<a href="https://modrinth.com/mod/bplb"><img src="https://img.shields.io/badge/Download_on-Modrinth-1bd96a?style=for-the-badge&logo=modrinth&logoColor=white" alt="Download on Modrinth"></a>
+<!-- /publish:only -->
 <!-- publish:only github -->
-<p align="center">
 <a href="https://github.com/bichal/BetterPlayerLocatorBar/releases"><img src="https://img.shields.io/badge/Download_on-GitHub-24292f?style=for-the-badge&logo=github&logoColor=white" alt="Download on GitHub"></a>
-</p>
 <!-- /publish:only -->
+</p>
 
 <p align="center">
 <img src="./docs/media/TwoPlayerBarPreview.gif" alt="Two players on the HUD bar" width="100%"/>
